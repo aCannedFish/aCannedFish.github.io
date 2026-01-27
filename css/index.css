@@ -4804,29 +4804,65 @@ figure.highlight pre .javascript .function {
 #nav.hide-menu #search-button span:not(.site-page) {
   display: none;
 }
-#nav #search-button {
-  display: inline;
-  position: absolute;
-  right: 36px;
-  padding: 0;
-  color: var(--light-grey);
+#nav #nav-right-container {
+  -webkit-box-flex: 0;
+  -moz-box-flex: 0;
+  -o-box-flex: 0;
+  box-flex: 0;
+  -webkit-flex: none;
+  -ms-flex: none;
+  flex: none;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: box;
+  display: flex;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+  -o-box-align: center;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  gap: 15px;
 }
-@media screen and (max-width: 768px) {
-  #nav #search-button {
-    right: 16px;
-  }
+#nav #nav-right-container #search-button {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  -o-transition: all 0.3s;
+  -ms-transition: all 0.3s;
+  transition: all 0.3s;
 }
-#nav #search-button:hover {
-  color: var(--white);
+#nav #nav-right-container #search-button .search {
+  font-size: 0.85em;
+  padding: 4px 8px;
+  border-radius: 15px;
+  -webkit-transition: all 0.3s;
+  -moz-transition: all 0.3s;
+  -o-transition: all 0.3s;
+  -ms-transition: all 0.3s;
+  transition: all 0.3s;
 }
-#nav .site-page {
+#nav #nav-right-container #search-button .search:hover {
+  background: rgba(255,255,255,0.73);
+}
+作者: kukual .site-page,
+链接: https: .site-page,
+来源: kukualのblog .site-page,
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。 .site-page {
   position: relative;
   padding-bottom: 6px;
   text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
   font-size: 0.78em;
   cursor: pointer;
 }
-#nav .site-page:not(.child):after {
+作者: kukual .site-page:not(.child):after,
+链接: https: .site-page:not(.child):after,
+来源: kukualのblog .site-page:not(.child):after,
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。 .site-page:not(.child):after {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -4842,15 +4878,27 @@ figure.highlight pre .javascript .function {
   transition: all 0.3s ease-in-out;
   border-radius: 6px;
 }
-#nav .site-page:not(.child):hover:after {
+作者: kukual .site-page:not(.child):hover:after,
+链接: https: .site-page:not(.child):hover:after,
+来源: kukualのblog .site-page:not(.child):hover:after,
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。 .site-page:not(.child):hover:after {
   width: 100%;
 }
-#nav .nav-page-title {
+作者: kukual .nav-page-title,
+链接: https: .nav-page-title,
+来源: kukualのblog .nav-page-title,
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。 .nav-page-title {
   position: relative;
   overflow: hidden;
 }
-#nav .nav-page-title > :first-child,
-#nav .nav-page-title > :last-child {
+作者: kukual .nav-page-title > :first-child,
+链接: https: .nav-page-title > :first-child,
+来源: kukualのblog .nav-page-title > :first-child,
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。 .nav-page-title > :first-child,
+作者: kukual .nav-page-title > :last-child,
+链接: https: .nav-page-title > :last-child,
+来源: kukualのblog .nav-page-title > :last-child,
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。 .nav-page-title > :last-child {
   display: inline-block;
   -webkit-transition: all 0.3s ease-in-out;
   -moz-transition: all 0.3s ease-in-out;
@@ -4858,7 +4906,10 @@ figure.highlight pre .javascript .function {
   -ms-transition: all 0.3s ease-in-out;
   transition: all 0.3s ease-in-out;
 }
-#nav .nav-page-title > :last-child {
+作者: kukual .nav-page-title > :last-child,
+链接: https: .nav-page-title > :last-child,
+来源: kukualのblog .nav-page-title > :last-child,
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。 .nav-page-title > :last-child {
   position: absolute;
   top: 50%;
   left: 0;
@@ -4871,7 +4922,10 @@ figure.highlight pre .javascript .function {
   -ms-transform: translateY(-50%) translateY(-10px);
   transform: translateY(-50%) translateY(-10px);
 }
-#nav .nav-page-title:hover > :last-child {
+作者: kukual .nav-page-title:hover > :last-child,
+链接: https: .nav-page-title:hover > :last-child,
+来源: kukualのblog .nav-page-title:hover > :last-child,
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。 .nav-page-title:hover > :last-child {
   opacity: 1;
   -ms-filter: none;
   filter: none;
@@ -4881,7 +4935,10 @@ figure.highlight pre .javascript .function {
   -ms-transform: translateY(-50%) translateY(0);
   transform: translateY(-50%) translateY(0);
 }
-#nav .nav-page-title:hover > :first-child {
+作者: kukual .nav-page-title:hover > :first-child,
+链接: https: .nav-page-title:hover > :first-child,
+来源: kukualのblog .nav-page-title:hover > :first-child,
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。 .nav-page-title:hover > :first-child {
   opacity: 0;
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
   filter: alpha(opacity=0);
