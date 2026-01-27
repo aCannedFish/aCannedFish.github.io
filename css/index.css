@@ -4837,7 +4837,6 @@ figure.highlight pre .javascript .function {
   transition: all 0.3s;
 }
 #nav #nav-right-container #search-button .search {
-  font-size: 0.85em;
   padding: 4px 8px;
   border-radius: 15px;
   -webkit-transition: all 0.3s;
