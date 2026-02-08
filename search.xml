@@ -4,7 +4,7 @@
   
     
     <entry>
-      <title>CS231n笔记08：循环神经网络</title>
+      <title>CS231n笔记09：循环神经网络</title>
       <link href="/2026/02/08/CS231n_09/"/>
       <url>/2026/02/08/CS231n_09/</url>
       
@@ -92,9 +92,9 @@
             
             <tag> Convolutional Neural Networks </tag>
             
-            <tag> Normalization </tag>
-            
             <tag> Residual Networks </tag>
+            
+            <tag> Normalization </tag>
             
         </tags>
       
