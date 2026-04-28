@@ -4,7 +4,7 @@
   
     
     <entry>
-      <title>CS231n笔记10：Attention与Transformer</title>
+      <title>CS231n-10：Attention与Transformer</title>
       <link href="/2026/02/09/CS231n_10/"/>
       <url>/2026/02/09/CS231n_10/</url>
       
@@ -37,7 +37,7 @@
     
     
     <entry>
-      <title>CS231n笔记09：循环神经网络</title>
+      <title>CS231n-09：循环神经网络</title>
       <link href="/2026/02/08/CS231n_09/"/>
       <url>/2026/02/08/CS231n_09/</url>
       
@@ -68,7 +68,7 @@
     
     
     <entry>
-      <title>CS231n笔记08：CNN训练</title>
+      <title>CS231n-08：CNN训练</title>
       <link href="/2026/02/05/CS231n_08/"/>
       <url>/2026/02/05/CS231n_08/</url>
       
@@ -101,7 +101,7 @@
     
     
     <entry>
-      <title>CS231n笔记07：卷积网络与残差网络</title>
+      <title>CS231n-07：卷积网络与残差网络</title>
       <link href="/2026/02/05/CS231n_07/"/>
       <url>/2026/02/05/CS231n_07/</url>
       
@@ -125,9 +125,9 @@
             
             <tag> Convolutional Neural Networks </tag>
             
-            <tag> Normalization </tag>
-            
             <tag> Residual Networks </tag>
+            
+            <tag> Normalization </tag>
             
         </tags>
       
@@ -136,7 +136,7 @@
     
     
     <entry>
-      <title>CS231n笔记06：卷积层</title>
+      <title>CS231n-06：卷积层</title>
       <link href="/2026/02/03/CS231n_06/"/>
       <url>/2026/02/03/CS231n_06/</url>
       
@@ -167,7 +167,7 @@
     
     
     <entry>
-      <title>CS231n笔记05：神经网络与反向传播</title>
+      <title>CS231n-05：神经网络与反向传播</title>
       <link href="/2026/02/02/CS231n_05/"/>
       <url>/2026/02/02/CS231n_05/</url>
       
@@ -202,7 +202,7 @@
     
     
     <entry>
-      <title>CS231n笔记04：优化与梯度下降</title>
+      <title>CS231n-04：优化与梯度下降</title>
       <link href="/2026/01/30/CS231n_04/"/>
       <url>/2026/01/30/CS231n_04/</url>
       
@@ -235,7 +235,7 @@
     
     
     <entry>
-      <title>CS231n笔记03：正则化</title>
+      <title>CS231n-03：正则化</title>
       <link href="/2026/01/29/CS231n_03/"/>
       <url>/2026/01/29/CS231n_03/</url>
       
@@ -266,7 +266,7 @@
     
     
     <entry>
-      <title>CS231n笔记02：损失函数</title>
+      <title>CS231n-02：损失函数</title>
       <link href="/2026/01/28/CS231n_02/"/>
       <url>/2026/01/28/CS231n_02/</url>
       
@@ -295,7 +295,7 @@
     
     
     <entry>
-      <title>CS231n笔记01：kNN分类与线性分类</title>
+      <title>CS231n-01：kNN分类与线性分类</title>
       <link href="/2026/01/27/CS231n_01/"/>
       <url>/2026/01/27/CS231n_01/</url>
       
@@ -324,7 +324,7 @@
     
     
     <entry>
-      <title>数据结构笔记10：图</title>
+      <title>数据结构-10：图</title>
       <link href="/2026/01/27/CS0505_10/"/>
       <url>/2026/01/27/CS0505_10/</url>
       
@@ -351,7 +351,7 @@
     
     
     <entry>
-      <title>数据结构笔记09：外排序</title>
+      <title>数据结构-09：外排序</title>
       <link href="/2026/01/27/CS0505_09/"/>
       <url>/2026/01/27/CS0505_09/</url>
       
@@ -378,7 +378,7 @@
     
     
     <entry>
-      <title>数据结构笔记08：内排序</title>
+      <title>数据结构-08：内排序</title>
       <link href="/2026/01/27/CS0505_08/"/>
       <url>/2026/01/27/CS0505_08/</url>
       
@@ -405,7 +405,7 @@
     
     
     <entry>
-      <title>数据结构笔记07：动态查找</title>
+      <title>数据结构-07：动态查找</title>
       <link href="/2026/01/27/CS0505_07/"/>
       <url>/2026/01/27/CS0505_07/</url>
       
@@ -432,7 +432,7 @@
     
     
     <entry>
-      <title>数据结构笔记06：静态查找</title>
+      <title>数据结构-06：静态查找</title>
       <link href="/2026/01/27/CS0505_06/"/>
       <url>/2026/01/27/CS0505_06/</url>
       
@@ -459,7 +459,7 @@
     
     
     <entry>
-      <title>数据结构笔记05：优先级队列</title>
+      <title>数据结构-05：优先级队列</title>
       <link href="/2026/01/27/CS0505_05/"/>
       <url>/2026/01/27/CS0505_05/</url>
       
@@ -486,7 +486,7 @@
     
     
     <entry>
-      <title>数据结构笔记04：树</title>
+      <title>数据结构-04：树</title>
       <link href="/2026/01/27/CS0505_04/"/>
       <url>/2026/01/27/CS0505_04/</url>
       
@@ -513,7 +513,7 @@
     
     
     <entry>
-      <title>数据结构笔记03：队列</title>
+      <title>数据结构-03：队列</title>
       <link href="/2026/01/27/CS0505_03/"/>
       <url>/2026/01/27/CS0505_03/</url>
       
@@ -540,7 +540,7 @@
     
     
     <entry>
-      <title>数据结构笔记02：栈</title>
+      <title>数据结构-02：栈</title>
       <link href="/2026/01/27/CS0505_02/"/>
       <url>/2026/01/27/CS0505_02/</url>
       
@@ -567,7 +567,7 @@
     
     
     <entry>
-      <title>数据结构笔记01：线性表</title>
+      <title>数据结构-01：线性表</title>
       <link href="/2026/01/27/CS0501_01/"/>
       <url>/2026/01/27/CS0501_01/</url>
       
