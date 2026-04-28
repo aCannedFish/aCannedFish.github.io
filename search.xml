@@ -4,6 +4,19 @@
   
     
     <entry>
+      <title></title>
+      <link href="/2026/04/28/MIT6.S184_01/"/>
+      <url>/2026/04/28/MIT6.S184_01/</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+      
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>CS231n-10：Attention与Transformer</title>
       <link href="/2026/02/09/CS231n_10/"/>
       <url>/2026/02/09/CS231n_10/</url>
@@ -125,9 +138,9 @@
             
             <tag> Convolutional Neural Networks </tag>
             
-            <tag> Normalization </tag>
-            
             <tag> Residual Networks </tag>
+            
+            <tag> Normalization </tag>
             
         </tags>
       
