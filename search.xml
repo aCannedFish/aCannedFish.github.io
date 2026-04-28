@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>MIT6.S184-02：流匹配</title>
+      <link href="/2026/04/28/MIT6_S184_02/"/>
+      <url>/2026/04/28/MIT6_S184_02/</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+      
+      <categories>
+          
+          <category> Note(MIT6.S184) </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Flow </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>MIT6.S184-01：流与扩散模型</title>
       <link href="/2026/04/28/MIT6_S184_01/"/>
       <url>/2026/04/28/MIT6_S184_01/</url>
@@ -23,31 +48,6 @@
             <tag> Flow </tag>
             
             <tag> Diffusion </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>MIT6.S184-02：流匹配</title>
-      <link href="/2026/04/28/MIT6_S184_02/"/>
-      <url>/2026/04/28/MIT6_S184_02/</url>
-      
-        <content type="html"><![CDATA[]]></content>
-      
-      
-      <categories>
-          
-          <category> Note(MIT6.S184) </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> Flow </tag>
             
         </tags>
       
@@ -177,9 +177,9 @@
             
             <tag> Convolutional Neural Networks </tag>
             
-            <tag> Residual Networks </tag>
-            
             <tag> Normalization </tag>
+            
+            <tag> Residual Networks </tag>
             
         </tags>
       
