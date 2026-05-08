@@ -1,0 +1,24 @@
+/* Homepage-only cards: subtle transparency with a very light frosted effect */
+#recent-posts .recent-post-item,
+#recent-posts ~ #aside-content .card-widget {
+    background: rgba(255, 255, 255, 0.84);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+}
+
+[data-theme="dark"] #recent-posts .recent-post-item,
+[data-theme="dark"] #recent-posts ~ #aside-content .card-widget {
+    background: rgba(28, 28, 28, 0.80);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Homepage hero: transparent layer so global background is always visible */
+#page-header.full_page {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+#page-header.full_page::before {
+  background-color: transparent !important;
+}
