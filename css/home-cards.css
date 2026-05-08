@@ -22,3 +22,8 @@
 #page-header.full_page::before {
   background-color: transparent !important;
 }
+
+/* Hide footer globally */
+#footer {
+  display: none !important;
+}
