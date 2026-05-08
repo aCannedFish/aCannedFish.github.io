@@ -20,9 +20,9 @@
       
         <tags>
             
-            <tag> Diffusion </tag>
-            
             <tag> Score Function </tag>
+            
+            <tag> Diffusion </tag>
             
         </tags>
       
@@ -72,9 +72,9 @@
       
         <tags>
             
-            <tag> Flow </tag>
-            
             <tag> Diffusion </tag>
+            
+            <tag> Flow </tag>
             
         </tags>
       
@@ -204,9 +204,9 @@
             
             <tag> Convolutional Neural Networks </tag>
             
-            <tag> Residual Networks </tag>
-            
             <tag> Normalization </tag>
+            
+            <tag> Residual Networks </tag>
             
         </tags>
       
