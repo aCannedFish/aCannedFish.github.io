@@ -27,3 +27,8 @@
 #footer {
   display: none !important;
 }
+
+/* Post-header card styling removed — revert to theme defaults so post
+   cover/header is full-bleed and positioned by theme CSS. */
+
+
