@@ -4,6 +4,33 @@
   
     
     <entry>
+      <title>MIT6.S184-04：用提示词引导生成</title>
+      <link href="/2026/05/09/MIT6_S184_04/"/>
+      <url>/2026/05/09/MIT6_S184_04/</url>
+      
+        <content type="html"><![CDATA[<h2 id="条件引导生成">条件引导生成</h2><p>到目前为止讨论的流匹配模型和扩散模型，都只是从噪声中还原出原始的，全局的数据分布——我们不给模型任何输入，模型相当于直接从<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mrow><mi>d</mi><mi>a</mi><mi>t</mi><mi>a</mi></mrow></msub><mo stretchy="false">(</mo><mi>z</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">p_{data}(z)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">a</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">a</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.04398em;">z</span><span class="mclose">)</span></span></span></span>中进行采样来得到一张图片。但是大部分情况下我们希望模型能够按照我们给出的prompt或者一些额外的信息生成特定类型的图片。为了和之前的 <strong>条件 Condition</strong> 区分开，我们称额外提供的信息为 <strong>引导 Guide</strong>。</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> Note(MIT6.S184) </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Flow </tag>
+            
+            <tag> Diffusion </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>MIT6.S184-03：分数函数与分数匹配</title>
       <link href="/2026/05/07/MIT6_S184_03/"/>
       <url>/2026/05/07/MIT6_S184_03/</url>
