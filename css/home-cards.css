@@ -23,6 +23,16 @@
   background-color: transparent !important;
 }
 
+/* About / archives / tags / categories / friends: hide the cover fill too */
+#page-header.not-home-page {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+#page-header.not-home-page::before {
+  background-color: transparent !important;
+}
+
 /* Hide footer globally */
 #footer {
   display: none !important;
