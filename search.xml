@@ -131,6 +131,31 @@
     
     
     <entry>
+      <title>MIT6.S184-06：变分自编码器</title>
+      <link href="/2026/05/10/MIT6_S184_06/"/>
+      <url>/2026/05/10/MIT6_S184_06/</url>
+      
+        <content type="html"><![CDATA[]]></content>
+      
+      
+      <categories>
+          
+          <category> Note(MIT6.S184) </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> VAE </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>MIT6.S184-05：可扩展的模型架构</title>
       <link href="/2026/05/10/MIT6_S184_05/"/>
       <url>/2026/05/10/MIT6_S184_05/</url>
