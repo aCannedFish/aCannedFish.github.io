@@ -1,0 +1,317 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>ADS-11：布谷鸟哈希 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="内存缓存 在现代分布式系统架构中，随着数据规模的扩展与访问频率的提升，系统往往采用远程数据库集群存储全量数据。在此架构下，Web服务器通过高速网络与多台远程数据库节点交互。当客户端发起数据查询请求时，频繁的跨网络调用与数据库磁盘检索会引发显著的系统延迟。为此，系统架构普遍引入内存缓存机制，在Web服务器的本地内存中划定高速存储区域，用于留存高频访问的数据副本。 数据检索的逻辑被重构为优先探查流程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ADS-11：布谷鸟哈希">
+<meta property="og:url" content="https://acannedfish.github.io/2026/06/07/CS2322_11/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="内存缓存 在现代分布式系统架构中，随着数据规模的扩展与访问频率的提升，系统往往采用远程数据库集群存储全量数据。在此架构下，Web服务器通过高速网络与多台远程数据库节点交互。当客户端发起数据查询请求时，频繁的跨网络调用与数据库磁盘检索会引发显著的系统延迟。为此，系统架构普遍引入内存缓存机制，在Web服务器的本地内存中划定高速存储区域，用于留存高频访问的数据副本。 数据检索的逻辑被重构为优先探查流程。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background12.png">
+<meta property="article:published_time" content="2026-06-07T06:14:00.000Z">
+<meta property="article:modified_time" content="2026-06-07T08:08:58.296Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="Cuckoo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background12.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "ADS-11：布谷鸟哈希",
+  "url": "https://acannedfish.github.io/2026/06/07/CS2322_11/",
+  "image": "https://acannedfish.github.io/img/background12.png",
+  "datePublished": "2026-06-07T06:14:00.000Z",
+  "dateModified": "2026-06-07T08:08:58.296Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/06/07/CS2322_11/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'ADS-11：布谷鸟哈希',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/background12.png);"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">ADS-11：布谷鸟哈希</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-07T06:14:00.000Z" title="发表于 2026-06-07 14:14:00">2026-06-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-07T08:08:58.296Z" title="更新于 2026-06-07 16:08:58">2026-06-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note-ADS/">Note(ADS)</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="内存缓存">内存缓存</h2>
+<p>在现代分布式系统架构中，随着数据规模的扩展与访问频率的提升，系统往往采用远程数据库集群存储全量数据。在此架构下，Web服务器通过高速网络与多台远程数据库节点交互。当客户端发起数据查询请求时，频繁的跨网络调用与数据库磁盘检索会引发显著的系统延迟。为此，系统架构普遍引入内存缓存机制，在Web服务器的本地内存中划定高速存储区域，用于留存高频访问的数据副本。</p>
+<p>数据检索的逻辑被重构为优先探查流程。应用服务器接收查询请求后，首先在本地内存缓存中执行检索计算。若目标数据命中缓存，则直接返回；若未命中，系统穿透缓存向远程数据库发起请求，并在获取返回数据后将其写入内存缓存，从而为后续相同目标的查询提供加速支持 。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607143626136.png" alt=""></p>
+<p>以电子商务平台的商品检索为例，数据库中的商品信息往往表现为多属性结构。每一条商品记录依赖一个唯一标识符进行索引，并绑定一系列属性数据。以下展示了典型的关系型数据库商品存储表结构：</p>
+<table>
+<thead>
+<tr>
+<th><strong>id（主键）</strong></th>
+<th><strong>颜色</strong></th>
+<th><strong>尺寸</strong></th>
+<th><strong>价格</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>红色</td>
+<td>L</td>
+<td>299</td>
+</tr>
+<tr>
+<td>2</td>
+<td>蓝色</td>
+<td>M</td>
+<td>199</td>
+</tr>
+<tr>
+<td>3</td>
+<td>黑色</td>
+<td>XL</td>
+<td>399</td>
+</tr>
+</tbody>
+</table>
+<p>在内存缓存中，上述关系型数据需转换为键值对映射模型。数据库中的主键作为唯一的查找键，而颜色、尺寸、价格等附加属性被封装为一个结构体作为对应的值 。系统必须保证对该键值对的查找具备极低的延迟与稳定的响应时间分布。</p>
+<h2 id="Cuckoo-Hash">Cuckoo Hash</h2>
+<h3 id="常规哈希性能局限">常规哈希性能局限</h3>
+<p>传统哈希表在处理元素碰撞时存在固有的性能边界：</p>
+<ul>
+<li>线性探测哈希通过步长遍历连续的内存空间，探寻可用的空闲槽位。在插入过程中，此机制易引发元素聚集现象，导致探测序列长度随系统负载因子的攀升而呈非线性增长。查找操作在此类探测序列上退化为线性扫描 。</li>
+<li>双重哈希利用第二哈希函数计算步长以缓解聚集效应，但依然无法提供严格的最坏情况性能上限。</li>
+<li>链式哈希采用独立的链表结构挂载碰撞元素，将哈希冲突的解决隔离于哈希槽内部。在负载因子上升时，挂载链表不断延长，其非连续的内存布局在现代计算机体系结构中会引发严重的缓存未命中现象 。</li>
+</ul>
+<h3 id="基本思想">基本思想</h3>
+<p>为满足内存缓存对最坏情况查询时间的严格要求，Cuckoo Hash引入了静态多选择探测与动态元素置换机制。该数据结构的物理组成包含两个等长的哈希数组空间以及两个相互独立的哈希函数。</p>
+<p>两个哈希函数在数学上确保将任意给定的键映射至两个异构的存储位置。若设两哈希函数分别为<code>h1</code>与<code>h2</code>，对于键<code>k</code>，系统强制保证<code>h1(k)</code>与<code>h2(k)</code>指向不同的内存槽位。在系统稳定状态下，键<code>k</code>的物理位置被严格限制在这两个计算结果对应的槽位之一，且仅能存在于一个位置 。</p>
+<p>该机制的设计灵感源自布谷鸟的繁衍与巢穴占据习性。布谷鸟倾向于在其他鸟类的巢穴内产卵，孵化后的幼崽会将原巢穴中的原有幼鸟推挤出巢，以此获取生存所需的物理空间 。Cuckoo Hash在解决存储位置冲突时应用了同构的物理置换逻辑。当新元素指向的哈希槽位已被占用时，新元素将强制覆写并驱逐原有元素，被驱逐的元素随后被迫迁移至其对应的次选哈希槽位。</p>
+<h3 id="元素的查找-插入-踢出">元素的查找/插入/踢出</h3>
+<p>在cuckoo hash中，因为一个键仅可能出现在table中的<code>h1(k)</code>位置或者<code>h2(k)</code>位置，所以查找时仅需要探测这两个位置。</p>
+<p>在Cuckoo Hash的插入过程中，踢出行为可能引发链式的级联反应。假设哈希表中已经存储了元素A、B与D。当系统试图插入新元素C时，计算得出其首选槽位与A的首选槽位重叠。系统将元素A剔除，并将C存入该位置。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607145434247.png" alt=""></p>
+<p>元素A被驱逐后，系统计算其备用槽位，发现该槽位已被元素D占据。遵循踢出逻辑，A将替换D的位置，使得D处于游离状态。最后，系统计算D的备用槽位，确认该位置当前处于空闲状态，遂将D存入此位置，整个驱逐链条至此终止 。</p>
+<p>如果最踢出过程终形成了一个环呢？工程上采用的解决方式是强制阻断，系统会预先设定一个最大循环跳跃次数的阈值。当插入一个新元素引发的连续踢出次数不断累加，一旦触及这个最大阈值，系统就会判定当前的哈希映射空间内产生了无法自然终止的环。此时，系统会中止当前的常规置换流程，并触发“重哈希”操作 。具体做法是：系统会重新选择两个全新的哈希函数，申请一块新的（通常容量更大）哈希表内存空间，然后将旧表中的所有全量数据使用新的哈希函数重新计算映射，并插入到新表中。</p>
+<h3 id="键值分离存储架构">键值分离存储架构</h3>
+<p>在实现键值映射模型时，物理内存的排布方案直接影响系统的运行效率。若采用基础的合并存储方案，将键与值打包为联合结构体并直接存入哈希槽位，会产生两个工程缺陷。第一，值结构体可能占据庞大的内存空间，导致哈希表数组整体体积膨胀；第二，在产生级联踢出现象时，系统需要在哈希槽位之间反复拷贝体积庞大的结构体，内存读写带宽消耗急剧上升 。</p>
+<p>为此，系统工程通常采用键值分离存储设计。<strong>哈希表内部的每一个存储单元仅负责存放键与对应的内存地址指针</strong>。实际的数据值被分配并集中存储在外部的内存池或者预分配的数组结构中。在地址总线为64位的计算平台上，一个物理指针仅占用固定大小的内存空间。发生驱逐与位置互换时，系统仅需在哈希槽之间交换整型变量与指针变量，极大抑制了内存迁移带来的运算开销 。</p>
+<h3 id="数据结构">数据结构</h3>
+<p>基于上述理论，可以使用<strong>连续数组</strong>结构实现哈希空间。以下代码展示了Cuckoo Hash 系统的核心结构声明：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="type">int</span> KeyType;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Cuckoo</span> &#123;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    std::mutex mtx;</span><br><span class="line">    KeyType T;</span><br><span class="line">    <span class="comment">// hash key by hash func 1</span></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">hash1</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span></span>;</span><br><span class="line">    <span class="comment">// hash key by hash func 2</span></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">hash2</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span></span>;</span><br><span class="line">    <span class="comment">// find key by hash func 1 in T, exist return key otherwise 0</span></span><br><span class="line">    <span class="function">KeyType <span class="title">get1</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span></span>;</span><br><span class="line">    <span class="comment">// find key by hash func 2 in T, exist return key otherwise 0</span></span><br><span class="line">    <span class="function">KeyType <span class="title">get2</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">bt_evict</span> <span class="params">(<span class="type">const</span> KeyType &amp;key, <span class="type">int</span> which, <span class="type">int</span> pre_pos)</span></span>;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Cuckoo</span> ();</span><br><span class="line">    <span class="comment">// ~Cuckoo ();</span></span><br><span class="line">    <span class="function">KeyType <span class="title">get</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">put</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>系统内部维护一个名为T的数组作为存储载体，互斥量<code>mtx</code>用于后续的并发控制。类的公有接口提供了插入与检索函数，私有接口隐藏了哈希函数的具体数学运算与底层数据迁移机制 。</p>
+<h3 id="串行查找">串行查找</h3>
+<p>在没有并发数据写入的前提下，Cuckoo Hash 的查找操作表现出极其稳定的时间复杂度。由于映射关系的二元约束，系统仅需顺序查询两个计算位置，即可确定元素是否存在。代码的具体实现逻辑如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;cuckoo.h&quot;</span></span></span><br><span class="line"><span class="keyword">namespace</span> cuckoo &#123;</span><br><span class="line">Cuckoo::<span class="built_in">Cuckoo</span> () &#123;</span><br><span class="line">    <span class="built_in">memset</span> (T, <span class="number">0</span>, <span class="built_in">sizeof</span> (KeyType) * SIZE);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">Cuckoo::hash1</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">assert</span> (SIZE!= <span class="number">0</span>);</span><br><span class="line">    <span class="type">int</span> half_siz = SIZE / <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> key % half_siz;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">Cuckoo::hash2</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">assert</span> (SIZE!= <span class="number">0</span>);</span><br><span class="line">    <span class="type">int</span> half_siz = SIZE / <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> key / half_siz % half_siz + half_siz;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">KeyType <span class="title">Cuckoo::get1</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (T[<span class="built_in">hash1</span> (key)] == key)? key : <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">KeyType <span class="title">Cuckoo::get2</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (T[<span class="built_in">hash2</span> (key)] == key)? key : <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">KeyType <span class="title">Cuckoo::get</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 0 is reserved for null, invalid input</span></span><br><span class="line">    <span class="keyword">if</span> (key == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;invalid key\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    KeyType result = <span class="built_in">get1</span> (key);</span><br><span class="line">    <span class="keyword">if</span> (result == <span class="number">0</span>) &#123;</span><br><span class="line">        result = <span class="built_in">get2</span> (key);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码逻辑首先处理了空值边界条件，通过预留零值代表无效或空闲单元。查询算法依次执行两次数组寻址与判定。无论系统当前处于何种规模，此查询行为对应的机器指令数量始终受到严格上限控制 。</p>
+<h3 id="并行查找">并行查找</h3>
+<p>内存缓存系统经常面临海量的客户端并发读取请求。由于读取操作不引发内存中数据的状态变更，在排除了并发写入干扰的场景下，可以省去操作系统级别的互斥锁定机制，消除线程竞争与上下文切换导致的额外消耗 。</p>
+<p>利用线程管理机制，能够以无锁架构实施高吞吐量查询。以下为主程序的测试模型实现：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;cuckoo.cpp&quot;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cuckoo;</span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="type">int</span> TOTAL = <span class="number">10</span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>* argv)</span> </span>&#123;</span><br><span class="line">    Cuckoo test;</span><br><span class="line">    <span class="comment">// single-thread to put</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">1</span>; i&lt;=TOTAL; ++i) &#123;</span><br><span class="line">        test.<span class="built_in">put</span>(i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// create multiple threads to get in parallel</span></span><br><span class="line">    std::vector&lt;std::thread&gt; threads;</span><br><span class="line">    threads.<span class="built_in">clear</span>();</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">1</span>; i&lt;=TOTAL; ++i) &#123;</span><br><span class="line">        threads.<span class="built_in">emplace_back</span>([&amp;] (<span class="type">int</span> thread_id) &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;thread: %d get %d\n&quot;</span>, thread_id, test.<span class="built_in">get</span>(thread_id));</span><br><span class="line">        &#125;, i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i &lt; TOTAL; ++i) &#123;</span><br><span class="line">        threads[i].<span class="built_in">join</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过创建等同于任务总数的并发线程，每个独立运行的线程在其上下文环境中调用类封装的查找函数。由于基础数组在内存中保持静态只读属性，处理器缓存系统可以以极高的效率将数据行分发至多个计算核心的局部缓存中，保证了系统的水平扩展能力 。</p>
+<h3 id="插入与踢出实现">插入与踢出实现</h3>
+<p>若将数据写入行为引入系统，则必须考虑位置碰撞的处理程序。基本的处理逻辑依赖一个<strong>包含暂存寄存器的状态循环</strong>。在新元素尝试写入第一位置被阻挡时，它将强行替换该位置的现有元素，被替换出来的元素暂存在独立变量中，并在循环内计算自身的备用哈希位置，执行新一轮判定与互换 。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">swap</span> <span class="params">(T* a, T* b)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">assert</span> (a!= <span class="literal">NULL</span> &amp;&amp; b!= <span class="literal">NULL</span>);</span><br><span class="line">    T tmp = *a;</span><br><span class="line">    *a = *b;</span><br><span class="line">    *b = tmp;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">Cuckoo::put</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(key == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;invalid key\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">get</span> (key)!= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;duplicate key, put fail\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// basic way</span></span><br><span class="line">    <span class="keyword">if</span> (T[<span class="built_in">hash1</span>(key)] == <span class="number">0</span>) &#123;</span><br><span class="line">        T[<span class="built_in">hash1</span>(key)] = key;</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span> (T[<span class="built_in">hash2</span>(key)] == <span class="number">0</span>) &#123;</span><br><span class="line">        T[<span class="built_in">hash2</span>(key)] = key;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123; </span><br><span class="line">        <span class="comment">// basic way</span></span><br><span class="line">        KeyType evicted = key;</span><br><span class="line">        <span class="type">int</span> which = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> idx = <span class="built_in">hash1</span> (evicted);</span><br><span class="line">        <span class="type">int</span> pre_pos = <span class="number">-1</span>;</span><br><span class="line">        <span class="keyword">while</span> (T[idx]!= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;evicted key %d from %d to %d\n&quot;</span>, evicted, pre_pos, idx);</span><br><span class="line">            <span class="built_in">swap</span>(&amp;evicted, &amp;T[idx]);</span><br><span class="line">            pre_pos = idx;</span><br><span class="line">            which = <span class="number">1</span> - which;</span><br><span class="line">            idx = (which == <span class="number">0</span>)? <span class="built_in">hash1</span> (evicted) : <span class="built_in">hash2</span> (evicted);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;evicted key %d from %d to %d\n&quot;</span>, evicted, pre_pos, idx);</span><br><span class="line">        T[idx] = evicted;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述控制流维持一个游标变量<code>which</code><strong>在两个哈希函数之间翻转</strong>。系统不断执行物理内存的覆写操作，直到目标寻址空间内的值为零，即表示存在可用空槽。</p>
+<p>常规的驱逐算法在混合工作负载下表现出严重的并发安全漏洞。当系统利用<code>swap</code>机制剥离哈希槽内部的值并将其分配给局部变量时，该值在一段连续的时间窗口内并不存在于底层数组中 。如果某并发读线程恰好在此时刻探测该值对应的两个固定哈希位置，将收到空值响应，并向客户端返回假性未命中报告。</p>
+<p>为了解决读写操作间的数据隐匿现象，通常的处理是利用全局读写锁封锁内存区段。然而，这种策略在处理重度读工作负载时会造成严重的读操作阻塞，削弱了系统的整体响应效能。</p>
+<h3 id="基于回溯的插入">基于回溯的插入</h3>
+<p>回溯重构技术提供了避免写周期锁定的替代方案。该方案放弃了按时间顺序的前向置换，转而探索替换链条直至空槽位，并逆向倒退实施数据拷贝。可以将其逻辑类比为基于回溯的递归算法，当输入参数未触及基础条件时，函数持续分配栈帧进行深度下潜；一旦到达底层的终止条件，控制流开始返回计算结果并收束每一层级的栈状态 。</p>
+<p>在 Cuckoo Hash 的链式踢出中，系统首先追踪一个潜在的完整踢出序列而不进行内存写入操作。例如检测出序列A将替换B，B将替换C，C将替换D，而D具备可用的空位置。系统随即将数据移入空位置，并将各个前置元素逐级拉入新的槽位中。<strong>由于所有赋值操作均不产生数据离开哈希表的空窗期，所有键在全局时钟下的任一微观切片内均存在于数组中</strong> 。</p>
+<p>理论研究中采用随机游走模型分析了该机制。将哈希表抽象为二分有向图后，回溯过程等价于执行一段带延迟的图上游走任务。研究证明，在包含无环路径约束的条件下，回溯引发的时间损耗仅相当于原随机游走时间常数级别的乘数扩展 。在C++实现中，这一无锁读取配合递归倒推写入的过程定义如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Cuckoo::bt_evict</span><span class="params">(<span class="type">const</span> KeyType &amp;key, <span class="type">int</span> which, <span class="type">int</span> pre_pos)</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> idx = (which == <span class="number">0</span>)? <span class="built_in">hash1</span> (key) : <span class="built_in">hash2</span> (key);</span><br><span class="line">    <span class="comment">// basic case: find a empty pos for the last evicted element</span></span><br><span class="line">    <span class="keyword">if</span> (T[idx] == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;evicted key %d from %d to %d\n&quot;</span>, key, pre_pos, idx);</span><br><span class="line">        T[idx] = key;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;evicted key %d from %d to %d\n&quot;</span>, key, pre_pos, idx);</span><br><span class="line">    KeyType cur = T[idx];</span><br><span class="line">    <span class="comment">// first evict latter elements</span></span><br><span class="line">    <span class="built_in">bt_evict</span> (cur, <span class="number">1</span> - which, idx);</span><br><span class="line">    T[idx] = key;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">Cuckoo::put</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (key == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;invalid key\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">get</span> (key)!= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;duplicate key, put fail\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// basic way</span></span><br><span class="line">    <span class="keyword">if</span> (T[<span class="built_in">hash1</span> (key)] == <span class="number">0</span>) &#123;</span><br><span class="line">        T[<span class="built_in">hash1</span> (key)] = key;</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span> (T[<span class="built_in">hash2</span> (key)] == <span class="number">0</span>) &#123;</span><br><span class="line">        T[<span class="built_in">hash2</span> (key)] = key;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123; </span><br><span class="line">        <span class="comment">// backtrace way</span></span><br><span class="line">        <span class="built_in">bt_evict</span> (key, <span class="number">0</span>, <span class="number">-1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>递归的最深处完成了元素向底层空单元的写入，并在每次函数调用返回时通过赋值指令将上层元素转移至当前槽位。依靠现代处理器的指令原子性，任何并发探测总能读取到有效数据体，彻底消除了针对查询线程的锁同步需求 。</p>
+<h3 id="并行插入">并行插入</h3>
+<p>并发读取的无锁化依赖于数据在任何时刻不会被移除哈希表，但并发写入引发的物理内存状态竞争依然构成威胁。如果系统内多个独立线程试图对同一个物理内存地址进行写覆写操作，会导致替换链条的断裂甚至游标异常。为确保系统状态机的确定性转换，写操作进入替换循环前必须声明互斥所有权 。</p>
+<p>通过C++的资源获取即初始化机制，写线程请求持有作用域锁以垄断写权限。如下文代码展示，当控制流脱离加锁作用域边界，锁对象将自动释放其资源，降低了死锁风险：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Cuckoo::put</span> <span class="params">(<span class="type">const</span> KeyType &amp;key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (key == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;invalid key\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">get</span> (key)!= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;duplicate key, put fail\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// basic way</span></span><br><span class="line">    <span class="keyword">if</span> (T[<span class="built_in">hash1</span> (key)] == <span class="number">0</span>) &#123;</span><br><span class="line">        T[<span class="built_in">hash1</span> (key)] = key;</span><br><span class="line">    &#125;<span class="keyword">else</span> <span class="keyword">if</span> (T[<span class="built_in">hash2</span> (key)] == <span class="number">0</span>) &#123;</span><br><span class="line">        T[<span class="built_in">hash2</span> (key)] = key;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123; </span><br><span class="line">        <span class="comment">// lock way</span></span><br><span class="line">        std::unique_lock&lt;std::mutex&gt; <span class="built_in">lck</span> (mtx);</span><br><span class="line">        KeyType evicted = key;</span><br><span class="line">        <span class="type">int</span> which = <span class="number">0</span>;</span><br><span class="line">        <span class="type">int</span> idx = <span class="built_in">hash1</span> (evicted);</span><br><span class="line">        <span class="type">int</span> pre_pos = <span class="number">-1</span>;</span><br><span class="line">        <span class="keyword">while</span>(T[idx]!= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">&quot;evicted key %d from %d to %d\n&quot;</span>, evicted, pre_pos, idx);</span><br><span class="line">            <span class="built_in">swap</span> (&amp;evicted, &amp;T[idx]);</span><br><span class="line">            pre_pos = idx;</span><br><span class="line">            which = <span class="number">1</span> - which;</span><br><span class="line">            idx = (which == <span class="number">0</span>)? <span class="built_in">hash1</span> (evicted) : <span class="built_in">hash2</span> (evicted);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;evicted key %d from %d to %d\n&quot;</span>, evicted, pre_pos, idx);</span><br><span class="line">        T[idx] = evicted;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="循环路径检测与重哈希">循环路径检测与重哈希</h3>
+<p>随着底层数组内元素的持续填充，系统承载能力逐渐饱和。在极端场景下，数据的级联置换将在少数几个节点之间生成死锁环状路径，导致程序陷于无限循环。将哈希映射空间抽象为二分图后，若图中包含一个使得部分元素无处可放的闭合回路，该过程即无法自然终止 。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607154519590.png" alt=""></p>
+<p>分析上述追踪数据，键28在槽位25和槽位26之间形成了相互包含的死锁结构。无论元素如何移动，其后续的探测链路均指向上一次刚发生驱逐的位置，最终造成整体驱逐动作在这几个孤立顶点中无限往复 。并非所有具备环状结构的图都会造成无限循环。存在一类结构为可终止环。在该类结构下，尽管部分踢出过程呈现出前驱顶点的二次访问，但<strong>只要尾部置换链路能够通过另一次散列计算寻获一个处于边缘且未被占用的空顶点，该踢出过程依然会正常完结</strong> 。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607155023383.png" alt=""></p>
+<p>针对不可终止的循环现象，必须引入强制阻断逻辑。通常将最大循环执行频次强制锚定于某一阈值。当循环判定变量触及该硬性上限，系统确认产生循环并中止常规置换流程。此时需激活重哈希组件，重新引入一套无数学关联的散列函数，申请宽裕度更高的新数组块，并将历史全量数据映射至新内存域 。</p>
+<h3 id="性能评估">性能评估</h3>
+<p>工程实践中的系统效能最终由实验数据验证。将Cuckoo Hash模型与标准的链式哈希结构进行针对性负载测试，可量化展现两者在随容量消耗增加时的性能分歧。</p>
+<p>设定不同的样本集容量，分别记录在两套机制内检索指定数据集合的平均键值比较次数，对比数据呈现于下表：</p>
+<table>
+<thead>
+<tr>
+<th><strong>查找键总数</strong></th>
+<th><strong>系统负载因子</strong></th>
+<th><strong>Cuckoo Hash操作消耗</strong></th>
+<th><strong>链式Hash操作消耗</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>50</td>
+<td>0.10</td>
+<td>1.00</td>
+<td>1.00</td>
+</tr>
+<tr>
+<td>250</td>
+<td>0.50</td>
+<td>1.00</td>
+<td>3.00</td>
+</tr>
+<tr>
+<td>375</td>
+<td>0.75</td>
+<td>1.33</td>
+<td>4.67</td>
+</tr>
+<tr>
+<td>500</td>
+<td>1.00</td>
+<td>1.50</td>
+<td>5.50</td>
+</tr>
+</tbody>
+</table>
+<p>数据剖析表明，当数据堆积极少（负载因子处于0.10）时，冲突概率极小，双系统均体现出一次比对即可定位的最佳效能。但随着系统吞吐数据的递增，链式哈希在负载达到上限1.00时由于链表节点堆积，平均扫描深度急剧拉升至5.50。相反，在Cuckoo Hash模型中，单元素探测的物理空间边界被强行截断在双分支结构内，导致其满载平均开销维持在1.50的低位水平 。</p>
+<p>在多类型混合负荷测试下，线性探测凭借连续内存的高速缓存行预读能力维持了单次查询周期的领先。然而，一旦考虑系统扩展导致的数据结构超出二级缓存容量边界，不同算法均承受了缓存未命中的时间惩罚。根据计算时间模型：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>时间</mtext><mo>=</mo><mtext>基础开销</mtext><mo>+</mo><mtext>缺失惩罚</mtext><mo>∗</mo><mtext>存取次数</mtext><mo>∗</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mtext>缓存容量</mtext><mi mathvariant="normal">/</mi><mtext>哈希表容量</mtext><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">时间 = 基础开销 + 缺失惩罚 * 存取次数 * (1 - 缓存容量/哈希表容量) 
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord cjk_fallback">时间</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord cjk_fallback">基础开销</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord cjk_fallback">缺失惩罚</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord cjk_fallback">存取次数</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord cjk_fallback">缓存容量</span><span class="mord">/</span><span class="mord cjk_fallback">哈希表容量</span><span class="mclose">)</span></span></span></span></span></p>
+<p>在内存访问深度成为效能瓶颈的大规模配置下，尽管Cuckoo Hash的基础时间略高，但其稳定可预测的物理探测限制与低于对数级增量的访问频率，能够成功对抗高并发环境下的随机存取延迟恶化 。在QPS（每秒查询率）刻画中，系统即使运行于50%至95%的高压区间内，其无状态命中与全部命中指标依然平滑过渡，不发生指数级性能崩溃 。</p>
+<h2 id="Cuckoo-Filter">Cuckoo Filter</h2>
+<p>数据工程领域基于此底层踢出机制与多槽定位原理，衍生出应用于概率集合查询的分支结构Cuckoo Filter。在处理超大规模去重或恶意流量IP封锁任务时，全量存储原始数据将耗尽硬件内存空间。传统方案部署Bloom Filter，通过位映射集合叠加输入项散列值，达到数据压缩目的 。然而Bloom Filter不支持删除语义，任何单比特状态的重置操作都会损坏共享同一比特的其余合法数据 。</p>
+<p>相比之下，Cuckoo Filter放弃保存长序列的初始数据键，转而在槽位内部嵌入极短的数据特征哈希签名，即指纹。指纹通常占用几个乃至几十个比特位，支持直接置入底层的原子整数数组内实现无锁内存屏障更新 。利用紧凑的存储结构，该模型在维持等效甚至更低的假阳性率概率基线上，大幅缩减了内存总体投入规模。</p>
+<p>在发生哈希位置被占用而需执行重定位操作时，由于系统缺失对原始数据的调用权限，它无法利用基础计算公式获取对端的候选哈希地址。Cuckoo Filter通过引入同态异或位运算，构建了首尾两端哈希地址的映射闭环：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext>次级哈希地址</mtext><mo>=</mo><mtext>初级哈希地址</mtext><mo>⊕</mo><mtext>哈希函数</mtext><mo stretchy="false">(</mo><mtext>元素指纹</mtext><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">次级哈希地址 = 初级哈希地址 ⊕ 哈希函数(元素指纹)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord cjk_fallback">次级哈希地址</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord cjk_fallback">初级哈希地址</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⊕</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord cjk_fallback">哈希函数</span><span class="mopen">(</span><span class="mord cjk_fallback">元素指纹</span><span class="mclose">)</span></span></span></span>。基于逻辑异或操作的自反特质，系统提取当前槽位索引与自身留存的特征指纹，即可倒推重建出初始哈希偏移量。这一逻辑架构打破了驱逐链路中对原数据体强关联约束的限制 。</p>
+<p>而在处理高并发删改场景时，传统的移除行为极易造成读操作的中断甚至引发数据逻辑错误。该过滤器引入了缓存驱逐寄存机制。在遭遇满载踢出现象而需要执行复杂的置换路线时，系统不再无序抢占目标，而是提前将预判的冲突换位流存储至暂存缓存列。系统优先扫描出全局空槽点后，方才释放拦截指令对物理槽位实施覆盖。此拦截方案有效地阻隔了中间状态下的读操作越界问题，避免了合法指纹被意外掩盖导致的数据流失 。凭借原生支持的数据剔除能力与基于双向状态纠缠的紧凑压缩结构，该扩展形式展现出了超越Bloom Filter等传统近似探测框架的工程价值 。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/06/07/CS2322_11/">https://acannedfish.github.io/2026/06/07/CS2322_11/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Cuckoo/">Cuckoo</a></div><div class="post-share"><div class="social-share" data-image="/img/background12.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width no-desc" href="/2026/06/06/CS2322_10/" title="ADS-10：多线程"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">ADS-10：多线程</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">37</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">32</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%BC%93%E5%AD%98"><span class="toc-number">1.</span> <span class="toc-text">内存缓存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cuckoo-Hash"><span class="toc-number">2.</span> <span class="toc-text">Cuckoo Hash</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E8%A7%84%E5%93%88%E5%B8%8C%E6%80%A7%E8%83%BD%E5%B1%80%E9%99%90"><span class="toc-number">2.1.</span> <span class="toc-text">常规哈希性能局限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%80%9D%E6%83%B3"><span class="toc-number">2.2.</span> <span class="toc-text">基本思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%83%E7%B4%A0%E7%9A%84%E6%9F%A5%E6%89%BE-%E6%8F%92%E5%85%A5-%E8%B8%A2%E5%87%BA"><span class="toc-number">2.3.</span> <span class="toc-text">元素的查找&#x2F;插入&#x2F;踢出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%94%AE%E5%80%BC%E5%88%86%E7%A6%BB%E5%AD%98%E5%82%A8%E6%9E%B6%E6%9E%84"><span class="toc-number">2.4.</span> <span class="toc-text">键值分离存储架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">2.5.</span> <span class="toc-text">数据结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%B2%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="toc-number">2.6.</span> <span class="toc-text">串行查找</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E8%A1%8C%E6%9F%A5%E6%89%BE"><span class="toc-number">2.7.</span> <span class="toc-text">并行查找</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E4%B8%8E%E8%B8%A2%E5%87%BA%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.8.</span> <span class="toc-text">插入与踢出实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E5%9B%9E%E6%BA%AF%E7%9A%84%E6%8F%92%E5%85%A5"><span class="toc-number">2.9.</span> <span class="toc-text">基于回溯的插入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E8%A1%8C%E6%8F%92%E5%85%A5"><span class="toc-number">2.10.</span> <span class="toc-text">并行插入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%AA%E7%8E%AF%E8%B7%AF%E5%BE%84%E6%A3%80%E6%B5%8B%E4%B8%8E%E9%87%8D%E5%93%88%E5%B8%8C"><span class="toc-number">2.11.</span> <span class="toc-text">循环路径检测与重哈希</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E8%AF%84%E4%BC%B0"><span class="toc-number">2.12.</span> <span class="toc-text">性能评估</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cuckoo-Filter"><span class="toc-number">3.</span> <span class="toc-text">Cuckoo Filter</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
