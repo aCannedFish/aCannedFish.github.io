@@ -4,7 +4,7 @@
   
     
     <entry>
-      <title>ADS-14：PageRank</title>
+      <title>高级数据结构-14：PageRank</title>
       <link href="/2026/06/11/CS2322_14/"/>
       <url>/2026/06/11/CS2322_14/</url>
       
@@ -29,7 +29,7 @@
     
     
     <entry>
-      <title>ADS-13：KV Cache</title>
+      <title>高级数据结构-13：KV Cache</title>
       <link href="/2026/06/10/CS2322_13/"/>
       <url>/2026/06/10/CS2322_13/</url>
       
@@ -56,7 +56,7 @@
     
     
     <entry>
-      <title>ADS-12：最小生成树</title>
+      <title>高级数据结构-12：最小生成树</title>
       <link href="/2026/06/07/CS2322_12/"/>
       <url>/2026/06/07/CS2322_12/</url>
       
@@ -81,7 +81,7 @@
     
     
     <entry>
-      <title>ADS-11：布谷鸟哈希</title>
+      <title>高级数据结构-11：布谷鸟哈希</title>
       <link href="/2026/06/07/CS2322_11/"/>
       <url>/2026/06/07/CS2322_11/</url>
       
@@ -106,7 +106,7 @@
     
     
     <entry>
-      <title>ADS-10：多线程</title>
+      <title>高级数据结构-10：多线程</title>
       <link href="/2026/06/06/CS2322_10/"/>
       <url>/2026/06/06/CS2322_10/</url>
       
@@ -131,7 +131,7 @@
     
     
     <entry>
-      <title>ADS-09：KMP 算法</title>
+      <title>高级数据结构-09：KMP 算法</title>
       <link href="/2026/06/05/CS2322_09/"/>
       <url>/2026/06/05/CS2322_09/</url>
       
@@ -156,7 +156,7 @@
     
     
     <entry>
-      <title>ADS-08：最短路径问题</title>
+      <title>高级数据结构-08：最短路径问题</title>
       <link href="/2026/06/03/CS2322_08/"/>
       <url>/2026/06/03/CS2322_08/</url>
       
@@ -181,7 +181,7 @@
     
     
     <entry>
-      <title>ADS-07：拓扑排序</title>
+      <title>高级数据结构-07：拓扑排序</title>
       <link href="/2026/06/03/CS2322_07/"/>
       <url>/2026/06/03/CS2322_07/</url>
       
@@ -206,7 +206,7 @@
     
     
     <entry>
-      <title>ADS-06：中位数与众数</title>
+      <title>高级数据结构-06：中位数与众数</title>
       <link href="/2026/06/02/CS2322_06/"/>
       <url>/2026/06/02/CS2322_06/</url>
       
@@ -231,7 +231,7 @@
     
     
     <entry>
-      <title>ADS-05：KD 树</title>
+      <title>高级数据结构-05：KD 树</title>
       <link href="/2026/05/13/CS2322_05/"/>
       <url>/2026/05/13/CS2322_05/</url>
       
@@ -256,7 +256,7 @@
     
     
     <entry>
-      <title>ADS-04：红黑树</title>
+      <title>高级数据结构-04：红黑树</title>
       <link href="/2026/05/12/CS2322_04/"/>
       <url>/2026/05/12/CS2322_04/</url>
       
@@ -281,7 +281,7 @@
     
     
     <entry>
-      <title>ADS-03：伸展树</title>
+      <title>高级数据结构-03：伸展树</title>
       <link href="/2026/05/12/CS2322_03/"/>
       <url>/2026/05/12/CS2322_03/</url>
       
@@ -306,7 +306,7 @@
     
     
     <entry>
-      <title>ADS-02：集合与布隆过滤器</title>
+      <title>高级数据结构-02：集合与布隆过滤器</title>
       <link href="/2026/05/11/CS2322_02/"/>
       <url>/2026/05/11/CS2322_02/</url>
       
@@ -333,7 +333,7 @@
     
     
     <entry>
-      <title>ADS-01：跳表</title>
+      <title>高级数据结构-01：跳表</title>
       <link href="/2026/05/11/CS2322_01/"/>
       <url>/2026/05/11/CS2322_01/</url>
       
@@ -358,7 +358,7 @@
     
     
     <entry>
-      <title>MIT6.S184-06：变分自编码器</title>
+      <title>流匹配与扩散模型-06：变分自编码器</title>
       <link href="/2026/05/10/MIT6_S184_06/"/>
       <url>/2026/05/10/MIT6_S184_06/</url>
       
@@ -383,7 +383,7 @@
     
     
     <entry>
-      <title>MIT6.S184-05：可扩展的模型架构</title>
+      <title>流匹配与扩散模型-05：可扩展的模型架构</title>
       <link href="/2026/05/10/MIT6_S184_05/"/>
       <url>/2026/05/10/MIT6_S184_05/</url>
       
@@ -410,7 +410,7 @@
     
     
     <entry>
-      <title>MIT6.S184-04：用提示词引导生成</title>
+      <title>流匹配与扩散模型-04：用提示词引导生成</title>
       <link href="/2026/05/09/MIT6_S184_04/"/>
       <url>/2026/05/09/MIT6_S184_04/</url>
       
@@ -437,7 +437,7 @@
     
     
     <entry>
-      <title>MIT6.S184-03：分数函数与分数匹配</title>
+      <title>流匹配与扩散模型-03：分数函数与分数匹配</title>
       <link href="/2026/05/07/MIT6_S184_03/"/>
       <url>/2026/05/07/MIT6_S184_03/</url>
       
@@ -464,7 +464,7 @@
     
     
     <entry>
-      <title>MIT6.S184-02：流匹配</title>
+      <title>流匹配与扩散模型-02：流匹配</title>
       <link href="/2026/04/28/MIT6_S184_02/"/>
       <url>/2026/04/28/MIT6_S184_02/</url>
       
@@ -489,7 +489,7 @@
     
     
     <entry>
-      <title>MIT6.S184-01：流与扩散模型</title>
+      <title>流匹配与扩散模型-01：流与扩散</title>
       <link href="/2026/04/28/MIT6_S184_01/"/>
       <url>/2026/04/28/MIT6_S184_01/</url>
       
@@ -516,7 +516,7 @@
     
     
     <entry>
-      <title>CS231n-10：Attention 与 Transformer</title>
+      <title>计算机视觉：Attention 与 Transformer</title>
       <link href="/2026/02/09/CS231n_10/"/>
       <url>/2026/02/09/CS231n_10/</url>
       
@@ -549,7 +549,7 @@
     
     
     <entry>
-      <title>CS231n-09：循环神经网络</title>
+      <title>计算机视觉-09：循环神经网络</title>
       <link href="/2026/02/08/CS231n_09/"/>
       <url>/2026/02/08/CS231n_09/</url>
       
@@ -580,7 +580,7 @@
     
     
     <entry>
-      <title>CS231n-08：CNN训练</title>
+      <title>计算机视觉-08：模型训练</title>
       <link href="/2026/02/05/CS231n_08/"/>
       <url>/2026/02/05/CS231n_08/</url>
       
@@ -613,7 +613,7 @@
     
     
     <entry>
-      <title>CS231n-07：卷积网络与残差网络</title>
+      <title>计算机视觉-07：CNN 与 ResNet</title>
       <link href="/2026/02/05/CS231n_07/"/>
       <url>/2026/02/05/CS231n_07/</url>
       
@@ -648,7 +648,7 @@
     
     
     <entry>
-      <title>CS231n-06：卷积层</title>
+      <title>计算机视觉-06：卷积层</title>
       <link href="/2026/02/03/CS231n_06/"/>
       <url>/2026/02/03/CS231n_06/</url>
       
@@ -679,7 +679,7 @@
     
     
     <entry>
-      <title>CS231n-05：神经网络与反向传播</title>
+      <title>计算机视觉-05：神经网络与反向传播</title>
       <link href="/2026/02/02/CS231n_05/"/>
       <url>/2026/02/02/CS231n_05/</url>
       
@@ -714,7 +714,7 @@
     
     
     <entry>
-      <title>CS231n-04：优化与梯度下降</title>
+      <title>计算机视觉-04：优化与梯度下降</title>
       <link href="/2026/01/30/CS231n_04/"/>
       <url>/2026/01/30/CS231n_04/</url>
       
@@ -747,7 +747,7 @@
     
     
     <entry>
-      <title>CS231n-03：正则化</title>
+      <title>计算机视觉-03：正则化</title>
       <link href="/2026/01/29/CS231n_03/"/>
       <url>/2026/01/29/CS231n_03/</url>
       
@@ -778,7 +778,7 @@
     
     
     <entry>
-      <title>CS231n-02：损失函数</title>
+      <title>计算机视觉-02：损失函数</title>
       <link href="/2026/01/28/CS231n_02/"/>
       <url>/2026/01/28/CS231n_02/</url>
       
@@ -807,7 +807,7 @@
     
     
     <entry>
-      <title>CS231n-01：kNN分类与线性分类</title>
+      <title>计算机视觉-01：kNN分类与线性分类</title>
       <link href="/2026/01/27/CS231n_01/"/>
       <url>/2026/01/27/CS231n_01/</url>
       
