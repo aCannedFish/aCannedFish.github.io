@@ -1,0 +1,520 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统基础-02：GPU | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="GPU 分类 独立 GPU 常见于桌面和服务器。特点：  GPU 是单独芯片。 拥有独立显存 VRAM。 通过 PCIe 与 CPU 连接。 计算能力和内存带宽通常更高。  集成 GPU 常见于手机、笔记本等移动设备。特点：  与 CPU 集成在同一系统中。 与 CPU 共享系统内存 DRAM。 功耗较低。 计算能力和内存带宽通常低于高端独立 GPU。  NVIDIA GPU 架构 NVIDIA">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机系统基础-02：GPU">
+<meta property="og:url" content="https://acannedfish.github.io/2026/06/23/SE2302_02/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="GPU 分类 独立 GPU 常见于桌面和服务器。特点：  GPU 是单独芯片。 拥有独立显存 VRAM。 通过 PCIe 与 CPU 连接。 计算能力和内存带宽通常更高。  集成 GPU 常见于手机、笔记本等移动设备。特点：  与 CPU 集成在同一系统中。 与 CPU 共享系统内存 DRAM。 功耗较低。 计算能力和内存带宽通常低于高端独立 GPU。  NVIDIA GPU 架构 NVIDIA">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background4.png">
+<meta property="article:published_time" content="2026-06-23T05:06:00.000Z">
+<meta property="article:modified_time" content="2026-06-23T07:17:50.008Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="GPU">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background4.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机系统基础-02：GPU",
+  "url": "https://acannedfish.github.io/2026/06/23/SE2302_02/",
+  "image": "https://acannedfish.github.io/img/background4.png",
+  "datePublished": "2026-06-23T05:06:00.000Z",
+  "dateModified": "2026-06-23T07:17:50.008Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/06/23/SE2302_02/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机系统基础-02：GPU',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/background4.png);"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统基础-02：GPU</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-23T05:06:00.000Z" title="发表于 2026-06-23 13:06:00">2026-06-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-23T07:17:50.008Z" title="更新于 2026-06-23 15:17:50">2026-06-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note-ICS/">Note(ICS)</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="GPU-分类">GPU 分类</h2>
+<p><strong>独立 GPU</strong> 常见于桌面和服务器。特点：</p>
+<ul>
+<li>GPU 是单独芯片。</li>
+<li>拥有独立显存 VRAM。</li>
+<li>通过 PCIe 与 CPU 连接。</li>
+<li>计算能力和内存带宽通常更高。</li>
+</ul>
+<p><strong>集成 GPU</strong> 常见于手机、笔记本等移动设备。特点：</p>
+<ul>
+<li>与 CPU 集成在同一系统中。</li>
+<li>与 CPU 共享系统内存 DRAM。</li>
+<li>功耗较低。</li>
+<li>计算能力和内存带宽通常低于高端独立 GPU。</li>
+</ul>
+<h2 id="NVIDIA-GPU-架构">NVIDIA GPU 架构</h2>
+<p>NVIDIA GPU 由多个 <strong>Streaming Multiprocessor, SM</strong> 组成。多个 SM 共享全局 L2 Cache，并访问 GPU 显存。</p>
+<p>可以将 SM 理解为 GPU 的基本计算单元，类似 CPU 中的核心，但其设计目标不同：SM 更接近一个向量处理器，内部包含多个执行单元。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260623141357794.png" alt=""></p>
+<p>一个 SM 通常包含：</p>
+<ul>
+<li>多个 CUDA Core。</li>
+<li>Load/Store 单元。</li>
+<li>Special Function Unit, SFU。</li>
+<li>寄存器文件。</li>
+<li>warp scheduler。</li>
+<li>片上共享内存和 L1 Cache。</li>
+</ul>
+<p>CUDA Core 中包含整数 ALU 和浮点 ALU，用于执行算术操作。</p>
+<h2 id="SIMT">SIMT</h2>
+<p>GPU 使用 <strong>SIMT Single Instruction Multiple Threads</strong> 执行模型。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260623141513881.png" alt=""></p>
+<p>SIMT 的基本含义：</p>
+<ul>
+<li>一条指令只解码一次。</li>
+<li>同组线程执行相同指令。</li>
+<li>每个线程使用自己的寄存器和数据。</li>
+<li>NVIDIA GPU 中一个 SIMT 组称为 <strong>warp</strong>，通常包含 32 个线程。</li>
+</ul>
+<h3 id="warp-调度">warp 调度</h3>
+<p>一个 SM 可以同时驻留多个 warp。例如 Fermi GPU 每个 SM 有 2 个 warp scheduler。SM 可在多个 warp 之间切换：</p>
+<ul>
+<li>若当前 warp 因内存访问等原因阻塞，可切换到已就绪的 warp。</li>
+<li>每个线程的状态持久保存在寄存器中。</li>
+<li>warp 切换不需要像 CPU 线程切换那样保存和恢复上下文，因此成本很低。</li>
+</ul>
+<p>这种机制通过并发驻留多个 warp 来隐藏内存访问延迟。</p>
+<h3 id="分支发散">分支发散</h3>
+<p>SIMT 要求同一 warp 中线程执行相同指令。若线程在分支处走向不同路径，会出现 <strong>thread divergence</strong>。</p>
+<p>若同一 warp 中部分线程执行 <code>A()</code>，部分线程执行 <code>B()</code>，GPU 会分阶段执行不同分支，并在某些阶段禁用不属于当前分支的线程。被禁用的核心在这些周期内不产生有效工作。</p>
+<blockquote>
+<p>分支发散会降低 warp 内执行单元利用率。GPU 程序应尽量让同一 warp 内线程执行相同控制流。</p>
+</blockquote>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260623141955480.png" alt=""></p>
+<h2 id="GPU-内存模型">GPU 内存模型</h2>
+<h3 id="GPU-层次">GPU 层次</h3>
+<p>GPU 具有嵌套层次：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">thread -&gt; warp/SIMT group -&gt; SM -&gt; GPU</span><br></pre></td></tr></table></figure>
+<p>GPU 包含多种内存。不同内存在容量、延迟、带宽、读写权限和共享范围上不同。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260623142240761.png" alt=""></p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th style="text-align:right">读取延迟</th>
+<th style="text-align:right">大小</th>
+<th>读写属性</th>
+<th>共享范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Register</td>
+<td style="text-align:right">1 cycle</td>
+<td style="text-align:right">每个 SM 约 128 KB</td>
+<td>R/W</td>
+<td>单个线程</td>
+</tr>
+<tr>
+<td>Local Memory</td>
+<td style="text-align:right">400 ~ 600 cycles</td>
+<td style="text-align:right">-</td>
+<td>R/W</td>
+<td>单个线程</td>
+</tr>
+<tr>
+<td>L1 Cache</td>
+<td style="text-align:right">1 ~ 32 cycles</td>
+<td style="text-align:right">每个 SM 约 192 KB</td>
+<td>透明缓存</td>
+<td>SM</td>
+</tr>
+<tr>
+<td>Shared Memory</td>
+<td style="text-align:right">1 ~ 32 cycles</td>
+<td style="text-align:right">每个 SM 约 192 KB</td>
+<td>R/W</td>
+<td>SIMT groups</td>
+</tr>
+<tr>
+<td>L2 Cache</td>
+<td style="text-align:right">32 ~ 64 cycles</td>
+<td style="text-align:right">约 6 MB</td>
+<td>透明缓存</td>
+<td>GPU</td>
+</tr>
+<tr>
+<td>Global Memory</td>
+<td style="text-align:right">400 ~ 600 cycles</td>
+<td style="text-align:right">GB 级</td>
+<td>R/W</td>
+<td>GPU</td>
+</tr>
+<tr>
+<td>Constant Memory</td>
+<td style="text-align:right">100 ~ 200 cycles</td>
+<td style="text-align:right">KB 级</td>
+<td>只读</td>
+<td>GPU</td>
+</tr>
+<tr>
+<td>Texture Memory</td>
+<td style="text-align:right">400 ~ 600 cycles</td>
+<td style="text-align:right">-</td>
+<td>只读</td>
+<td>GPU</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Register</strong> 延迟最低，只属于单个线程。</li>
+<li><strong>Local Memory</strong> 类似 CPU 的栈，但物理上通常位于 global memory。</li>
+<li><strong>Shared Memory</strong> 是可编程片上内存，常用于同一 SM 内线程协作。</li>
+<li><strong>Global Memory</strong> 容量大延迟高，是 GPU 数据的主要存放位置。</li>
+<li><strong>Constant Memory</strong> 位于全局内存体系中，但支持专门的读取路径和缓存机制。</li>
+<li><strong>L1/L2 Cache</strong> 类似 CPU cache，对程序通常是透明的。</li>
+</ul>
+<h2 id="CUDA">CUDA</h2>
+<p>CUDA 即 <strong>Compute Unified Device Architecture</strong>，风格接近 C/C++，用于表达在 GPU 上运行的并行程序。</p>
+<table>
+<thead>
+<tr>
+<th>术语</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Host</td>
+<td>CPU</td>
+</tr>
+<tr>
+<td>Host memory</td>
+<td>CPU 内存</td>
+</tr>
+<tr>
+<td>Host code</td>
+<td>在 CPU 上运行的代码</td>
+</tr>
+<tr>
+<td>Device</td>
+<td>GPU</td>
+</tr>
+<tr>
+<td>Device memory</td>
+<td>GPU 内存，独立 GPU 中通常指显存</td>
+</tr>
+<tr>
+<td>Device code</td>
+<td>在 GPU 上运行的代码</td>
+</tr>
+</tbody>
+</table>
+<p>CPU 程序的一般流程：</p>
+<p><code>定义函数-&gt;分配 CPU 内存-&gt;加载数据-&gt;在 CPU 上计算-&gt;保存结果-&gt;释放 CPU 内存</code></p>
+<p>独立 GPU 程序通常需要额外处理主机与设备之间的数据移动：</p>
+<p><code>将 CPU/GPU 代码分别加载到 CPU/GPU 内存-&gt;为数据分配 CPU/GPU 内存-&gt;将输入数据加载到 CPU 内存-&gt;将数据从 CPU 内存复制到 GPU 内存-&gt;启动 GPU kernel-&gt;将结果从 GPU 内存复制回 CPU 内存</code></p>
+<blockquote>
+<p>对独立 GPU 而言，CPU 内存和 GPU 显存是分离的。数据传输通常通过 PCIe 完成，传输开销可能影响整体性能。</p>
+</blockquote>
+<h3 id="CUDA-Kernel">CUDA Kernel</h3>
+<p>GPU kernel 是运行在 GPU 上的函数。<code>__global__</code> 表示函数：</p>
+<ul>
+<li>在 device 上执行。</li>
+<li>从 host code 中调用。</li>
+<li>以单个线程的视角编写。</li>
+</ul>
+<p>向量加法 kernel：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">__global__ <span class="type">void</span> <span class="title function_">vecAdd</span><span class="params">(<span class="type">float</span> *a, <span class="type">float</span> *b, <span class="type">float</span> *c, <span class="type">size_t</span> length)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">size_t</span> idx = blockDim.x * blockIdx.x + threadIdx.x;</span><br><span class="line">    <span class="keyword">if</span> (idx &lt; length) &#123;</span><br><span class="line">        c[idx] = a[idx] + b[idx];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该函数中每个线程负责一个元素。<code>idx</code> 根据 block 编号和 thread 编号计算全局线程编号。</p>
+<p>CUDA 使用 <strong>SPMD Single Program Multiple Data</strong> 模型：</p>
+<ul>
+<li>所有处理单元执行同一个程序。</li>
+<li>每个线程处理不同数据。</li>
+<li>在 CUDA 中，程序通常是 kernel，处理单元是 CUDA core 上执行的线程。</li>
+</ul>
+<blockquote>
+<ul>
+<li>SPMD 描述程序员视角：同一个 kernel 被许多线程执行。</li>
+<li>SIMT 描述硬件执行方式：线程被组织成 warp，同一 warp 中线程同步执行指令。</li>
+</ul>
+</blockquote>
+<h3 id="CUDA-内存管理">CUDA 内存管理</h3>
+<p>Host 指针和 device 指针指向不同地址空间：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">float</span> *h_A;  <span class="comment">// host pointer</span></span><br><span class="line"><span class="type">float</span> *d_A;  <span class="comment">// device pointer</span></span><br><span class="line"></span><br><span class="line">h_A = (<span class="type">float</span> *)<span class="built_in">malloc</span>(size);</span><br><span class="line">cudaMalloc((<span class="type">void</span> **)&amp;d_A, size);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Device pointer 指向 GPU 内存。</li>
+<li>Device pointer 可在 host code 中传递，但不能在 host code 中解引用。</li>
+<li>Host pointer 指向 CPU 内存。</li>
+<li>Host pointer 可传给 device code，但不能在 device code 中直接解引用。</li>
+<li><code>cudaMalloc()</code> 和 <code>cudaFree()</code> 类似 <code>malloc()</code> 和 <code>free()</code>，用于管理设备内存。</li>
+</ul>
+<p>CPU 与 GPU 之间通过 <code>cudaMemcpy()</code> 复制数据，并通过方向参数指定复制方向：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);</span><br><span class="line">cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);</span><br><span class="line">cudaMemcpy(h_C, d_C, size, cudaMemcpyDeviceToHost);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>cudaMemcpyHostToDevice</code>：CPU 到 GPU。</li>
+<li><code>cudaMemcpyDeviceToHost</code>：GPU 到 CPU。</li>
+</ul>
+<h3 id="Kernel-Launch">Kernel Launch</h3>
+<p>CUDA 使用 <code>&lt;&lt;&lt; &gt;&gt;&gt;</code> 从 host code 启动 device code，该操作称为 <strong>kernel launch</strong>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vecAdd&lt;&lt;&lt;<span class="number">16</span>, <span class="number">64</span>&gt;&gt;&gt;(d_A, d_B, d_C, length);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>&lt;&lt;&lt;16, 64&gt;&gt;&gt;</code> 指定并行结构。</li>
+<li>第一个参数是 block 数量。</li>
+<li>第二个参数是每个 block 的 thread 数量。</li>
+<li>圆括号中是 kernel 参数。</li>
+</ul>
+<p>该例启动 16 个 block，每个 block 有 64 个 thread，总线程数为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16</mn><mo>×</mo><mn>64</mn><mo>=</mo><mn>1024</mn></mrow><annotation encoding="application/x-tex">16 \times 64 = 1024</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">16</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">64</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1024</span></span></span></span>。</p>
+<h3 id="CUDA-线程模型">CUDA 线程模型</h3>
+<p>CUDA 程序包含层次化并发线程：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Grid -&gt; Block -&gt; Thread</span><br></pre></td></tr></table></figure>
+<p>基本规则：</p>
+<ul>
+<li>一个 grid 由多个 block 组成。</li>
+<li>一个 block 由多个 thread 组成。</li>
+<li>启动一个 kernel 等价于启动一个 grid。</li>
+<li>Grid 和 block 默认是一维，也可扩展到最多三维。</li>
+</ul>
+<p>常见维度变量：</p>
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gridDim.x/y/z</code></td>
+<td>grid 在各维度上的 block 数量</td>
+</tr>
+<tr>
+<td><code>blockDim.x/y/z</code></td>
+<td>每个 block 在各维度上的 thread 数量</td>
+</tr>
+<tr>
+<td><code>blockIdx.x/y/z</code></td>
+<td>当前 block 的编号</td>
+</tr>
+<tr>
+<td><code>threadIdx.x/y/z</code></td>
+<td>当前 thread 在 block 内的编号</td>
+</tr>
+</tbody>
+</table>
+<p>一维数组索引公式：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>thread_id</mtext><mo>=</mo><mtext>blockDim.x</mtext><mo>⋅</mo><mtext>blockIdx.x</mtext><mo>+</mo><mtext>threadIdx.x</mtext></mrow><annotation encoding="application/x-tex">\text{thread\_id} = \text{blockDim.x} \cdot \text{blockIdx.x} + \text{threadIdx.x}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">thread_id</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">blockDim.x</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.7778em;vertical-align:-0.0833em;"></span><span class="mord text"><span class="mord">blockIdx.x</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">threadIdx.x</span></span></span></span></span></span></p>
+<p>总线程数：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>total_threads</mtext><mo>=</mo><mtext>gridDim.x</mtext><mo>⋅</mo><mtext>blockDim.x</mtext></mrow><annotation encoding="application/x-tex">\text{total\_threads} = \text{gridDim.x} \cdot \text{blockDim.x}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">total_threads</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">gridDim.x</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">blockDim.x</span></span></span></span></span></span></p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">gridDim.x = 16</span><br><span class="line">blockDim.x = 64</span><br><span class="line">blockIdx.x = 2</span><br><span class="line">threadIdx.x = 1</span><br><span class="line"></span><br><span class="line">thread_id = 64 * 2 + 1 = 129</span><br><span class="line">total_threads = 16 * 64 = 1024</span><br></pre></td></tr></table></figure>
+<p>CUDA block 与 SM 的映射规则：</p>
+<ul>
+<li>一个 block 中的所有 thread 在同一个 SM 上运行。</li>
+<li>一个 block 不会被拆分到多个 SM。</li>
+<li>一个 block 在执行期间不会迁移到其他 SM。</li>
+<li>一个 SM 可同时执行多个 block。</li>
+<li>block 由硬件自动分配到 SM。</li>
+</ul>
+<p>这种映射使 block 内线程可以通过 shared memory 协作。</p>
+<h2 id="GPU-性能趋势">GPU 性能趋势</h2>
+<p>GPU 性能趋势考虑带宽、计算能力、能效和计算/带宽比：</p>
+<ul>
+<li>
+<p>GPU 显存带宽持续增长。带宽决定从 device memory 读取或写入数据的速度。对于访存密集、每字节计算量较低的程序，带宽通常成为主要瓶颈。</p>
+</li>
+<li>
+<p>GPU 峰值浮点计算能力持续增长，尤其适合独立算术操作较多的任务。对于每字节数据执行较多浮点操作的程序，计算单元吞吐可能成为主要瓶颈。</p>
+</li>
+<li>
+<p>GPU 在单位能耗上的计算能力持续提升，因此适合高并行吞吐任务。但实际能效仍取决于访存模式、分支发散、线程占用率和算法的并行度。</p>
+</li>
+<li>
+<p>计算能力与带宽的比值常用 <strong>算术强度 Arithmetic Intensity / Operational Intensity</strong> 描述：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>I</mi><mo>=</mo><mfrac><mtext>floating point operations</mtext><mtext>bytes moved from device memory</mtext></mfrac></mrow><annotation encoding="application/x-tex">I=\frac{\text{floating point operations}}{\text{bytes moved from device memory}}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.2519em;vertical-align:-0.8804em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord">bytes moved from device memory</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord">floating point operations</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8804em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
+<p>其含义是：从 device memory 移动每个字节数据所对应的浮点运算数量。</p>
+</li>
+</ul>
+<p>总体趋势是峰值计算能力相对于带宽增长更快，因此硬件要求程序具有更高算术强度，才能充分利用计算单元。</p>
+<h2 id="Roofline-模型">Roofline 模型</h2>
+<p>Roofline 模型用于判断给定硬件上的程序是 <strong>memory bandwidth bound</strong> 还是 <strong>compute bound</strong>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260623150437362.png" alt=""></p>
+<p>核心思想：</p>
+<ul>
+<li>横轴表示算术强度 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>I</mi></mrow><annotation encoding="application/x-tex">I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span></span></span></span>。</li>
+<li>纵轴表示可达到的计算性能。</li>
+<li>当 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>I</mi></mrow><annotation encoding="application/x-tex">I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span></span></span></span> 较低时，性能受内存带宽限制。</li>
+<li>当 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>I</mi></mrow><annotation encoding="application/x-tex">I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span></span></span></span> 较高时，性能受峰值计算能力限制。</li>
+</ul>
+<p>性能上界可表示为：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>P</mi><mo>≤</mo><mi>min</mi><mo>⁡</mo><mo stretchy="false">(</mo><msub><mi>P</mi><mrow><mi>p</mi><mi>e</mi><mi>a</mi><mi>k</mi></mrow></msub><mo separator="true">,</mo><mtext> </mtext><mi>I</mi><mo>⋅</mo><msub><mi>B</mi><mrow><mi>p</mi><mi>e</mi><mi>a</mi><mi>k</mi></mrow></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">P \le \min(P_{peak},\ I \cdot B_{peak})
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8193em;vertical-align:-0.136em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mop">min</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">ak</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace"> </span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05017em;">B</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0502em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">ak</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span></p>
+<p>其中：</p>
+<ul>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi></mrow><annotation encoding="application/x-tex">P</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span></span></span></span> 是实际可达性能。</li>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>P</mi><mrow><mi>p</mi><mi>e</mi><mi>a</mi><mi>k</mi></mrow></msub></mrow><annotation encoding="application/x-tex">P_{peak}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">ak</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span> 是硬件峰值计算性能。</li>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>B</mi><mrow><mi>p</mi><mi>e</mi><mi>a</mi><mi>k</mi></mrow></msub></mrow><annotation encoding="application/x-tex">B_{peak}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9694em;vertical-align:-0.2861em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05017em;">B</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0502em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="mord mathnormal mtight">e</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">ak</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span></span></span></span> 是硬件峰值内存带宽。</li>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>I</mi></mrow><annotation encoding="application/x-tex">I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span></span></span></span> 是算术强度。</li>
+</ul>
+<p>因此优化 GPU 程序时，需要判断瓶颈位置：</p>
+<table>
+<thead>
+<tr>
+<th>瓶颈类型</th>
+<th>特征</th>
+<th>优化方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>带宽受限</td>
+<td>算术强度低，访存占主导</td>
+<td>减少 global memory 访问，合并访存，使用 shared memory，提高数据复用</td>
+</tr>
+<tr>
+<td>计算受限</td>
+<td>算术强度高，计算单元占主导</td>
+<td>提高指令吞吐，减少分支发散，提高 occupancy，利用专用计算库</td>
+</tr>
+</tbody>
+</table>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/06/23/SE2302_02/">https://acannedfish.github.io/2026/06/23/SE2302_02/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/GPU/">GPU</a></div><div class="post-share"><div class="social-share" data-image="/img/background4.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/06/23/SE2302_03/" title="计算机系统基础-03：存储器层次结构"><img class="cover" src="/img/background5.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统基础-03：存储器层次结构</div></div></div></a><a class="pagination-related  no-desc" href="/2026/06/23/SE2302_01/" title="计算机系统基础-01：程序性能优化"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统基础-01：程序性能优化</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#GPU-%E5%88%86%E7%B1%BB"><span class="toc-number">1.</span> <span class="toc-text">GPU 分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NVIDIA-GPU-%E6%9E%B6%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">NVIDIA GPU 架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SIMT"><span class="toc-number">3.</span> <span class="toc-text">SIMT</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#warp-%E8%B0%83%E5%BA%A6"><span class="toc-number">3.1.</span> <span class="toc-text">warp 调度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E6%94%AF%E5%8F%91%E6%95%A3"><span class="toc-number">3.2.</span> <span class="toc-text">分支发散</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GPU-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B"><span class="toc-number">4.</span> <span class="toc-text">GPU 内存模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GPU-%E5%B1%82%E6%AC%A1"><span class="toc-number">4.1.</span> <span class="toc-text">GPU 层次</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CUDA"><span class="toc-number">5.</span> <span class="toc-text">CUDA</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CUDA-Kernel"><span class="toc-number">5.1.</span> <span class="toc-text">CUDA Kernel</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CUDA-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-number">5.2.</span> <span class="toc-text">CUDA 内存管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kernel-Launch"><span class="toc-number">5.3.</span> <span class="toc-text">Kernel Launch</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CUDA-%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc-number">5.4.</span> <span class="toc-text">CUDA 线程模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GPU-%E6%80%A7%E8%83%BD%E8%B6%8B%E5%8A%BF"><span class="toc-number">6.</span> <span class="toc-text">GPU 性能趋势</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Roofline-%E6%A8%A1%E5%9E%8B"><span class="toc-number">7.</span> <span class="toc-text">Roofline 模型</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
