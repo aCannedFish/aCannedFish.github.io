@@ -7,7 +7,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://acannedfish.github.io/img/background8.png">
 <meta property="article:published_time" content="2026-06-23T05:10:00.000Z">
-<meta property="article:modified_time" content="2026-06-26T06:44:48.873Z">
+<meta property="article:modified_time" content="2026-06-26T07:38:15.986Z">
 <meta property="article:author" content="aCannedFish">
 <meta property="article:tag" content="VM">
 <meta name="twitter:card" content="summary">
@@ -18,7 +18,7 @@
   "url": "https://acannedfish.github.io/2026/06/23/SE2302_06/",
   "image": "https://acannedfish.github.io/img/background8.png",
   "datePublished": "2026-06-23T05:10:00.000Z",
-  "dateModified": "2026-06-26T06:44:48.873Z",
+  "dateModified": "2026-06-26T07:38:15.986Z",
   "author": [
     {
       "@type": "Person",
@@ -159,7 +159,7 @@
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
-}</script><link rel="stylesheet" href="/css/home-cards.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/background8.png);"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统基础-06：虚拟内存</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-23T05:10:00.000Z" title="发表于 2026-06-23 13:10:00">2026-06-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-26T06:44:48.873Z" title="更新于 2026-06-26 14:44:48">2026-06-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note-ICS/">Note(ICS)</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="虚拟内存">虚拟内存</h2>
+}</script><link rel="stylesheet" href="/css/home-cards.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/background8.png);"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统基础-06：虚拟内存</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-23T05:10:00.000Z" title="发表于 2026-06-23 13:10:00">2026-06-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-26T07:38:15.986Z" title="更新于 2026-06-26 15:38:15">2026-06-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note-ICS/">Note(ICS)</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="虚拟内存">虚拟内存</h2>
 <h3 id="物理寻址">物理寻址</h3>
 <p>主存可视为一个连续字节数组，每个字节有唯一物理地址，从 0 开始编号。</p>
 <p>物理寻址中，CPU 直接用物理地址访问主存。早期 PC、DSP 和部分嵌入式微控制器可采用这种方式。</p>
@@ -1055,7 +1055,6 @@
 <p>shared area 可用于进程间通信。private area 常配合 COW 实现高效 <code>fork</code>。</p>
 <blockquote>
 <p><strong><code>MAP_SHARED</code> 和 <code>MAP_PRIVATE</code> 的写入可见性有什么区别？</strong></p>
-<p>解析：</p>
 <ul>
 <li><code>MAP_SHARED</code> 映射同一对象的进程共享写入结果，一个进程写入后其他进程可见。</li>
 <li><code>MAP_PRIVATE</code> 初始可共享同一物理页，但写入是本地私有的。</li>
@@ -1063,9 +1062,9 @@
 <li>shared mapping 可用于进程间通信，private mapping 常用于加载代码、数据段和 <code>fork</code> 后的地址空间。</li>
 </ul>
 </blockquote>
-<h2 id="页面置换策略">页面置换策略</h2>
-<p>当 OS 需要分配空闲物理页但没有可用页时，需要选择页面换出。</p>
-<p>页面置换体现了机制与策略分离：</p>
+<h2 id="页替换策略">页替换策略</h2>
+<h3 id="页替换">页替换</h3>
+<p>当 OS 需要分配空闲物理页但没有可用页时，需要选择页面换出。页面置换体现了机制与策略分离：</p>
 <ul>
 <li><strong>机制</strong>：page swapping 提供把页面从 DRAM 换出到二级存储、再换入 DRAM 的能力。</li>
 <li><strong>策略</strong>：replacement policy 决定在内存紧张时换出哪一个页面。</li>
@@ -1078,8 +1077,7 @@
 </ul>
 <p>主动回收可避免每次物理页分配失败时只临时换出一个页。若系统总在分配路径上同步回收，会增加请求延迟；后台回收可提前准备空闲页池。</p>
 <blockquote>
-<p><strong>思考题：什么时候会触发页面置换？</strong></p>
-<p>解析：</p>
+<p><strong>什么时候会触发页面置换？</strong></p>
 <ul>
 <li>当 OS 需要分配新物理页但空闲页不足时，需要选择页面换出。</li>
 <li>典型场景包括 page fault 调入页面、COW 写入分配新页、<code>mmap</code> 匿名页首次写入、内核申请连续页等。</li>
@@ -1088,7 +1086,7 @@
 </ul>
 </blockquote>
 <h3 id="AMAT">AMAT</h3>
-<p>平均内存访问时间：</p>
+<p>平均内存访问时间（Average Memory Access Time）：</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>A</mi><mi>M</mi><mi>A</mi><mi>T</mi><mo>=</mo><msub><mi>P</mi><mrow><mi>h</mi><mi>i</mi><mi>t</mi></mrow></msub><mo>⋅</mo><msub><mi>T</mi><mi>M</mi></msub><mo>+</mo><msub><mi>P</mi><mrow><mi>m</mi><mi>i</mi><mi>s</mi><mi>s</mi></mrow></msub><mo>⋅</mo><msub><mi>T</mi><mi>D</mi></msub></mrow><annotation encoding="application/x-tex">AMAT = P_{hit}\cdot T_M + P_{miss}\cdot T_D
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">hi</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.10903em;">M</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">mi</span><span class="mord mathnormal mtight">ss</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">D</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span></p>
 <p>其中：</p>
@@ -1102,7 +1100,7 @@
 <p>结论：很小的 miss rate 变化也会影响 AMAT。</p>
 <h3 id="OPT">OPT</h3>
 <p>OPT 策略换出未来最长时间不会再被访问的页面。</p>
-<p>特点：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626145907767.png" alt=""></p>
 <ul>
 <li>理论最优。</li>
 <li>需要知道未来访问序列，实际系统无法直接实现。</li>
@@ -1110,10 +1108,14 @@
 </ul>
 <h3 id="FIFO-与-Belady-Anomaly">FIFO 与 Belady Anomaly</h3>
 <p>FIFO 维护一个队列，记录页面换入顺序。每次换入页面时加入队尾，换出时选择队头。</p>
-<p>例题访问序列：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626145907768.png" alt=""></p>
+<blockquote>
+<p>若访问序列：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5</span><br></pre></td></tr></table></figure>
-<p>问题：3 个物理页和 4 个物理页时 FIFO 各产生几次缺页？</p>
-<h4 id="3-个物理页">3 个物理页</h4>
+<p>3 个物理页和 4 个物理页时 FIFO 各产生几次缺页？</p>
+<ul>
+<li>
+<p>3 个物理页</p>
 <table>
 <thead>
 <tr>
@@ -1186,7 +1188,9 @@
 </tbody>
 </table>
 <p>缺页次数：9。</p>
-<h4 id="4-个物理页">4 个物理页</h4>
+</li>
+<li>
+<p>4 个物理页</p>
 <table>
 <thead>
 <tr>
@@ -1259,7 +1263,11 @@
 </tbody>
 </table>
 <p>缺页次数：10。</p>
-<p>结论：FIFO 中增加物理页数可能反而增加缺页次数，这称为 Belady’s Anomaly。</p>
+</li>
+</ul>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626145907769.png" alt=""></p>
+<p>FIFO 中增加物理页数可能反而增加缺页次数，称为 Belady’s Anomaly。</p>
+</blockquote>
 <h3 id="Second-Chance">Second Chance</h3>
 <p>Second Chance 是 FIFO 的改进。每个页维护一个访问位：</p>
 <ul>
@@ -1268,32 +1276,36 @@
 <li>若访问位为 0，换出该页。</li>
 <li>若访问位为 1，清除访问位并放到队尾，继续查找。</li>
 </ul>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626145907770.png" alt=""></p>
 <p>它避免立即换出近期访问过的页。</p>
 <h3 id="LRU">LRU</h3>
 <p>LRU（Least Recently Used）换出最长时间未访问的页。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626145907771.png" alt=""></p>
 <p>优点：</p>
 <ul>
 <li>通常能保留热点页。</li>
-<li>对 80-20 workload 表现较好：约 20% 热页贡献约 80% 访问。</li>
+<li>对 80-20 workload 表现较好：约 20% 热页贡献约 80% 访问。<br>
+<img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626145907772.png" alt=""></li>
 </ul>
 <p>缺点：</p>
 <ul>
 <li>精确实现成本高，需要记录和排序所有页面访问时间。</li>
-<li>对循环顺序访问可能表现差。</li>
+<li>对<strong>循环顺序访问</strong>可能表现差。</li>
 </ul>
 <blockquote>
-<p>循环访问示例：</p>
+<p>循环顺序访问示例：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">访问 50 个页面：0,1,2,...,49，循环 10000 次</span><br></pre></td></tr></table></figure>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626145907773.png" alt=""></p>
 <p>若 cache 大小为 49，LRU 和 FIFO 会不断换出即将再次使用的旧页，hit rate 可能为 0。随机置换反而可能避免这种特定最坏行为，因此一些硬件结构会使用随机置换。</p>
 </blockquote>
 <h3 id="Clock-Algorithm">Clock Algorithm</h3>
-<p>Clock 是近似 LRU 的策略。</p>
-<p>数据结构：</p>
+<p>Clock 是近似 LRU 的策略。其数据结构：</p>
 <ul>
 <li>物理页按环形排列。</li>
 <li>每页有访问位。</li>
 <li>指针指向候选位置。</li>
 </ul>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626150723429.png" alt=""></p>
 <p>算法：</p>
 <ol>
 <li>需要换出时，从指针下一个位置开始扫描。</li>
@@ -1302,6 +1314,7 @@
 <li>新页换入该位置，指针更新。</li>
 </ol>
 <p>指针更新规则是：换出某页并把新页放入该位置后，指针停在该位置或移动到该位置之后，下一次扫描从后继页开始。这样可避免每次都从同一位置重新扫描。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626150800957.png" alt=""></p>
 <p>若考虑 dirty bit，置换策略可进一步区分 clean page 和 dirty page：</p>
 <ul>
 <li>clean file-backed page 可直接丢弃，因为磁盘上已有相同内容。</li>
@@ -1309,28 +1322,31 @@
 <li>实际系统常结合 accessed bit 和 dirty bit 做多级优先级，而不是只看最近访问情况。</li>
 </ul>
 <blockquote>
-<p><strong>问题：Clock 如何获得物理页访问位？</strong></p>
-<p>MMU 设置的是 PTE 中的 Accessed bit，它属于虚拟页映射。OS 需要知道某个物理页对应哪些 PTE。</p>
-<p>实现方式：</p>
+<p><strong>Clock 如何获得物理页访问位？</strong></p>
+<p>MMU 设置的是 PTE 中的 Accessed bit，它属于虚拟页映射（从虚拟页到物理页）。OS 做 swap 时需要知道某个物理页对应哪些 PTE。实现方式：</p>
 <ul>
 <li>OS 在描述物理页的数据结构中记录对应 PTE 位置。</li>
 <li>物理页被填入页表时，记录反向映射（reverse mapping）。</li>
 <li>置换时通过反向映射检查并清除相关 PTE 的 accessed bit。</li>
-<li>若页被共享，驱逐时需要清空所有对应 PTE。</li>
+<li>若页被多个进程共享，需要检查所有对应 PTE；只要任一映射近期被访问，该物理页就应被视为 recently used。</li>
+<li>真正驱逐该物理页时，OS 需要更新所有相关 PTE，使它们不再指向被回收的物理页。</li>
 </ul>
 </blockquote>
 <blockquote>
-<p><strong>思考题：页表页和内核页能否被换出？</strong></p>
-<p>问题 1：OS 能否换出页表页？</p>
-<p>答案：理论上除当前 CR3 指向的一级页表外，其余页表页可以设计为可换出，但实现复杂。硬件页表遍历需要页表页可访问，换出页表页需要额外元数据和异常处理。实际系统通常谨慎处理。</p>
+<p><strong>页表页和内核页能否被换出？</strong></p>
+<ol>
+<li>OS 能否换出页表页？</li>
+</ol>
+<p>理论上除当前 CR3 指向的一级页表外，其余页表页可以设计为可换出，但实现复杂。硬件页表遍历需要页表页可访问，换出页表页需要额外元数据和异常处理。实际系统通常谨慎处理。</p>
 <p>当前 CR3 指向的顶级页表页不能被换出。MMU 页表遍历的第一步就是读取 CR3 指向的物理页；如果该页已经被替换成普通数据，硬件无法知道真正的顶级页表在哪里，后续翻译会失去依据。</p>
-<p>问题 2：OS 能否换出自己的页面？</p>
-<p>答案：取决于页面用途，但通常关键内核代码、异常处理路径、页表管理数据和中断处理所需页面不能换出。否则处理缺页时可能再次缺页，导致无法恢复。</p>
+<ol start="2">
+<li>OS 能否换出自己的页面？</li>
+</ol>
+<p>取决于页面用途，但通常关键内核代码、异常处理路径、页表管理数据和中断处理所需页面不能换出。否则处理缺页时可能再次缺页，导致无法恢复。</p>
 <p>例如 page fault handler 所在代码页若被换出，处理 page fault 时又会因为取 handler 指令而 page fault，可能形成递归异常，严重时导致系统崩溃。因此关键内核路径通常必须常驻。</p>
 </blockquote>
 <blockquote>
-<p><strong>思考题：一条 <code>mov</code> 最多触发几次 page fault？</strong></p>
-<p>解析：</p>
+<p><strong>一条 <code>mov</code> 最多触发几次 page fault？</strong></p>
 <ul>
 <li>CPU 执行指令前要先 instruction fetch，PC 本身是虚拟地址。若指令所在代码页尚未调入，取指会触发 page fault。</li>
 <li><code>mov</code> 若访问内存操作数，该操作数地址也是虚拟地址。若对应数据页尚未调入，也会触发 page fault。</li>
@@ -1340,26 +1356,26 @@
 <ul>
 <li>在常见不跨页情形下，一条访存 <code>mov</code> 最多可因取指页和数据页各触发一次 page fault，即最多 2 次。</li>
 <li>若指令字节跨页，取指可能涉及两个代码页；若内存操作数跨页，也可能涉及两个数据页，此时次数可更多。</li>
-<li>两条连续 <code>mov</code> 的第二条是否再次发生取指 page fault，取决于第二条指令是否仍在第一条已经调入的代码页中。若 PC 增量后仍在同一虚拟页，则通常不会因取指再次 fault；若第一条位于页尾，第二条跨入新代码页，则仍可能因取指 fault。</li>
+<li>两条连续 <code>mov</code> 的第二条是否再次发生取指 page fault，取决于第二条指令是否仍在第一条已经调入的代码页中。若 PC 增量后仍在同一虚拟页，且中间没有调度、TLB flush 或页面换出，则通常不会因取指再次 fault；若第一条位于页尾，第二条跨入新代码页，则仍可能因取指 fault。</li>
+<li>即使两条指令在同一虚拟页，中间也可能发生 timer interrupt 和进程切换。若该进程长时间后才继续执行，相关 TLB entry 可能已失效，甚至代码页可能被换出，因此下一条指令仍可能再次触发取指 page fault。</li>
 </ul>
 </blockquote>
 <blockquote>
-<p><strong>思考题：地址 0 是否可能合法访问？</strong></p>
+<p><strong>地址 0 是否可能合法访问？</strong></p>
 <p>原则上可以。虚拟地址 0 是否合法取决于页表映射和 VMA 权限。</p>
-<p>实际用户程序中，操作系统通常故意不映射低地址区域，用于捕获空指针解引用。因此普通 Linux 进程访问地址 0 通常会触发 <code>SIGSEGV</code>。但在内核、嵌入式系统或特定配置下，地址 0 可以被映射为合法地址。</p>
+<p>实际用户程序中，操作系统通常故意不映射低地址区域，用于捕获空指针解引用。因此普通 Linux 进程访问地址 0 通常会触发 <code>SIGSEGV</code>。但从机制上看，只要 OS 允许在地址 0 建立 VMA 和页表映射，地址 0 就可以合法访问。用户态可尝试通过 <code>mmap</code> 指定起始地址，但该参数通常只是建议；是否允许映射低地址取决于 OS 配置和安全策略。</p>
 </blockquote>
 <blockquote>
-<p><strong>思考题：Segmentation Fault 的完整流程</strong></p>
-<p>流程：</p>
+<p><strong>Segmentation Fault 的完整流程</strong></p>
 <ol>
 <li>应用执行 load、store 或 instruction fetch。</li>
 <li>CPU/MMU 对虚拟地址进行翻译。</li>
-<li>MMU 发现 PTE 不存在、地址不在 VMA 中，或权限不允许。</li>
+<li>MMU 发现页表翻译失败或 PTE 权限检查失败，例如 PTE not present、用户态访问内核页、写只读页等。</li>
 <li>CPU 触发 page fault exception，进入内核。</li>
-<li>OS page fault handler 检查 VMA 和访问权限。</li>
+<li>OS page fault handler 检查 faulting address 是否落在合法 VMA 中，并检查访问类型是否符合 VMA 权限。</li>
 <li>若地址非法或权限非法，内核向当前进程发送 <code>SIGSEGV</code>。</li>
-<li>若进程没有自定义 handler，默认动作是终止进程。</li>
-<li>shell 或父进程观察到进程因 segmentation fault 退出。</li>
+<li>若地址合法且可恢复，例如 demand paging 或 COW，则 handler 修复映射并重新执行 faulting instruction。</li>
+<li>若进程没有自定义 signal handler，<code>SIGSEGV</code> 的默认动作是终止进程，shell 或父进程可观察到进程因 segmentation fault 退出。</li>
 </ol>
 </blockquote>
 <h2 id="动态内存分配">动态内存分配</h2>
@@ -1391,7 +1407,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="malloc-与-free">malloc 与 free</h3>
+<h3 id="malloc-与-free"><code>malloc</code> 与 <code>free</code></h3>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">malloc</span><span class="params">(<span class="type">size_t</span> size)</span>;</span><br><span class="line"><span class="type">void</span> <span class="title function_">free</span><span class="params">(<span class="type">void</span> *p)</span>;</span><br></pre></td></tr></table></figure>
 <p><code>malloc(size)</code>：</p>
 <ul>
@@ -1408,8 +1424,7 @@
 <li>否则行为未定义。</li>
 </ul>
 <blockquote>
-<p><strong>思考题：为什么释放非 malloc 指针是未定义行为？</strong></p>
-<p>解析：</p>
+<p><strong>为什么释放非 malloc 指针是未定义行为？</strong></p>
 <ul>
 <li>分配器通常在 payload 前存放 header，记录 block size 和分配状态。</li>
 <li><code>free(p)</code> 会根据 <code>p</code> 回退到 header。</li>
@@ -1417,12 +1432,11 @@
 <li>后果可能是破坏堆结构、错误合并块或访问非法内存。</li>
 </ul>
 </blockquote>
-<h3 id="为什么需要动态分配">为什么需要动态分配</h3>
 <p>静态数组需要提前设置上限：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> MAXN 15213</span></span><br><span class="line"><span class="type">int</span> <span class="built_in">array</span>[MAXN];</span><br></pre></td></tr></table></figure>
 <p>若输入规模超过 <code>MAXN</code>，必须修改代码并重新编译。动态分配可按运行时输入分配：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> *<span class="built_in">array</span>, i, n;</span><br><span class="line"></span><br><span class="line"><span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;n);</span><br><span class="line"><span class="built_in">array</span> = (<span class="type">int</span> *)Malloc(n * <span class="keyword">sizeof</span>(<span class="type">int</span>));</span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">&quot;%d&quot;</span>, &amp;<span class="built_in">array</span>[i]);</span><br></pre></td></tr></table></figure>
-<h3 id="sbrk">sbrk</h3>
+<h3 id="sbrk"><code>sbrk</code></h3>
 <p>堆空间来自内核。传统分配器可用 <code>sbrk</code> 调整堆顶 <code>brk</code>。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">void</span> *<span class="title function_">sbrk</span><span class="params">(<span class="type">int</span> incr)</span>;</span><br></pre></td></tr></table></figure>
 <p>语义：</p>
@@ -1435,16 +1449,17 @@
 <p>分配器使用 <code>sbrk</code> 扩展堆，然后在堆内自行管理 blocks。</p>
 <h3 id="对齐要求">对齐要求</h3>
 <p>分配器通常要求 <code>malloc</code> 返回值按双字对齐。若一个 word 为 4 bytes，则双字对齐为 8 bytes。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626153108624.png" alt=""></p>
 <blockquote>
-<p><strong>思考题：为什么要求对齐？</strong></p>
-<p>解析：</p>
+<p><strong>为什么要求对齐？</strong></p>
 <ul>
 <li>某些数据类型和指令要求自然对齐。</li>
 <li>对齐访问通常性能更好。</li>
 <li>block 大小若总是 8 的倍数，则低 3 位恒为 0，可复用低位保存 allocated bit 等标志。</li>
 </ul>
 </blockquote>
-<h2 id="分配器要求与指标">分配器要求与指标</h2>
+<h2 id="分配器与碎片">分配器与碎片</h2>
+<h3 id="分配器要求与目标">分配器要求与目标</h3>
 <p>分配器必须满足：</p>
 <ul>
 <li>处理任意请求序列。</li>
@@ -1460,7 +1475,7 @@
 </ul>
 <p>二者通常冲突。</p>
 <h3 id="吞吐">吞吐</h3>
-<p>吞吐是单位时间完成的请求数。</p>
+<p>吞吐是<strong>单位时间完成的请求数</strong>。</p>
 <blockquote>
 <p>示例：1 秒内完成 5000 次 <code>malloc</code> 和 5000 次 <code>free</code>，吞吐为 10000 operations/second。</p>
 </blockquote>
@@ -1475,8 +1490,6 @@
 <p>常用峰值利用率：</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>U</mi><mi>k</mi></msub><mo>=</mo><mfrac><mrow><munder><mrow><mi>max</mi><mo>⁡</mo></mrow><mrow><mi>i</mi><mo>≤</mo><mi>k</mi></mrow></munder><msub><mi>P</mi><mi>i</mi></msub></mrow><msub><mi>H</mi><mi>k</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">U_k=\frac{\max_{i\le k}P_i}{H_k}
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">U</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.109em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.1963em;vertical-align:-0.836em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.08125em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0813em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mop"><span class="mop">max</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mrel mtight">≤</span><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2452em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.836em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
-<h2 id="碎片">碎片</h2>
-<p>碎片导致内存利用率下降。</p>
 <h3 id="内部碎片">内部碎片</h3>
 <p>内部碎片指一个 block 中 block size 与 payload size 的差。</p>
 <p>原因：</p>
@@ -1801,7 +1814,7 @@
 <li>释放 empty slab 可把页归还给 buddy system 或上层页分配器。</li>
 </ul>
 </blockquote>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/06/23/SE2302_06/">https://acannedfish.github.io/2026/06/23/SE2302_06/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/VM/">VM</a></div><div class="post-share"><div class="social-share" data-image="/img/background8.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/06/23/SE2302_07/" title="计算机系统基础-07：网络"><img class="cover" src="/img/background9.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统基础-07：网络</div></div></div></a><a class="pagination-related  no-desc" href="/2026/06/23/SE2302_05/" title="计算机系统基础-05：系统级 I/O"><img class="cover" src="/img/background7.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统基础-05：系统级 I/O</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98"><span class="toc-number">1.</span> <span class="toc-text">虚拟内存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E5%AF%BB%E5%9D%80"><span class="toc-number">1.1.</span> <span class="toc-text">物理寻址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%AF%BB%E5%9D%80"><span class="toc-number">1.2.</span> <span class="toc-text">虚拟寻址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-number">1.3.</span> <span class="toc-text">地址空间</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E4%B8%8E%E9%A1%B5%E8%A1%A8"><span class="toc-number">2.</span> <span class="toc-text">页与页表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5"><span class="toc-number">2.1.</span> <span class="toc-text">页</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E8%A1%A8"><span class="toc-number">2.2.</span> <span class="toc-text">页表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E7%BC%93%E5%AD%98"><span class="toc-number">3.</span> <span class="toc-text">虚拟内存作为缓存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Hit"><span class="toc-number">3.1.</span> <span class="toc-text">Page Hit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Fault"><span class="toc-number">3.2.</span> <span class="toc-text">Page Fault</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Fault-%E7%9A%84%E4%B8%89%E7%B1%BB%E6%83%85%E5%86%B5"><span class="toc-number">3.3.</span> <span class="toc-text">Page Fault 的三类情况</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7"><span class="toc-number">4.</span> <span class="toc-text">虚拟内存作为内存管理工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%93%BE%E6%8E%A5%E4%B8%8E%E5%8A%A0%E8%BD%BD"><span class="toc-number">4.1.</span> <span class="toc-text">链接与加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E9%A1%B5%E5%88%86%E9%85%8D"><span class="toc-number">4.2.</span> <span class="toc-text">物理页分配</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E4%BF%9D%E6%8A%A4%E5%B7%A5%E5%85%B7"><span class="toc-number">5.</span> <span class="toc-text">虚拟内存作为保护工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E7%BF%BB%E8%AF%91"><span class="toc-number">6.</span> <span class="toc-text">地址翻译</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TLB-%E5%8A%A0%E9%80%9F"><span class="toc-number">7.</span> <span class="toc-text">TLB 加速</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">8.</span> <span class="toc-text">多级页表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#x86-32-%E4%B8%A4%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">8.1.</span> <span class="toc-text">x86-32 两级页表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#x86-64-%E5%9B%9B%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">8.2.</span> <span class="toc-text">x86-64 四级页表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Core-i7-%E5%86%85%E5%AD%98%E7%B3%BB%E7%BB%9F"><span class="toc-number">9.</span> <span class="toc-text">Core i7 内存系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E7%BB%93%E6%9E%84"><span class="toc-number">9.1.</span> <span class="toc-text">系统结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VIPT-%E5%8A%A0%E9%80%9F"><span class="toc-number">9.2.</span> <span class="toc-text">VIPT 加速</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98"><span class="toc-number">10.</span> <span class="toc-text">Linux 虚拟内存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux-Page-Fault-Handling"><span class="toc-number">10.1.</span> <span class="toc-text">Linux Page Fault Handling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Memory-Mapping"><span class="toc-number">10.2.</span> <span class="toc-text">Memory Mapping</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%98%A0%E5%B0%84"><span class="toc-number">10.2.1.</span> <span class="toc-text">文件映射</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mmap"><span class="toc-number">10.2.2.</span> <span class="toc-text">mmap</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mmap-%E5%BF%AB%E9%80%9F%E6%96%87%E4%BB%B6%E5%A4%8D%E5%88%B6"><span class="toc-number">10.2.3.</span> <span class="toc-text">mmap 快速文件复制</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fork-%E4%B8%8E-COW"><span class="toc-number">10.3.</span> <span class="toc-text">fork 与 COW</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Shared-Object-%E4%B8%8E-Private-Object"><span class="toc-number">10.4.</span> <span class="toc-text">Shared Object 与 Private Object</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E9%9D%A2%E7%BD%AE%E6%8D%A2%E7%AD%96%E7%95%A5"><span class="toc-number">11.</span> <span class="toc-text">页面置换策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AMAT"><span class="toc-number">11.1.</span> <span class="toc-text">AMAT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OPT"><span class="toc-number">11.2.</span> <span class="toc-text">OPT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FIFO-%E4%B8%8E-Belady-Anomaly"><span class="toc-number">11.3.</span> <span class="toc-text">FIFO 与 Belady Anomaly</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E4%B8%AA%E7%89%A9%E7%90%86%E9%A1%B5"><span class="toc-number">11.3.1.</span> <span class="toc-text">3 个物理页</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E4%B8%AA%E7%89%A9%E7%90%86%E9%A1%B5"><span class="toc-number">11.3.2.</span> <span class="toc-text">4 个物理页</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Second-Chance"><span class="toc-number">11.4.</span> <span class="toc-text">Second Chance</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LRU"><span class="toc-number">11.5.</span> <span class="toc-text">LRU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Clock-Algorithm"><span class="toc-number">11.6.</span> <span class="toc-text">Clock Algorithm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D"><span class="toc-number">12.</span> <span class="toc-text">动态内存分配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#malloc-%E4%B8%8E-free"><span class="toc-number">12.1.</span> <span class="toc-text">malloc 与 free</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%8A%A8%E6%80%81%E5%88%86%E9%85%8D"><span class="toc-number">12.2.</span> <span class="toc-text">为什么需要动态分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sbrk"><span class="toc-number">12.3.</span> <span class="toc-text">sbrk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E9%BD%90%E8%A6%81%E6%B1%82"><span class="toc-number">12.4.</span> <span class="toc-text">对齐要求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E9%85%8D%E5%99%A8%E8%A6%81%E6%B1%82%E4%B8%8E%E6%8C%87%E6%A0%87"><span class="toc-number">13.</span> <span class="toc-text">分配器要求与指标</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%9E%E5%90%90"><span class="toc-number">13.1.</span> <span class="toc-text">吞吐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%A9%E7%94%A8%E7%8E%87"><span class="toc-number">13.2.</span> <span class="toc-text">内存利用率</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A2%8E%E7%89%87"><span class="toc-number">14.</span> <span class="toc-text">碎片</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E7%A2%8E%E7%89%87"><span class="toc-number">14.1.</span> <span class="toc-text">内部碎片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%96%E9%83%A8%E7%A2%8E%E7%89%87"><span class="toc-number">14.2.</span> <span class="toc-text">外部碎片</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%90%E5%BC%8F%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">15.</span> <span class="toc-text">隐式空闲链表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E6%A0%87%E8%AE%B0%E4%B8%8E%E5%B8%B8%E6%95%B0%E6%97%B6%E9%97%B4%E5%90%88%E5%B9%B6"><span class="toc-number">16.</span> <span class="toc-text">边界标记与常数时间合并</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%98%BE%E5%BC%8F%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">17.</span> <span class="toc-text">显式空闲链表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E7%AD%96%E7%95%A5"><span class="toc-number">17.1.</span> <span class="toc-text">插入策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E7%A6%BB%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">18.</span> <span class="toc-text">分离空闲链表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Simple-Segregated-Storage"><span class="toc-number">18.1.</span> <span class="toc-text">Simple Segregated Storage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Segregated-Fits"><span class="toc-number">18.2.</span> <span class="toc-text">Segregated Fits</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Buddy-System"><span class="toc-number">19.</span> <span class="toc-text">Buddy System</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Slab-Allocator"><span class="toc-number">20.</span> <span class="toc-text">Slab Allocator</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Resource-Pool"><span class="toc-number">20.1.</span> <span class="toc-text">Resource Pool</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Slab-%E5%86%85%E9%83%A8-free-list"><span class="toc-number">20.2.</span> <span class="toc-text">Slab 内部 free list</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Slab-%E7%AE%A1%E7%90%86%E9%97%AE%E9%A2%98"><span class="toc-number">20.3.</span> <span class="toc-text">Slab 管理问题</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/06/23/SE2302_06/">https://acannedfish.github.io/2026/06/23/SE2302_06/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/VM/">VM</a></div><div class="post-share"><div class="social-share" data-image="/img/background8.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/06/23/SE2302_07/" title="计算机系统基础-07：网络"><img class="cover" src="/img/background9.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统基础-07：网络</div></div></div></a><a class="pagination-related  no-desc" href="/2026/06/23/SE2302_05/" title="计算机系统基础-05：系统级 I/O"><img class="cover" src="/img/background7.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统基础-05：系统级 I/O</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98"><span class="toc-number">1.</span> <span class="toc-text">虚拟内存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E5%AF%BB%E5%9D%80"><span class="toc-number">1.1.</span> <span class="toc-text">物理寻址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%AF%BB%E5%9D%80"><span class="toc-number">1.2.</span> <span class="toc-text">虚拟寻址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-number">1.3.</span> <span class="toc-text">地址空间</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E4%B8%8E%E9%A1%B5%E8%A1%A8"><span class="toc-number">2.</span> <span class="toc-text">页与页表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5"><span class="toc-number">2.1.</span> <span class="toc-text">页</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E8%A1%A8"><span class="toc-number">2.2.</span> <span class="toc-text">页表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E7%BC%93%E5%AD%98"><span class="toc-number">3.</span> <span class="toc-text">虚拟内存作为缓存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Hit"><span class="toc-number">3.1.</span> <span class="toc-text">Page Hit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Fault"><span class="toc-number">3.2.</span> <span class="toc-text">Page Fault</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Fault-%E7%9A%84%E4%B8%89%E7%B1%BB%E6%83%85%E5%86%B5"><span class="toc-number">3.3.</span> <span class="toc-text">Page Fault 的三类情况</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7"><span class="toc-number">4.</span> <span class="toc-text">虚拟内存作为内存管理工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%93%BE%E6%8E%A5%E4%B8%8E%E5%8A%A0%E8%BD%BD"><span class="toc-number">4.1.</span> <span class="toc-text">链接与加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E9%A1%B5%E5%88%86%E9%85%8D"><span class="toc-number">4.2.</span> <span class="toc-text">物理页分配</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E4%BF%9D%E6%8A%A4%E5%B7%A5%E5%85%B7"><span class="toc-number">5.</span> <span class="toc-text">虚拟内存作为保护工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E7%BF%BB%E8%AF%91"><span class="toc-number">6.</span> <span class="toc-text">地址翻译</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TLB-%E5%8A%A0%E9%80%9F"><span class="toc-number">7.</span> <span class="toc-text">TLB 加速</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">8.</span> <span class="toc-text">多级页表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#x86-32-%E4%B8%A4%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">8.1.</span> <span class="toc-text">x86-32 两级页表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#x86-64-%E5%9B%9B%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">8.2.</span> <span class="toc-text">x86-64 四级页表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Core-i7-%E5%86%85%E5%AD%98%E7%B3%BB%E7%BB%9F"><span class="toc-number">9.</span> <span class="toc-text">Core i7 内存系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E7%BB%93%E6%9E%84"><span class="toc-number">9.1.</span> <span class="toc-text">系统结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VIPT-%E5%8A%A0%E9%80%9F"><span class="toc-number">9.2.</span> <span class="toc-text">VIPT 加速</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98"><span class="toc-number">10.</span> <span class="toc-text">Linux 虚拟内存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux-Page-Fault-Handling"><span class="toc-number">10.1.</span> <span class="toc-text">Linux Page Fault Handling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Memory-Mapping"><span class="toc-number">10.2.</span> <span class="toc-text">Memory Mapping</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%98%A0%E5%B0%84"><span class="toc-number">10.2.1.</span> <span class="toc-text">文件映射</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mmap"><span class="toc-number">10.2.2.</span> <span class="toc-text">mmap</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mmap-%E5%BF%AB%E9%80%9F%E6%96%87%E4%BB%B6%E5%A4%8D%E5%88%B6"><span class="toc-number">10.2.3.</span> <span class="toc-text">mmap 快速文件复制</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fork-%E4%B8%8E-COW"><span class="toc-number">10.3.</span> <span class="toc-text">fork 与 COW</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Shared-Object-%E4%B8%8E-Private-Object"><span class="toc-number">10.4.</span> <span class="toc-text">Shared Object 与 Private Object</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E6%9B%BF%E6%8D%A2%E7%AD%96%E7%95%A5"><span class="toc-number">11.</span> <span class="toc-text">页替换策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E6%9B%BF%E6%8D%A2"><span class="toc-number">11.1.</span> <span class="toc-text">页替换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AMAT"><span class="toc-number">11.2.</span> <span class="toc-text">AMAT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OPT"><span class="toc-number">11.3.</span> <span class="toc-text">OPT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FIFO-%E4%B8%8E-Belady-Anomaly"><span class="toc-number">11.4.</span> <span class="toc-text">FIFO 与 Belady Anomaly</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Second-Chance"><span class="toc-number">11.5.</span> <span class="toc-text">Second Chance</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LRU"><span class="toc-number">11.6.</span> <span class="toc-text">LRU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Clock-Algorithm"><span class="toc-number">11.7.</span> <span class="toc-text">Clock Algorithm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D"><span class="toc-number">12.</span> <span class="toc-text">动态内存分配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#malloc-%E4%B8%8E-free"><span class="toc-number">12.1.</span> <span class="toc-text">malloc 与 free</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sbrk"><span class="toc-number">12.2.</span> <span class="toc-text">sbrk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E9%BD%90%E8%A6%81%E6%B1%82"><span class="toc-number">12.3.</span> <span class="toc-text">对齐要求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E9%85%8D%E5%99%A8%E4%B8%8E%E7%A2%8E%E7%89%87"><span class="toc-number">13.</span> <span class="toc-text">分配器与碎片</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E9%85%8D%E5%99%A8%E8%A6%81%E6%B1%82%E4%B8%8E%E7%9B%AE%E6%A0%87"><span class="toc-number">13.1.</span> <span class="toc-text">分配器要求与目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%9E%E5%90%90"><span class="toc-number">13.2.</span> <span class="toc-text">吞吐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%A9%E7%94%A8%E7%8E%87"><span class="toc-number">13.3.</span> <span class="toc-text">内存利用率</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E7%A2%8E%E7%89%87"><span class="toc-number">13.4.</span> <span class="toc-text">内部碎片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%96%E9%83%A8%E7%A2%8E%E7%89%87"><span class="toc-number">13.5.</span> <span class="toc-text">外部碎片</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%90%E5%BC%8F%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">14.</span> <span class="toc-text">隐式空闲链表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E6%A0%87%E8%AE%B0%E4%B8%8E%E5%B8%B8%E6%95%B0%E6%97%B6%E9%97%B4%E5%90%88%E5%B9%B6"><span class="toc-number">15.</span> <span class="toc-text">边界标记与常数时间合并</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%98%BE%E5%BC%8F%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">16.</span> <span class="toc-text">显式空闲链表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E7%AD%96%E7%95%A5"><span class="toc-number">16.1.</span> <span class="toc-text">插入策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E7%A6%BB%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">17.</span> <span class="toc-text">分离空闲链表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Simple-Segregated-Storage"><span class="toc-number">17.1.</span> <span class="toc-text">Simple Segregated Storage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Segregated-Fits"><span class="toc-number">17.2.</span> <span class="toc-text">Segregated Fits</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Buddy-System"><span class="toc-number">18.</span> <span class="toc-text">Buddy System</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Slab-Allocator"><span class="toc-number">19.</span> <span class="toc-text">Slab Allocator</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Resource-Pool"><span class="toc-number">19.1.</span> <span class="toc-text">Resource Pool</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Slab-%E5%86%85%E9%83%A8-free-list"><span class="toc-number">19.2.</span> <span class="toc-text">Slab 内部 free list</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Slab-%E7%AE%A1%E7%90%86%E9%97%AE%E9%A2%98"><span class="toc-number">19.3.</span> <span class="toc-text">Slab 管理问题</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
   const showKatex = () => {
     document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
   }
@@ -1815,4 +1828,79 @@
   }
 
   showKatex()
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
 })()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
