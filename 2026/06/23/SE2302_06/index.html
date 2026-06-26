@@ -7,7 +7,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://acannedfish.github.io/img/background8.png">
 <meta property="article:published_time" content="2026-06-23T05:10:00.000Z">
-<meta property="article:modified_time" content="2026-06-25T11:50:20.271Z">
+<meta property="article:modified_time" content="2026-06-26T06:44:48.873Z">
 <meta property="article:author" content="aCannedFish">
 <meta property="article:tag" content="VM">
 <meta name="twitter:card" content="summary">
@@ -18,7 +18,7 @@
   "url": "https://acannedfish.github.io/2026/06/23/SE2302_06/",
   "image": "https://acannedfish.github.io/img/background8.png",
   "datePublished": "2026-06-23T05:10:00.000Z",
-  "dateModified": "2026-06-25T11:50:20.271Z",
+  "dateModified": "2026-06-26T06:44:48.873Z",
   "author": [
     {
       "@type": "Person",
@@ -159,7 +159,7 @@
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
-}</script><link rel="stylesheet" href="/css/home-cards.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/background8.png);"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统基础-06：虚拟内存</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-23T05:10:00.000Z" title="发表于 2026-06-23 13:10:00">2026-06-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-25T11:50:20.271Z" title="更新于 2026-06-25 19:50:20">2026-06-25</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note-ICS/">Note(ICS)</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="虚拟内存">虚拟内存</h2>
+}</script><link rel="stylesheet" href="/css/home-cards.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/background8.png);"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统基础-06：虚拟内存</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-23T05:10:00.000Z" title="发表于 2026-06-23 13:10:00">2026-06-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-26T06:44:48.873Z" title="更新于 2026-06-26 14:44:48">2026-06-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note-ICS/">Note(ICS)</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="虚拟内存">虚拟内存</h2>
 <h3 id="物理寻址">物理寻址</h3>
 <p>主存可视为一个连续字节数组，每个字节有唯一物理地址，从 0 开始编号。</p>
 <p>物理寻址中，CPU 直接用物理地址访问主存。早期 PC、DSP 和部分嵌入式微控制器可采用这种方式。</p>
@@ -184,11 +184,30 @@
 </ul>
 <p>现代服务器、桌面和笔记本系统都使用虚拟寻址。</p>
 <p>硬件地址翻译必须足够简单。课堂中多次强调：CPU 适合执行固定、快速、规则的查表逻辑，因此页表、异常表、物理内存和虚拟内存都被组织成类似数组的结构。MMU 不能在每次访存时执行复杂数据结构搜索，否则会直接限制 CPU 主频和访存流水线性能。</p>
+<blockquote>
+<p><strong>只使用物理地址会有什么问题？</strong></p>
+<ul>
+<li>物理内存容量有限，多个进程和大程序无法都完整常驻主存。</li>
+<li>程序直接使用物理地址会互相冲突，链接器和加载器必须关心其他程序占用了哪些地址。</li>
+<li>进程缺少隔离，一个程序可能直接读写另一个程序或内核的数据。</li>
+<li>共享库、按需加载、页面换入换出等机制难以统一实现。</li>
+</ul>
+</blockquote>
 <h3 id="地址空间">地址空间</h3>
 <p>地址空间是非负整数地址的有序集合。线性地址空间是连续非负整数地址集合：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;0, 1, 2, 3, ...&#125;</span><br></pre></td></tr></table></figure>
 <p>若虚拟地址有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> 位，则虚拟地址空间大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><msup><mn>2</mn><mi>n</mi></msup></mrow><annotation encoding="application/x-tex">N = 2^n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6644em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span>；若物理地址有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">m</span></span></span></span> 位，则物理地址空间大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mo>=</mo><msup><mn>2</mn><mi>m</mi></msup></mrow><annotation encoding="application/x-tex">M = 2^m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6644em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span></span>。</p>
 <p>每个对象可同时具有：一个物理地址；一个或多个虚拟地址。</p>
+<blockquote>
+<p><strong>思考题：一个物理对象为什么可以有多个虚拟地址？</strong></p>
+<p>解析：</p>
+<ul>
+<li>虚拟地址属于进程私有地址空间，同一物理页可被多个进程的不同 VA 映射。</li>
+<li>共享库代码是典型例子：库文件内容最初在磁盘上，加载后可在物理内存中只保留一份。</li>
+<li>不同进程的页表项可指向同一物理页，从而共享只读代码或共享映射区域。</li>
+<li>每个进程看到的是自己的虚拟地址；真正的数据位置由 PTE 中的物理页号决定。</li>
+</ul>
+</blockquote>
 <p>常见虚拟地址位数：</p>
 <table>
 <thead>
@@ -287,8 +306,7 @@
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625183728596.png" alt=""></p>
 <p>页表由操作系统管理，由 MMU 查询。</p>
 <blockquote>
-<p><strong>思考题：为什么页表适合设计成数组式查表？</strong></p>
-<p>解析：</p>
+<p><strong>为什么页表适合设计成数组式查表？</strong></p>
 <ul>
 <li>硬件需要在极短时间内完成地址翻译，数组索引可以由基地址加偏移直接计算。</li>
 <li>页表项大小固定，VPN 可直接作为索引或被拆成多级索引。</li>
@@ -332,6 +350,25 @@
 <li>OS 根据中断来源找到等待该 I/O 的 page fault 请求，更新页表并恢复被挂起进程。<br>
 <img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625194351906.png" alt=""></li>
 </ol>
+<blockquote>
+<p><strong>换入页面时找不到空闲物理页怎么办？</strong></p>
+<ul>
+<li>OS 必须先选择一个当前不适合继续保留在主存中的 victim page。</li>
+<li>若 victim page 为 dirty，需要先写回磁盘或 swap space。</li>
+<li>写回或丢弃后，该物理页变为空闲页。</li>
+<li>OS 再把目标虚拟页从磁盘、映射文件或匿名零页来源调入该物理页。</li>
+<li>最后更新 faulting page 的 PTE，并恢复 faulting instruction。</li>
+</ul>
+</blockquote>
+<blockquote>
+<p><strong>DMA 完成后为什么需要 interrupt？</strong></p>
+<ul>
+<li>DMA 由 I/O 控制器直接把数据搬到主存，CPU 不需要逐字节参与复制。</li>
+<li>CPU 在 DMA 期间可以运行其他任务，不能一直等待设备完成。</li>
+<li>I/O 控制器完成数据搬运后，通过 interrupt 通知 CPU。</li>
+<li>OS 在中断处理路径中识别对应的 I/O 请求，再恢复等待该页面的进程。</li>
+</ul>
+</blockquote>
 <h3 id="Page-Fault-的三类情况">Page Fault 的三类情况</h3>
 <table>
 <thead>
@@ -362,8 +399,16 @@
 <li><strong>匿名页面</strong>：堆、栈、<code>MAP_ANON</code> 映射没有实际文件来源。OS 可先只分配虚拟地址范围；首次写入时再分配全 0 物理页并填入 PTE。</li>
 </ul>
 <blockquote>
-<p><strong>思考题：Segmentation fault 和普通 page fault 的关系是什么？</strong></p>
-<p>解析：</p>
+<p><strong><code>malloc</code> 申请大块堆空间时，为什么 OS 不立即分配所有物理页？</strong></p>
+<ul>
+<li><code>malloc</code> 可能通过 C 库一次性向 OS 申请较大的虚拟堆区域，但应用实际只使用其中一部分。</li>
+<li>若 OS 立即为整段区域分配物理页，会把未访问区域也占入主存，形成浪费。</li>
+<li>对匿名堆页，OS 可以先建立 VMA 或扩展堆边界，不填实际 PTE。</li>
+<li>当程序执行 <code>memset</code>、<code>memcpy</code> 或普通读写并首次触碰某页时，再通过 demand-zero page fault 分配全 0 物理页。</li>
+</ul>
+</blockquote>
+<blockquote>
+<p><strong>Segmentation fault 和普通 page fault 的关系是什么？</strong></p>
 <ul>
 <li>从 CPU/MMU 角度看，二者都先表现为 page fault exception。</li>
 <li>CPU 不判断该 fault 是否可恢复，只负责转入内核异常处理流程。</li>
@@ -371,30 +416,28 @@
 <li>如果地址未分配、权限不允许，或访问类型非法，OS 才向进程发送 <code>SIGSEGV</code>。</li>
 </ul>
 </blockquote>
-<h3 id="局部性与-Thrashing">局部性与 Thrashing</h3>
 <p>虚拟内存依赖局部性。任意时刻，程序倾向于访问一组活跃虚拟页，称为 working set。</p>
 <ul>
 <li>时间局部性越好，working set 越小。</li>
-<li>若 working set 小于主存容量，程序在强制缺页后可获得较好性能。</li>
+<li>若 working set 小于主存容量，程序在强制缺页（首次访问没有装入过）后可获得较好性能。</li>
 <li>若所有进程 working set 总和大于主存容量，系统会不断换入换出页面，称为 thrashing。</li>
 </ul>
 <h2 id="虚拟内存作为内存管理工具">虚拟内存作为内存管理工具</h2>
-<p>每个进程有自己的虚拟地址空间。进程把内存看成从 0 到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">N-1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> 的线性数组。</p>
 <h3 id="链接与加载">链接与加载</h3>
+<p>每个进程有自己的虚拟地址空间。进程把内存看成从 0 到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">N-1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> 的线性数组。</p>
 <p>因为每个进程看到相似的虚拟地址空间，链接器和加载器可以使用固定布局：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Kernel virtual memory</span><br><span class="line">User stack</span><br><span class="line">Memory-mapped region</span><br><span class="line">Run-time heap</span><br><span class="line">.bss</span><br><span class="line">.data</span><br><span class="line">.text / .rodata</span><br><span class="line">0</span><br></pre></td></tr></table></figure>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625201334606.png" alt="498"></p>
 <p><code>execve</code> 运行新程序时：</p>
 <ol>
 <li>释放旧程序的 <code>vm_area_struct</code> 和页表。</li>
-<li>为新程序创建新的 VM areas 和页表，包括 stack、bss、data、text、shared libraries。</li>
+<li>为新程序创建新的 VM areas 和页表，包括 <code>stack、bss、data、text、shared libraries</code>。</li>
 <li><code>.text</code> 和 <code>.data</code> 由 ELF 可执行文件支持。</li>
 <li><code>.bss</code> 和 stack 初始为 0。</li>
 <li>设置 PC 为 <code>.text</code> 入口。</li>
 <li>代码和数据页面按需调入。</li>
 </ol>
 <blockquote>
-<p><strong>思考题：<code>execve</code> 按需分页的收益是什么？</strong></p>
-<p>解析：</p>
+<p><strong><code>execve</code> 按需分页的收益是什么？</strong></p>
 <ul>
 <li>程序启动时不需要立即把所有代码和数据读入内存。</li>
 <li>只访问过的页面才触发 page fault 并调入。</li>
@@ -411,12 +454,12 @@
 <li>让不同进程使用相同虚拟地址但映射到不同物理页。</li>
 </ul>
 <blockquote>
-<p><strong>例题：同一虚拟页能否先后映射到不同物理页？</strong></p>
+<p><strong>同一虚拟页能否先后映射到不同物理页？</strong></p>
 <p>可以。假设某个虚拟页最初映射到 <code>PP2</code>，之后该页被换出，<code>PP2</code> 被其他用途占用。下一次该虚拟页触发 page fault 时，OS 只需选择新的空闲物理页，例如 <code>PP8</code>，把磁盘或文件中的页面内容调入 <code>PP8</code>，再把 PTE 改为指向 <code>PP8</code>。</p>
 <p>对用户进程而言，虚拟地址不变；变化只发生在 OS 维护的 VA 到 PA 映射中。这是分页管理提供灵活性的核心。</p>
 </blockquote>
-<h3 id="共享代码和数据">共享代码和数据</h3>
-<p>不同进程可把各自虚拟页映射到同一物理页。例如只读共享库代码可由多个进程共享。</p>
+<p>不同进程可把各自虚拟页映射到同一物理页。例如<strong>只读共享库代码</strong>可由多个进程共享。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625201632866.png" alt=""></p>
 <p>共享时，虚拟地址可以不同，但 PTE 指向同一物理页。</p>
 <h2 id="虚拟内存作为保护工具">虚拟内存作为保护工具</h2>
 <p>PTE 可扩展权限位，例如：</p>
@@ -433,6 +476,7 @@
 <li>PTE 权限是否允许该访问。</li>
 </ol>
 <p>若违反权限，内核向进程发送 <code>SIGSEGV</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625202216456.png" alt=""></p>
 <h2 id="地址翻译">地址翻译</h2>
 <p>地址翻译可定义为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>A</mi><mi>P</mi><mo>:</mo><mi>V</mi><mo>→</mo><mi>P</mi><mo>∪</mo><mo stretchy="false">{</mo><mi mathvariant="normal">∅</mi><mo stretchy="false">}</mo></mrow><annotation encoding="application/x-tex">MAP: V \rightarrow P \cup \{\emptyset\}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">∪</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">{</span><span class="mord">∅</span><span class="mclose">}</span></span></span></span>。若 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>A</mi><mi>P</mi><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>a</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup></mrow><annotation encoding="application/x-tex">MAP(a)=a&#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathnormal">a</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7519em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7519em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span></span></span></span>，表示虚拟地址 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">a</span></span></span></span> 对应物理地址 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>a</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup></mrow><annotation encoding="application/x-tex">a&#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7519em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7519em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span></span></span></span>；若 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi><mi>A</mi><mi>P</mi><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo><mo>=</mo><mi mathvariant="normal">∅</mi></mrow><annotation encoding="application/x-tex">MAP(a)=\emptyset</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathnormal">a</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8056em;vertical-align:-0.0556em;"></span><span class="mord">∅</span></span></span></span>，表示该虚拟地址对应数据当前不在物理内存，或地址非法。</p>
 <p>基本参数：</p>
@@ -471,8 +515,26 @@
 <li>由于页内偏移不变，<code>PPO = VPO</code>。</li>
 </ul>
 <blockquote>
-<p><strong>地址翻译例题</strong></p>
-<p>题目条件：</p>
+<p><strong>MMU 如何从 VA 找到 PTE？</strong></p>
+<ul>
+<li>MMU 先把 VA 拆成 VPN 和 VPO。</li>
+<li>页表基地址由控制寄存器提供，x86 中典型为 CR3。</li>
+<li>在单级页表中，<code>PTEA = PTBR + VPN * sizeof(PTE)</code>。</li>
+<li>在多级页表中，VPN 被拆成多段索引，每一级索引都在当前页表页中选择一个 PTE。</li>
+<li>页表本身也存放在物理内存中，因此读取 PTE 可能命中 cache，也可能继续访问主存。</li>
+</ul>
+</blockquote>
+<blockquote>
+<p><strong>PTE 中的 PPN 如何变成 PA？</strong></p>
+<ul>
+<li>PTE 保存的是物理页号 PPN，不需要保存完整物理地址。</li>
+<li>VA 的页内偏移 VPO 在翻译后保持不变，直接作为 PPO。</li>
+<li>最终物理地址由 PPN 与 VPO 拼接得到，即 <code>PA = (PPN &lt;&lt; p) | VPO</code>。</li>
+<li>这里是按位拼接，不是把完整物理地址和 offset 简单相加。</li>
+</ul>
+</blockquote>
+<blockquote>
+<p><strong>地址翻译示例：</strong></p>
 <ul>
 <li>14-bit virtual address。</li>
 <li>12-bit physical address。</li>
@@ -480,97 +542,7 @@
 <li>页表只展示前 16 项。</li>
 </ul>
 <p>页表：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:right">VPN</th>
-<th style="text-align:right">PPN</th>
-<th style="text-align:right">Valid</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:right">0x00</td>
-<td style="text-align:right">0x28</td>
-<td style="text-align:right">1</td>
-</tr>
-<tr>
-<td style="text-align:right">0x01</td>
-<td style="text-align:right">-</td>
-<td style="text-align:right">0</td>
-</tr>
-<tr>
-<td style="text-align:right">0x02</td>
-<td style="text-align:right">0x33</td>
-<td style="text-align:right">1</td>
-</tr>
-<tr>
-<td style="text-align:right">0x03</td>
-<td style="text-align:right">0x02</td>
-<td style="text-align:right">1</td>
-</tr>
-<tr>
-<td style="text-align:right">0x04</td>
-<td style="text-align:right">-</td>
-<td style="text-align:right">0</td>
-</tr>
-<tr>
-<td style="text-align:right">0x05</td>
-<td style="text-align:right">0x16</td>
-<td style="text-align:right">1</td>
-</tr>
-<tr>
-<td style="text-align:right">0x06</td>
-<td style="text-align:right">-</td>
-<td style="text-align:right">0</td>
-</tr>
-<tr>
-<td style="text-align:right">0x07</td>
-<td style="text-align:right">-</td>
-<td style="text-align:right">0</td>
-</tr>
-<tr>
-<td style="text-align:right">0x08</td>
-<td style="text-align:right">0x13</td>
-<td style="text-align:right">1</td>
-</tr>
-<tr>
-<td style="text-align:right">0x09</td>
-<td style="text-align:right">0x17</td>
-<td style="text-align:right">1</td>
-</tr>
-<tr>
-<td style="text-align:right">0x0A</td>
-<td style="text-align:right">0x09</td>
-<td style="text-align:right">1</td>
-</tr>
-<tr>
-<td style="text-align:right">0x0B</td>
-<td style="text-align:right">-</td>
-<td style="text-align:right">0</td>
-</tr>
-<tr>
-<td style="text-align:right">0x0C</td>
-<td style="text-align:right">-</td>
-<td style="text-align:right">0</td>
-</tr>
-<tr>
-<td style="text-align:right">0x0D</td>
-<td style="text-align:right">0x2D</td>
-<td style="text-align:right">1</td>
-</tr>
-<tr>
-<td style="text-align:right">0x0E</td>
-<td style="text-align:right">0x11</td>
-<td style="text-align:right">1</td>
-</tr>
-<tr>
-<td style="text-align:right">0x0F</td>
-<td style="text-align:right">0x0D</td>
-<td style="text-align:right">1</td>
-</tr>
-</tbody>
-</table>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625202524922.png" alt=""></p>
 <p>问题：翻译虚拟地址 <code>0x03D4</code>。</p>
 <p>解析：</p>
 <ol>
@@ -582,9 +554,9 @@
 <li>物理地址为 <code>(PPN &lt;&lt; 6) | VPO = (0x0D &lt;&lt; 6) | 0x14 = 0x354</code>。</li>
 </ol>
 <p>结论：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">VPN = 0x0F</span><br><span class="line">VPO = 0x14</span><br><span class="line">PPN = 0x0D</span><br><span class="line">PPO = 0x14</span><br><span class="line">Page Fault = No</span><br><span class="line">PA = 0x354</span><br></pre></td></tr></table></figure>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625202707426.png" alt=""></p>
 </blockquote>
-<h2 id="Cache、TLB-与-VM">Cache、TLB 与 VM</h2>
+<h2 id="TLB-加速">TLB 加速</h2>
 <p>多数 cache 使用物理地址访问。这样可以：</p>
 <ul>
 <li>允许多个进程的 cache block 同时存在。</li>
@@ -593,18 +565,8 @@
 <li>进程切换时不必清空 cache，因为物理地址不会因进程不同而产生歧义。</li>
 </ul>
 <p>问题是：cache lookup 前需要先完成地址翻译，而地址翻译本身可能访问内存中的 PTE。</p>
-<blockquote>
-<p><strong>思考题：为什么 cache 通常不直接按虚拟地址访问？</strong></p>
-<p>解析：</p>
-<ul>
-<li>虚拟地址属于进程私有地址空间，不同进程的同一 VA 可映射到不同 PA。</li>
-<li>如果 cache 直接以 VA 标识数据，进程切换时可能需要 flush cache，代价远高于 flush TLB。</li>
-<li>TLB 只缓存地址翻译项，容量较小；cache 保存真实数据，容量大得多，频繁 flush 会严重影响性能。</li>
-<li>使用物理地址可让不同进程的 cache line 同时存在，也可自然支持共享物理页。</li>
-</ul>
-</blockquote>
-<h3 id="TLB">TLB</h3>
-<p>TLB（Translation Lookaside Buffer）是 MMU 内的小型硬件缓存，用于缓存 VPN 到 PPN 的映射。</p>
+<p>TLB（Translation Lookaside Buffer）是 MMU 内的小型硬件缓存，用于缓存 VPN 到 PPN 的映射。MMU 通过 PTEA 访问映射表的时候，返回的 PTE 可以缓存在 TLB 中，进行地址翻译的时候如果 hit 则可以直接传递 PA 访问物理内存，而不是到 PTE 重复取映射关系。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625204008575.png" alt=""></p>
 <ul>
 <li>TLB hit 可避免访问内存中的 PTE。</li>
 <li>TLB miss 需要额外访问页表。</li>
@@ -615,50 +577,28 @@
 <li><strong>Page fault</strong>：页表检查失败，常见原因是 PTE 不 present、地址未分配或权限不合法，需要进入 OS handler。</li>
 </ul>
 <p>在多级页表下，TLB miss 的代价更高。若 x86-64 四级页表全部需要访问内存，地址翻译本身最多需要读取 4 个页表项；再加上最终数据访问，本来一次访存可能变为多次内存访问。因此 TLB 是多级页表可接受的关键条件。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625204312777.png" alt=""></p>
+<p>加入 TLB 的 VPN 被切分成 TLBT 和 TLBI 两部分，物理地址则保持不变。翻译流程如下：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625204603342.png" alt=""></p>
 <blockquote>
-<p><strong>思考题：为什么 TLB miss 通常不频繁？</strong></p>
-<p>解析：</p>
+<p><strong>为什么 cache 通常不直接按虚拟地址访问？</strong></p>
+<ul>
+<li>虚拟地址属于进程私有地址空间，不同进程的同一 VA 可映射到不同 PA。</li>
+<li>如果 cache 直接以 VA 标识数据，进程切换时可能需要 flush cache，代价远高于 flush TLB。</li>
+<li>TLB 只缓存地址翻译项，容量较小；cache 保存真实数据，容量大得多，频繁 flush 会严重影响性能。</li>
+<li>使用物理地址可让不同进程的 cache line 同时存在，也可自然支持共享物理页。</li>
+</ul>
+</blockquote>
+<blockquote>
+<p><strong>为什么 TLB miss 通常不频繁？</strong></p>
 <ul>
 <li>程序具有时间局部性，会反复访问同一批虚拟页。</li>
 <li>程序具有空间局部性，一个页面包含多个相邻字节，一次 TLB entry 可覆盖整个页。</li>
 <li>常用页面集中在 working set 中，TLB 可缓存其中的热页映射。</li>
 </ul>
 </blockquote>
-<blockquote>
-<p><strong>TLB 与 Cache 联合例题</strong></p>
-<p>题目条件：</p>
-<ul>
-<li>14-bit virtual address。</li>
-<li>12-bit physical address。</li>
-<li>page size = 64 bytes。</li>
-<li>TLB：16 entries，4-way set associative，因此共有 4 个 set，TLBI 为 2 位。</li>
-<li>Cache：16 lines，4-byte line size，direct mapped。</li>
-</ul>
-<p>虚拟地址：<code>0x03D4</code>。</p>
-<p><strong>第一步：拆分 VA</strong></p>
-<p>页面大小为 64 bytes，因此：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">VPN = 0x0F</span><br><span class="line">VPO = 0x14</span><br></pre></td></tr></table></figure>
-<p>TLB 有 4 个 set，因此 TLBI 使用 VPN 低 2 位：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TLBI = VPN &amp; 0x3 = 0x03</span><br><span class="line">TLBT = VPN &gt;&gt; 2 = 0x03</span><br></pre></td></tr></table></figure>
-<p>查 TLB set 3，存在 valid entry：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Tag = 0x03</span><br><span class="line">PPN = 0x0D</span><br><span class="line">Valid = 1</span><br></pre></td></tr></table></figure>
-<p>所以：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TLB Hit = Yes</span><br><span class="line">Page Fault = No</span><br></pre></td></tr></table></figure>
-<p><strong>第二步：形成物理地址</strong></p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PA = (0x0D &lt;&lt; 6) | 0x14 = 0x354</span><br></pre></td></tr></table></figure>
-<p><strong>第三步：访问 Cache</strong></p>
-<p>Cache line size 为 4 bytes，因此 block offset 为 2 位。Cache 有 16 lines，因此 index 为 4 位。</p>
-<p>对物理地址 <code>0x354</code>：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CO = 0x354 &amp; 0x3 = 0x0</span><br><span class="line">CI = (0x354 &gt;&gt; 2) &amp; 0xF = 0x5</span><br><span class="line">CT = 0x354 &gt;&gt; 6 = 0x0D</span><br></pre></td></tr></table></figure>
-<p>查 cache index 5：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Tag = 0x0D</span><br><span class="line">Valid = 1</span><br><span class="line">B0 = 0x36</span><br><span class="line">B1 = 0x72</span><br><span class="line">B2 = 0xF0</span><br><span class="line">B3 = 0x1D</span><br></pre></td></tr></table></figure>
-<p>tag 匹配且 valid 为 1，因此 cache hit。<code>CO=0</code>，读取 <code>B0=0x36</code>。</p>
-<p>结论：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">VA  = 0x03D4</span><br><span class="line">PA  = 0x354</span><br><span class="line">TLB = hit</span><br><span class="line">Cache = hit</span><br><span class="line">Byte = 0x36</span><br></pre></td></tr></table></figure>
-</blockquote>
 <h2 id="多级页表">多级页表</h2>
-<p>单级页表在大地址空间下占用过大。</p>
-<p>例如：</p>
+<p>单级页表在大地址空间下占用过大：</p>
 <ul>
 <li>x86 32-bit，4KB page，4-byte PTE：VPN 为 20 位，需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>20</mn></msup></mrow><annotation encoding="application/x-tex">2^{20}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">20</span></span></span></span></span></span></span></span></span></span></span></span> 个 PTE，总大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>20</mn></msup><mo>×</mo><mn>4</mn><mo>=</mo><mn>4</mn></mrow><annotation encoding="application/x-tex">2^{20}\times4=4</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">20</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span> MB。</li>
 <li>x86-64 48-bit effective VA，4KB page，8-byte PTE：VPN 为 36 位，需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>36</mn></msup></mrow><annotation encoding="application/x-tex">2^{36}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">36</span></span></span></span></span></span></span></span></span></span></span></span> 个 PTE，总大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>36</mn></msup><mo>×</mo><mn>8</mn><mo>=</mo><mn>512</mn></mrow><annotation encoding="application/x-tex">2^{36}\times8=512</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">36</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">8</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">512</span></span></span></span> GB。</li>
@@ -669,8 +609,18 @@
 <li><strong>按需分配页表页</strong>：只有已分配虚拟区域对应的下级页表页需要存在；未分配区域不需要二级或更低级页表。</li>
 <li><strong>避免大块连续物理内存</strong>：单级页表必须是一段连续数组；多级页表只要求每个页表页自身连续，不同页表页可放在任意物理页中。</li>
 </ul>
+<blockquote>
+<p><strong>多级页表为什么既能覆盖完整地址空间，又能节省空间？</strong></p>
+<ul>
+<li>若所有下级页表页都存在，多级页表的索引组合仍可覆盖完整虚拟地址空间。</li>
+<li>以 32-bit <code>10-10-12</code> 为例，一级 10 位、二级 10 位、页内偏移 12 位，总计 32 位。</li>
+<li>节省空间不是因为覆盖能力变小，而是因为未分配虚拟区域的下级页表页可以不创建。</li>
+<li>若地址空间被密集使用，多级页表需要大量下级页表页，还会额外引入中间层开销。</li>
+</ul>
+</blockquote>
 <h3 id="x86-32-两级页表">x86-32 两级页表</h3>
 <p>32-bit 地址，4KB page，4-byte PTE 时，地址可按 <code>10-10-12</code> 划分：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625210518466.png" alt=""></p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">| Level-1 index: 10 | Level-2 index: 10 | Offset: 12 |</span><br></pre></td></tr></table></figure>
 <ul>
 <li>一级页表有 1024 项，每项指向一个二级页表。</li>
@@ -680,90 +630,50 @@
 <p>这里的字段宽度来自页表页大小和 PTE 大小的匹配：一个页表页为 4KB，32-bit PTE 为 4 bytes，因此一个页表页可容纳 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4096</mn><mi mathvariant="normal">/</mi><mn>4</mn><mo>=</mo><mn>1024</mn><mo>=</mo><msup><mn>2</mn><mn>10</mn></msup></mrow><annotation encoding="application/x-tex">4096/4=1024=2^{10}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">4096/4</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1024</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">10</span></span></span></span></span></span></span></span></span></span></span></span> 个 entry，需要 10 位索引。4KB page 的页内偏移为 12 位，所以 32-bit VA 剩余 20 位可拆成两级 <code>10+10</code>。</p>
 <p>两级页表仍保持数组式查表：CR3 或页表基址寄存器给出一级页表页的物理基地址，一级索引找到 PDE，PDE 给出二级页表页地址，二级索引找到最终 PTE。</p>
 <blockquote>
-<p><strong>例题：两级页表骨架</strong></p>
-<p>题目：</p>
-<p>在 32-bit 机器上使用 <code>10-10-12</code> 两级页表。进程有：</p>
+<p><strong>为什么 <code>10-10-12</code> 中两个索引都是 10 位？</strong></p>
 <ul>
-<li>code segment：48KB，从 <code>0x01000000</code> 开始。</li>
-<li>data segment：600KB，从 <code>0x80000000</code> 开始。</li>
-<li>stack segment：64KB，从 <code>0xF0000000</code> 开始，并向高地址增长。</li>
-</ul>
-<p>求页表骨架。</p>
-<p>解析：</p>
-<ol>
-<li>页面大小为 4KB，因此 offset 为 12 位。</li>
-<li>code 大小 <code>48KB = 12</code> 页。</li>
-<li>data 大小 <code>600KB = 150</code> 页。</li>
-<li>stack 大小 <code>64KB = 16</code> 页。</li>
-</ol>
-<p>计算起始地址索引：</p>
-<table>
-<thead>
-<tr>
-<th>段</th>
-<th style="text-align:right">起始地址</th>
-<th style="text-align:right">PDE index</th>
-<th style="text-align:right">起始 PTE index</th>
-<th style="text-align:right">页数</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>code</td>
-<td style="text-align:right"><code>0x01000000</code></td>
-<td style="text-align:right"><code>0x004</code></td>
-<td style="text-align:right"><code>0x000</code></td>
-<td style="text-align:right">12</td>
-</tr>
-<tr>
-<td>data</td>
-<td style="text-align:right"><code>0x80000000</code></td>
-<td style="text-align:right"><code>0x200</code></td>
-<td style="text-align:right"><code>0x000</code></td>
-<td style="text-align:right">150</td>
-</tr>
-<tr>
-<td>stack</td>
-<td style="text-align:right"><code>0xF0000000</code></td>
-<td style="text-align:right"><code>0x3C0</code></td>
-<td style="text-align:right"><code>0x000</code></td>
-<td style="text-align:right">16</td>
-</tr>
-</tbody>
-</table>
-<p>因此页表骨架为：</p>
-<ul>
-<li>一级页表中 <code>PDE[0x004]</code> 指向 code 的二级页表，使用 <code>PTE[0..11]</code>。</li>
-<li>一级页表中 <code>PDE[0x200]</code> 指向 data 的二级页表，使用 <code>PTE[0..149]</code>。</li>
-<li>一级页表中 <code>PDE[0x3C0]</code> 指向 stack 的二级页表，使用 <code>PTE[0..15]</code>。</li>
-<li>其余未分配范围不需要创建对应二级页表。</li>
+<li>32-bit 机器中 PTE 可用 4 bytes 表示。</li>
+<li>一个页表页大小为 4KB，因此可存放 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4</mn><mtext>KB</mtext><mi mathvariant="normal">/</mi><mn>4</mn><mtext>B</mtext><mo>=</mo><mn>1024</mn></mrow><annotation encoding="application/x-tex">4\text{KB}/4\text{B}=1024</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">4</span><span class="mord text"><span class="mord">KB</span></span><span class="mord">/4</span><span class="mord text"><span class="mord">B</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1024</span></span></span></span> 个 PTE。</li>
+<li>索引 1024 个 entry 正好需要 10 位。</li>
+<li>offset 为 12 位来自 4KB page size，剩余 20 位自然拆成两个 10 位索引。</li>
 </ul>
 </blockquote>
-<h2 id="x86-64-四级页表">x86-64 四级页表</h2>
+<h3 id="x86-64-四级页表">x86-64 四级页表</h3>
 <p>x86-64 当前常用 48-bit effective virtual address。64-bit 虚拟地址需满足 canonical address 规则：高 16 位必须复制第 47 位。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625211618292.png" alt=""></p>
 <p>48-bit 地址划分：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">| 63:48 | 47:39 | 38:30 | 29:21 | 20:12 | 11:0 |</span><br><span class="line">| sign  | L1    | L2    | L3    | L4    | offset |</span><br></pre></td></tr></table></figure>
 <p>每级索引 9 位，每个页表页大小为 4KB，每个 PTE 为 8 bytes，因此每个页表页有 512 项。</p>
 <p>CR3 寄存器保存一级页表页的物理基地址。页表项中保存下一级页表页或最终物理页的物理地址。</p>
 <p>9 位索引同样来自页表页容量：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4096</mn><mi mathvariant="normal">/</mi><mn>8</mn><mo>=</mo><mn>512</mn><mo>=</mo><msup><mn>2</mn><mn>9</mn></msup></mrow><annotation encoding="application/x-tex">4096/8=512=2^9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">4096/8</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">512</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">9</span></span></span></span></span></span></span></span></span></span></span>。因此一个 48-bit effective VA 可拆成 4 级索引和 12 位 offset，即 <code>9-9-9-9-12</code>。高 16 位不参与普通 48-bit 地址翻译，只用于 canonical address 检查。</p>
 <blockquote>
-<p><strong>思考题：页表项中保存的是物理地址还是虚拟地址？</strong></p>
-<p>答案：物理地址。硬件页表遍历发生在地址翻译过程中，不能依赖尚未翻译的虚拟地址。</p>
+<p><strong>四级页表中每一级最多有多少个页表页？</strong></p>
+<ul>
+<li>顶级页表页只有 1 个，其物理基地址由 CR3 保存。</li>
+<li>第二级最多有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>512</mn></mrow><annotation encoding="application/x-tex">512</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">512</span></span></span></span> 个页表页，因为顶级页表页最多有 512 个 entry。</li>
+<li>第三级最多有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>512</mn><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">512^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord">51</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> 个页表页。</li>
+<li>第四级最多有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>512</mn><mn>3</mn></msup></mrow><annotation encoding="application/x-tex">512^3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord">51</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span></span></span></span> 个页表页。</li>
+<li>每个页表页内有 512 个 PTE，这是“页表页数量”和“页表项数量”的区别。</li>
+</ul>
 </blockquote>
-<h3 id="四级页表覆盖范围">四级页表覆盖范围</h3>
+<blockquote>
+<p><strong>页表项中保存的是物理地址还是虚拟地址？</strong></p>
+<p>物理地址。硬件页表遍历发生在地址翻译过程中，不能依赖尚未翻译的虚拟地址。</p>
+</blockquote>
 <p>每个 L4 页表页可映射 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>512</mn><mo>×</mo><mn>4</mn><mtext>KB</mtext><mo>=</mo><mn>2</mn><mtext>MB</mtext></mrow><annotation encoding="application/x-tex">512 \times 4\text{KB} = 2\text{MB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">512</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">4</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">2</span><span class="mord text"><span class="mord">MB</span></span></span></span></span>。每个 L3 entry 覆盖一个 L4 页表页可映射的范围，即 2MB。</p>
 <p>若只分配一条完整页表路径：L1、L2、L3、L4 各一个页表页，总页表大小为 16KB。此时若 L4 表中 512 项都填写，可以翻译一个 2MB 连续虚拟地址范围。</p>
 <blockquote>
-<p><strong>例题：稀疏虚拟页的页表开销</strong></p>
-<p>题目：进程只用到虚拟页 <code>0</code>、<code>1</code>、<code>2^36-1</code>。</p>
+<p><strong>稀疏虚拟页的页表开销：</strong></p>
+<p>如果进程只用到虚拟页 <code>0</code>、<code>1</code>、<code>2^36-1</code>。</p>
 <p>单级页表：</p>
 <ul>
 <li>48-bit VA，4KB page，因此 VPN 为 36 位。</li>
-<li>需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>36</mn></msup></mrow><annotation encoding="application/x-tex">2^{36}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">36</span></span></span></span></span></span></span></span></span></span></span></span> 个 PTE。</li>
+<li>由于页表视为一个连续的大数组，因此中间的全部 PTE 不能跳过，需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>36</mn></msup></mrow><annotation encoding="application/x-tex">2^{36}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">36</span></span></span></span></span></span></span></span></span></span></span></span> 个 PTE。</li>
 <li>每个 PTE 为 8 bytes。</li>
 </ul>
 <p>总大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>36</mn></msup><mo>×</mo><mn>8</mn><mo>=</mo><msup><mn>2</mn><mn>39</mn></msup><mtext> bytes</mtext><mo>=</mo><mn>512</mn><mtext>GB</mtext></mrow><annotation encoding="application/x-tex">2^{36}\times8=2^{39}\text{ bytes}=512\text{GB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">36</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">8</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0085em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">39</span></span></span></span></span></span></span></span></span><span class="mord text"><span class="mord"> bytes</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">512</span><span class="mord text"><span class="mord">GB</span></span></span></span></span>。</p>
 <p>四级页表：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625212827984.png" alt=""></p>
 <ul>
 <li>虚拟页 0 和 1 在同一路径下，共享 L1、L2、L3、L4 页表页。</li>
 <li>虚拟页 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>36</mn></msup><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">2^{36}-1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8974em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">36</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> 对应全 1 索引，需要另一条 L2、L3、L4 路径。</li>
@@ -773,7 +683,7 @@
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1 个 L1</span><br><span class="line">2 个 L2</span><br><span class="line">2 个 L3</span><br><span class="line">2 个 L4</span><br><span class="line">共 7 个页表页</span><br></pre></td></tr></table></figure>
 <p>总大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>7</mn><mo>×</mo><mn>4</mn><mtext>KB</mtext><mo>=</mo><mn>28</mn><mtext>KB</mtext></mrow><annotation encoding="application/x-tex">7\times4\text{KB}=28\text{KB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">7</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">4</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">28</span><span class="mord text"><span class="mord">KB</span></span></span></span></span>。</p>
 <blockquote>
-<p><strong>思考题：多级页表一定比单级页表省内存吗？</strong></p>
+<p><strong>多级页表一定比单级页表省内存吗？</strong></p>
 <p>不一定。</p>
 <p>解析：</p>
 <ul>
@@ -784,7 +694,7 @@
 </blockquote>
 </blockquote>
 <blockquote>
-<p><strong>例题：拆分虚拟地址 <code>0xFFF8080604FFF</code></strong></p>
+<p><strong>拆分虚拟地址 <code>0xFFF8080604FFF</code></strong></p>
 <p>按 x86-64 低 48 位字段拆分：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">L1 index = (VA &gt;&gt; 39) &amp; 0x1FF = 0x1FF</span><br><span class="line">L2 index = (VA &gt;&gt; 30) &amp; 0x1FF = 0x002</span><br><span class="line">L3 index = (VA &gt;&gt; 21) &amp; 0x1FF = 0x003</span><br><span class="line">L4 index = (VA &gt;&gt; 12) &amp; 0x1FF = 0x004</span><br><span class="line">offset   = VA &amp; 0xFFF        = 0xFFF</span><br></pre></td></tr></table></figure>
 <p>因此：</p>
@@ -821,7 +731,7 @@
 <p>若将其视为完整 64-bit canonical address，需要保证高 16 位等于第 47 位的复制。该地址第 47 位为 1，所以完整 canonical 形式应补高位 1。</p>
 </blockquote>
 <blockquote>
-<p><strong>例题：映射虚拟地址 <code>0 ~ 16MB</code> 需要多少页表空间？</strong></p>
+<p><strong>映射虚拟地址 <code>0 ~ 16MB</code> 需要多少页表空间？</strong></p>
 <p>按 4KB page，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16</mn><mtext>MB</mtext><mi mathvariant="normal">/</mi><mn>4</mn><mtext>KB</mtext><mo>=</mo><mn>4096</mn><mtext> pages</mtext></mrow><annotation encoding="application/x-tex">16\text{MB}/4\text{KB}=4096\text{ pages}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">16</span><span class="mord text"><span class="mord">MB</span></span><span class="mord">/4</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">4096</span><span class="mord text"><span class="mord"> pages</span></span></span></span></span>。</p>
 <p>一个 L4 页表页有 512 个 PTE，可映射 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>512</mn><mo>×</mo><mn>4</mn><mtext>KB</mtext><mo>=</mo><mn>2</mn><mtext>MB</mtext></mrow><annotation encoding="application/x-tex">512\times4\text{KB}=2\text{MB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">512</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">4</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">2</span><span class="mord text"><span class="mord">MB</span></span></span></span></span>。映射 16MB 需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16</mn><mtext>MB</mtext><mi mathvariant="normal">/</mi><mn>2</mn><mtext>MB</mtext><mo>=</mo><mn>8</mn><mtext> 个 L4 页表页</mtext></mrow><annotation encoding="application/x-tex">16\text{MB}/2\text{MB}=8\text{ 个 L4 页表页}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">16</span><span class="mord text"><span class="mord">MB</span></span><span class="mord">/2</span><span class="mord text"><span class="mord">MB</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">8</span><span class="mord text"><span class="mord"> </span><span class="mord cjk_fallback">个</span><span class="mord"> L4 </span><span class="mord cjk_fallback">页表页</span></span></span></span></span>。</p>
 <p>这些 L4 页表页由同一个 L3 页表页的 8 个 entry 指向。更高层只需要一个 L2 页表页和一个 L1 页表页。</p>
@@ -830,24 +740,29 @@
 <p>总大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>11</mn><mo>×</mo><mn>4</mn><mtext>KB</mtext><mo>=</mo><mn>44</mn><mtext>KB</mtext></mrow><annotation encoding="application/x-tex">11\times4\text{KB}=44\text{KB}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">11</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">4</span><span class="mord text"><span class="mord">KB</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">44</span><span class="mord text"><span class="mord">KB</span></span></span></span></span>。</p>
 <p>若题目把地址 <code>16MB</code> 所在页面也包含进去，则还需要第 9 个 L4 页表页，总计 48KB。通常区间 <code>0 ~ 16MB</code> 表示 <code>[0,16MB)</code>，答案为 44KB。</p>
 </blockquote>
-<h2 id="Core-i7-内存系统与-PTE">Core i7 内存系统与 PTE</h2>
-<p>典型 Core i7 / Skylake 内存系统包括：</p>
-<ul>
-<li>L1 d-cache：32KB，8-way。</li>
-<li>L1 i-cache：32KB，8-way。</li>
-<li>L2 unified cache：256KB，8-way。</li>
-<li>L3 unified cache：8MB，16-way，所有 core 共享。</li>
-<li>L1 d-TLB：64 entries，4-way。</li>
-<li>L1 i-TLB：64 entries，4-way。</li>
-<li>L2 unified TLB：1536 entries，12-way。</li>
-</ul>
+<h2 id="Core-i7-内存系统">Core i7 内存系统</h2>
+<h3 id="系统结构">系统结构</h3>
+<p>Core i7 / Skylake 内存系统如下：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625213900728.png" alt=""></p>
 <p>L1 cache 和 L1 TLB 都区分 instruction 与 data：</p>
 <ul>
 <li>instruction fetch 使用 PC 作为虚拟地址，经过 i-TLB 与 i-cache。</li>
 <li>load/store 使用指令中的有效地址，经过 d-TLB 与 d-cache。</li>
 <li>两类访问模式不同，分离后可降低互相干扰，并提高取指和数据访问的并行度。</li>
 </ul>
+<p>地址翻译如下：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625214758352.png" alt=""></p>
+<blockquote>
+<p><strong>为什么要区分 i-TLB / d-TLB 和 i-cache / d-cache？</strong></p>
+<ul>
+<li>取指和数据访问可以并行发生，分离结构可减少结构冲突。</li>
+<li>instruction access 通常更顺序，data access 可能更随机，两者访问模式不同。</li>
+<li>分离后，数据访问的局部性变化不容易污染取指缓存。</li>
+<li>更低层可使用 unified TLB/cache，在容量和共享性上折中。</li>
+</ul>
+</blockquote>
 <p>PTE 中常见位：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625215054986.png" alt=""></p>
 <table>
 <thead>
 <tr>
@@ -899,15 +814,27 @@
 </tbody>
 </table>
 <p>当 <code>P=0</code> 时，PTE 中部分位可由 OS 用于记录页面在二级存储中的位置。</p>
-<h3 id="VIPT-技巧">VIPT 技巧</h3>
+<blockquote>
+<p><strong>PTE 为什么保存 PPN 而不是完整 PA？</strong></p>
+<ul>
+<li>页面大小为 4KB 时，物理地址低 12 位是页内偏移 PPO。</li>
+<li>PPO 与虚拟地址中的 VPO 相同，不需要保存在 PTE 中。</li>
+<li>PTE 只需保存高位物理页号 PPN，再与 VPO 拼接即可形成 PA。</li>
+<li>省下的低位和其他位可用于 present、permission、accessed、dirty 等控制信息。</li>
+</ul>
+</blockquote>
+<h3 id="VIPT-加速">VIPT 加速</h3>
 <p>L1 cache 可采用 Virtually Indexed, Physically Tagged（VIPT）：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625215323783.png" alt=""></p>
 <ul>
 <li>cache index 所需位与虚拟地址和物理地址相同，因为这些位位于页内偏移或不受翻译影响的范围。</li>
 <li>cache 可在地址翻译同时用 VA 取 index。</li>
 <li>TLB 命中后得到 PPN，再用物理 tag 比较。</li>
 </ul>
 <p>该设计可隐藏一部分翻译延迟，但要求 L1 cache 大小和相联度满足索引位不跨越页号变化范围。</p>
+<blockquote>
 <p>以 4KB page 为例，VPO/PPO 为 12 位。若 L1 cache line 为 64 bytes，则 block offset 需要 6 位；若 cache 有 64 个 set，则 cache index 需要 6 位。<code>CO + CI = 12</code>，两者完全落在页内偏移中，因此 VA 与 PA 的这 12 位相同。</p>
+</blockquote>
 <p>访问过程可以并行执行：</p>
 <ol>
 <li>用 VA 的 VPN 查询 TLB，获得 PPN。</li>
@@ -916,8 +843,9 @@
 <li>用物理 tag 与所选 set 中各 way 的 tag 比较。</li>
 </ol>
 <p>若 <code>CO + CI</code> 超过 page offset 位数，cache index 会依赖 VPN 中的位，不同虚拟地址别名可能指向同一物理页但落入不同 cache set，设计会更复杂。</p>
-<h2 id="Linux-虚拟内存区域">Linux 虚拟内存区域</h2>
+<h2 id="Linux-虚拟内存">Linux 虚拟内存</h2>
 <p>Linux 将进程虚拟内存组织为一组 area。相关数据结构包括：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625221001090.png" alt=""></p>
 <ul>
 <li><code>task_struct</code>：进程描述符。</li>
 <li><code>mm_struct</code>：描述进程地址空间。</li>
@@ -967,8 +895,7 @@
 <li>若地址和权限合法，执行缺页处理，例如 demand paging 或 COW。</li>
 </ol>
 <blockquote>
-<p><strong>思考题：为什么 page fault handler 需要先查 VMA？</strong></p>
-<p>解析：</p>
+<p><strong>为什么 page fault handler 需要先查 VMA？</strong></p>
 <ul>
 <li>页表只回答“当前是否有有效映射”，不能单独说明该地址是否属于进程合法地址空间。</li>
 <li>VMA 描述了已分配虚拟区域、权限和 backing object。</li>
@@ -976,21 +903,23 @@
 <li>若 VA 属于 VMA 但 PTE 不 present，则可能是 demand paging、file-backed mapping 或 COW，可由 OS 恢复。</li>
 </ul>
 </blockquote>
-<h2 id="Memory-Mapping">Memory Mapping</h2>
+<h3 id="Memory-Mapping">Memory Mapping</h3>
+<h4 id="文件映射">文件映射</h4>
 <p>Linux 通过 memory mapping 将 VM area 与磁盘对象关联，区域初始内容来自被映射对象。</p>
 <p>可映射对象：</p>
 <ul>
-<li>regular file，例如 ELF executable object file。</li>
+<li>regular file，例如 ELF executable object file，映射不等于立刻读入物理内存。它指示将来如果程序访问这段虚拟地址，内容应该从哪个文件位置取得。</li>
 <li>anonymous file，表示没有实际文件，首次缺页时分配全 0 物理页。</li>
 </ul>
-<p>dirty page 可在内存和 swap file 之间换入换出。swap file 由内核维护，也称 swap space 或 swap area。</p>
-<p>关键点：</p>
+<p>dirty page 可在内存和 swap file 之间换入换出。swap file 由内核维护，存储栈、堆等结构对应的匿名页，也称 swap space 或 swap area。</p>
 <blockquote>
-<p>虚拟页在被引用前不会复制到物理内存，这称为 demand paging。</p>
+<p>虚拟页在被引用前不会复制到物理内存，这称为 demand paging。Linux 不会在程序刚启动时，把整个程序文件、所有库、所有堆栈空间都读进内存，而是等页面真正被访问时再调入。</p>
 </blockquote>
-<h2 id="mmap">mmap</h2>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">进程虚拟地址空间</span><br><span class="line">┌────────────────────┐</span><br><span class="line">│ text VM area       │ → regular file: ELF text segment</span><br><span class="line">├────────────────────┤</span><br><span class="line">│ rodata VM area     │ → regular file: ELF rodata segment</span><br><span class="line">├────────────────────┤</span><br><span class="line">│ data VM area       │ → regular file: ELF data segment</span><br><span class="line">├────────────────────┤</span><br><span class="line">│ bss VM area        │ → anonymous file，初始全 0</span><br><span class="line">├────────────────────┤</span><br><span class="line">│ heap VM area       │ → anonymous file，初始全 0</span><br><span class="line">├────────────────────┤</span><br><span class="line">│ mmap file area     │ → regular file</span><br><span class="line">├────────────────────┤</span><br><span class="line">│ stack VM area      │ → anonymous file，初始全 0</span><br><span class="line">└────────────────────┘</span><br></pre></td></tr></table></figure>
+<h4 id="mmap"><code>mmap</code></h4>
 <p>用户可通过 <code>mmap</code> 创建新的内存映射区域：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">mmap</span><span class="params">(<span class="type">void</span> *start, <span class="type">int</span> len, <span class="type">int</span> prot,</span></span><br><span class="line"><span class="params">           <span class="type">int</span> flags, <span class="type">int</span> fd, <span class="type">int</span> offset)</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260625224756340.png" alt=""></p>
 <p>含义：</p>
 <ul>
 <li>从文件描述符 <code>fd</code> 指定的文件中，自 <code>offset</code> 开始映射 <code>len</code> bytes。</li>
@@ -999,13 +928,12 @@
 <li><code>flags</code> 指定映射类型，例如 <code>MAP_PRIVATE</code>、<code>MAP_SHARED</code>。</li>
 <li>返回映射区域指针。</li>
 </ul>
-<h3 id="mmap-快速文件复制">mmap 快速文件复制</h3>
+<h4 id="mmap-快速文件复制"><code>mmap</code> 快速文件复制</h4>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mmapcopy</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">char</span> *bufp;</span><br><span class="line"></span><br><span class="line">    bufp = mmap(<span class="number">0</span>, size, PROT_READ, MAP_PRIVATE, fd, <span class="number">0</span>);</span><br><span class="line">    write(<span class="number">1</span>, bufp, size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>主程序：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">stat</span>;</span></span><br><span class="line">    <span class="type">int</span> fd;</span><br><span class="line"></span><br><span class="line">    fd = open(argv[<span class="number">1</span>], O_RDONLY, <span class="number">0</span>);</span><br><span class="line">    fstat(fd, &amp;stat);</span><br><span class="line">    mmapcopy(fd, stat.st_size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p><strong>思考题：为什么 <code>mmapcopy</code> 更快？</strong></p>
-<p>解析：</p>
+<p><strong>为什么 <code>mmapcopy</code> 更快？</strong></p>
 <ul>
 <li>传统 <code>read</code> 需要把文件数据从内核缓冲复制到用户缓冲，再由 <code>write</code> 从用户缓冲复制回内核。</li>
 <li><code>mmap</code> 把文件页映射到进程虚拟地址空间，访问时由 page fault 按需读入。</li>
@@ -1014,13 +942,12 @@
 </ul>
 </blockquote>
 <blockquote>
-<p><strong>例题：mmap 后页表形态</strong></p>
+<p><strong>mmap 后页表形态</strong></p>
 <p>程序运行在 32-bit Linux 系统上，page size 为 4KB。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> PAGE_SIZE (4 * 1024)</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    <span class="type">char</span> *p = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="type">int</span> i;</span><br><span class="line"></span><br><span class="line">A:</span><br><span class="line">    p = mmap(<span class="number">0</span>, <span class="number">128</span> * PAGE_SIZE, PROT_READ | PROT_WRITE,</span><br><span class="line">             MAP_PRIVATE | MAP_ANON, <span class="number">-1</span>, <span class="number">0</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;buffer start: %p\n&quot;</span>, p);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">128</span> * PAGE_SIZE; i += PAGE_SIZE)</span><br><span class="line">        p[i] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">B:</span><br><span class="line">    munmap(p, <span class="number">128</span> * PAGE_SIZE);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>已知 <code>printf</code> 输出：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">buffer start: 0xb7bdf000</span><br></pre></td></tr></table></figure>
-<p>问题：程序到达标号 B 时，新映射区域相关页表如何变化？</p>
-<p>解析：</p>
+<p><strong>程序到达标号 B 时，新映射区域相关页表如何变化？</strong></p>
 <ol>
 <li><code>mmap</code> 创建长度为 <code>128 * 4KB = 512KB</code> 的匿名私有 VMA。</li>
 <li>起始地址为 <code>0xb7bdf000</code>。</li>
@@ -1064,14 +991,14 @@
 <li>这些页具有私有匿名映射的读写权限。</li>
 </ul>
 </blockquote>
-<h2 id="fork-与-Copy-on-Write">fork 与 Copy-on-Write</h2>
+<h3 id="fork-与-COW"><code>fork</code> 与 COW</h3>
 <p><code>fork</code> 创建新进程时：</p>
 <ol>
 <li>复制旧进程的 <code>mm_struct</code>、<code>vm_area_struct</code> 和页表。</li>
 <li>父子进程初始共享所有物理页。</li>
 <li>对可写私有区域，内核将 PTE 标记为只读，并将 VMA 标记为 private copy-on-write。</li>
 </ol>
-<p>如果父进程或子进程写入 COW 页：</p>
+<p>这种处理在 <code>fork</code> 时不立即创建父进程页面的完整复制，而是暂时共享相同的页面，避免了一次性分配暂时不会使用的内存。如果父进程或子进程写入 COW（Copy-On-Write） 页：</p>
 <ol>
 <li>写操作触发 protection fault。</li>
 <li>page fault handler 识别这是 COW 区域。</li>
@@ -1082,7 +1009,28 @@
 <li>faulting instruction 重新执行并成功写入。</li>
 </ol>
 <p>结果：只有在进程实际写入共享页时才复制页面。</p>
+<blockquote>
+<p><strong><code>fork</code> 为什么不直接复制所有物理页？</strong></p>
+<ul>
+<li>直接复制可以保证父子进程之后互不影响，但会立即消耗大量时间和物理内存。</li>
+<li>很多 <code>fork</code> 后会立刻 <code>execve</code>，直接复制旧地址空间会被马上丢弃。</li>
+<li>COW 先让父子进程共享物理页，并把可写私有页暂时标为只读。</li>
+<li>真正写入时才触发 protection fault，由 OS 复制对应物理页。</li>
+<li>因此复制成本被推迟到“确实需要修改”的页面上。</li>
+</ul>
+</blockquote>
+<blockquote>
+<p><strong>COW 为什么要把可写页暂时设为只读？</strong></p>
+<ul>
+<li>OS 需要在第一次写入时获得控制权，否则写入会直接修改共享物理页。</li>
+<li>将 PTE 标为只读后，父进程或子进程执行写操作会触发 page fault。</li>
+<li>handler 检查 VMA/PTE 后识别这是 COW，不是非法写。</li>
+<li>handler 分配新物理页、复制旧内容、更新当前进程 PTE 并恢复写权限。</li>
+<li>faulting store 重新执行后，只写入当前进程的新页。</li>
+</ul>
+</blockquote>
 <h3 id="Shared-Object-与-Private-Object">Shared Object 与 Private Object</h3>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626144354495.png" alt=""></p>
 <table>
 <thead>
 <tr>
@@ -1105,6 +1053,16 @@
 </tbody>
 </table>
 <p>shared area 可用于进程间通信。private area 常配合 COW 实现高效 <code>fork</code>。</p>
+<blockquote>
+<p><strong><code>MAP_SHARED</code> 和 <code>MAP_PRIVATE</code> 的写入可见性有什么区别？</strong></p>
+<p>解析：</p>
+<ul>
+<li><code>MAP_SHARED</code> 映射同一对象的进程共享写入结果，一个进程写入后其他进程可见。</li>
+<li><code>MAP_PRIVATE</code> 初始可共享同一物理页，但写入是本地私有的。</li>
+<li>private mapping 的写入通常通过 COW 实现，不回写原始文件对象。</li>
+<li>shared mapping 可用于进程间通信，private mapping 常用于加载代码、数据段和 <code>fork</code> 后的地址空间。</li>
+</ul>
+</blockquote>
 <h2 id="页面置换策略">页面置换策略</h2>
 <p>当 OS 需要分配空闲物理页但没有可用页时，需要选择页面换出。</p>
 <p>页面置换体现了机制与策略分离：</p>
@@ -1119,6 +1077,16 @@
 <li>回收到 high water mark 后停止。</li>
 </ul>
 <p>主动回收可避免每次物理页分配失败时只临时换出一个页。若系统总在分配路径上同步回收，会增加请求延迟；后台回收可提前准备空闲页池。</p>
+<blockquote>
+<p><strong>思考题：什么时候会触发页面置换？</strong></p>
+<p>解析：</p>
+<ul>
+<li>当 OS 需要分配新物理页但空闲页不足时，需要选择页面换出。</li>
+<li>典型场景包括 page fault 调入页面、COW 写入分配新页、<code>mmap</code> 匿名页首次写入、内核申请连续页等。</li>
+<li>实际系统不一定等到完全没有空闲页才开始；后台线程可在低水位线触发回收。</li>
+<li>回收到高水位线后停止，以减少分配路径上的同步等待。</li>
+</ul>
+</blockquote>
 <h3 id="AMAT">AMAT</h3>
 <p>平均内存访问时间：</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>A</mi><mi>M</mi><mi>A</mi><mi>T</mi><mo>=</mo><msub><mi>P</mi><mrow><mi>h</mi><mi>i</mi><mi>t</mi></mrow></msub><mo>⋅</mo><msub><mi>T</mi><mi>M</mi></msub><mo>+</mo><msub><mi>P</mi><mrow><mi>m</mi><mi>i</mi><mi>s</mi><mi>s</mi></mrow></msub><mo>⋅</mo><msub><mi>T</mi><mi>D</mi></msub></mrow><annotation encoding="application/x-tex">AMAT = P_{hit}\cdot T_M + P_{miss}\cdot T_D
@@ -1355,8 +1323,10 @@
 <p><strong>思考题：页表页和内核页能否被换出？</strong></p>
 <p>问题 1：OS 能否换出页表页？</p>
 <p>答案：理论上除当前 CR3 指向的一级页表外，其余页表页可以设计为可换出，但实现复杂。硬件页表遍历需要页表页可访问，换出页表页需要额外元数据和异常处理。实际系统通常谨慎处理。</p>
+<p>当前 CR3 指向的顶级页表页不能被换出。MMU 页表遍历的第一步就是读取 CR3 指向的物理页；如果该页已经被替换成普通数据，硬件无法知道真正的顶级页表在哪里，后续翻译会失去依据。</p>
 <p>问题 2：OS 能否换出自己的页面？</p>
 <p>答案：取决于页面用途，但通常关键内核代码、异常处理路径、页表管理数据和中断处理所需页面不能换出。否则处理缺页时可能再次缺页，导致无法恢复。</p>
+<p>例如 page fault handler 所在代码页若被换出，处理 page fault 时又会因为取 handler 指令而 page fault，可能形成递归异常，严重时导致系统崩溃。因此关键内核路径通常必须常驻。</p>
 </blockquote>
 <blockquote>
 <p><strong>思考题：一条 <code>mov</code> 最多触发几次 page fault？</strong></p>
@@ -1705,6 +1675,16 @@
 <h2 id="Buddy-System">Buddy System</h2>
 <p>Buddy system 是 segregated fits 的特例，每个 size class 都是 2 的幂。</p>
 <p>在内核中，buddy system 常用于管理物理页。其 size class 通常表示 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>n</mi></msup></mrow><annotation encoding="application/x-tex">2^n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6644em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span> 个连续页面，因此最小块为 1 个 page，之后是 2、4、8 个连续 page。它适合满足页级分配需求，例如分配连续物理页、为页表或 DMA buffer 准备内存。</p>
+<blockquote>
+<p><strong>思考题：为什么 buddy system 适合内核页级分配？</strong></p>
+<p>解析：</p>
+<ul>
+<li>内核经常需要 1 个或连续多个物理页，例如页表页、大页映射、DMA buffer。</li>
+<li>buddy system 的 size class 是 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>n</mi></msup></mrow><annotation encoding="application/x-tex">2^n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6644em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span> 个 page，天然满足连续页分配。</li>
+<li>分裂时把大块递归拆成两个同大小 buddy，释放时只尝试与自己的 buddy 合并。</li>
+<li>这种规则让分配和合并逻辑简单，适合内核维护物理页池。</li>
+</ul>
+</blockquote>
 <p>初始化：堆大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>m</mi></msup></mrow><annotation encoding="application/x-tex">2^m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6644em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span></span>。</p>
 <p>分配大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">m</span></span></span></span> 个物理页的 block：</p>
 <ol>
@@ -1740,6 +1720,16 @@
 <p>8KB = <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>13</mn></msup></mrow><annotation encoding="application/x-tex">2^{13}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">13</span></span></span></span></span></span></span></span></span></span></span></span>，两个 buddy block 的起始地址只在第 13 位不同。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0x0000 xor 0x2000 = 0x2000</span><br></pre></td></tr></table></figure>
 <p>因此大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span></span></span></span></span></span></span> 的 buddy 可通过翻转地址第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span></span></span></span> 位得到。</p>
+</blockquote>
+<blockquote>
+<p><strong>思考题：buddy system 为什么能快速找到伙伴块？</strong></p>
+<p>解析：</p>
+<ul>
+<li>buddy 块大小相同，且来自同一个更大的父块二分。</li>
+<li>两个 buddy 的起始地址只有表示当前块大小的那一位不同。</li>
+<li>若块大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">2^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span></span></span></span></span></span></span>，其伙伴地址可由 <code>addr xor 2^k</code> 得到。</li>
+<li>是否可以合并还要检查伙伴块是否空闲且大小相同；空闲状态通常记录在内核维护的物理页元数据中。</li>
+</ul>
 </blockquote>
 <h2 id="Slab-Allocator">Slab Allocator</h2>
 <p>观察：系统中很多对象大小固定或可预知，例如内核对象。</p>
@@ -1811,7 +1801,7 @@
 <li>释放 empty slab 可把页归还给 buddy system 或上层页分配器。</li>
 </ul>
 </blockquote>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/06/23/SE2302_06/">https://acannedfish.github.io/2026/06/23/SE2302_06/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/VM/">VM</a></div><div class="post-share"><div class="social-share" data-image="/img/background8.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/06/23/SE2302_07/" title="计算机系统基础-07：网络"><img class="cover" src="/img/background9.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统基础-07：网络</div></div></div></a><a class="pagination-related  no-desc" href="/2026/06/23/SE2302_05/" title="计算机系统基础-05：系统级 I/O"><img class="cover" src="/img/background7.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统基础-05：系统级 I/O</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98"><span class="toc-number">1.</span> <span class="toc-text">虚拟内存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E5%AF%BB%E5%9D%80"><span class="toc-number">1.1.</span> <span class="toc-text">物理寻址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%AF%BB%E5%9D%80"><span class="toc-number">1.2.</span> <span class="toc-text">虚拟寻址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-number">1.3.</span> <span class="toc-text">地址空间</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E4%B8%8E%E9%A1%B5%E8%A1%A8"><span class="toc-number">2.</span> <span class="toc-text">页与页表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5"><span class="toc-number">2.1.</span> <span class="toc-text">页</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E8%A1%A8"><span class="toc-number">2.2.</span> <span class="toc-text">页表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E7%BC%93%E5%AD%98"><span class="toc-number">3.</span> <span class="toc-text">虚拟内存作为缓存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Hit"><span class="toc-number">3.1.</span> <span class="toc-text">Page Hit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Fault"><span class="toc-number">3.2.</span> <span class="toc-text">Page Fault</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Fault-%E7%9A%84%E4%B8%89%E7%B1%BB%E6%83%85%E5%86%B5"><span class="toc-number">3.3.</span> <span class="toc-text">Page Fault 的三类情况</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E6%80%A7%E4%B8%8E-Thrashing"><span class="toc-number">3.4.</span> <span class="toc-text">局部性与 Thrashing</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7"><span class="toc-number">4.</span> <span class="toc-text">虚拟内存作为内存管理工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%93%BE%E6%8E%A5%E4%B8%8E%E5%8A%A0%E8%BD%BD"><span class="toc-number">4.1.</span> <span class="toc-text">链接与加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E9%A1%B5%E5%88%86%E9%85%8D"><span class="toc-number">4.2.</span> <span class="toc-text">物理页分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E4%BB%A3%E7%A0%81%E5%92%8C%E6%95%B0%E6%8D%AE"><span class="toc-number">4.3.</span> <span class="toc-text">共享代码和数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E4%BF%9D%E6%8A%A4%E5%B7%A5%E5%85%B7"><span class="toc-number">5.</span> <span class="toc-text">虚拟内存作为保护工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E7%BF%BB%E8%AF%91"><span class="toc-number">6.</span> <span class="toc-text">地址翻译</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cache%E3%80%81TLB-%E4%B8%8E-VM"><span class="toc-number">7.</span> <span class="toc-text">Cache、TLB 与 VM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#TLB"><span class="toc-number">7.1.</span> <span class="toc-text">TLB</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">8.</span> <span class="toc-text">多级页表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#x86-32-%E4%B8%A4%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">8.1.</span> <span class="toc-text">x86-32 两级页表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#x86-64-%E5%9B%9B%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">9.</span> <span class="toc-text">x86-64 四级页表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E7%BA%A7%E9%A1%B5%E8%A1%A8%E8%A6%86%E7%9B%96%E8%8C%83%E5%9B%B4"><span class="toc-number">9.1.</span> <span class="toc-text">四级页表覆盖范围</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Core-i7-%E5%86%85%E5%AD%98%E7%B3%BB%E7%BB%9F%E4%B8%8E-PTE"><span class="toc-number">10.</span> <span class="toc-text">Core i7 内存系统与 PTE</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#VIPT-%E6%8A%80%E5%B7%A7"><span class="toc-number">10.1.</span> <span class="toc-text">VIPT 技巧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F"><span class="toc-number">11.</span> <span class="toc-text">Linux 虚拟内存区域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux-Page-Fault-Handling"><span class="toc-number">11.1.</span> <span class="toc-text">Linux Page Fault Handling</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Memory-Mapping"><span class="toc-number">12.</span> <span class="toc-text">Memory Mapping</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#mmap"><span class="toc-number">13.</span> <span class="toc-text">mmap</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mmap-%E5%BF%AB%E9%80%9F%E6%96%87%E4%BB%B6%E5%A4%8D%E5%88%B6"><span class="toc-number">13.1.</span> <span class="toc-text">mmap 快速文件复制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fork-%E4%B8%8E-Copy-on-Write"><span class="toc-number">14.</span> <span class="toc-text">fork 与 Copy-on-Write</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Shared-Object-%E4%B8%8E-Private-Object"><span class="toc-number">14.1.</span> <span class="toc-text">Shared Object 与 Private Object</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E9%9D%A2%E7%BD%AE%E6%8D%A2%E7%AD%96%E7%95%A5"><span class="toc-number">15.</span> <span class="toc-text">页面置换策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AMAT"><span class="toc-number">15.1.</span> <span class="toc-text">AMAT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OPT"><span class="toc-number">15.2.</span> <span class="toc-text">OPT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FIFO-%E4%B8%8E-Belady-Anomaly"><span class="toc-number">15.3.</span> <span class="toc-text">FIFO 与 Belady Anomaly</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E4%B8%AA%E7%89%A9%E7%90%86%E9%A1%B5"><span class="toc-number">15.3.1.</span> <span class="toc-text">3 个物理页</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E4%B8%AA%E7%89%A9%E7%90%86%E9%A1%B5"><span class="toc-number">15.3.2.</span> <span class="toc-text">4 个物理页</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Second-Chance"><span class="toc-number">15.4.</span> <span class="toc-text">Second Chance</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LRU"><span class="toc-number">15.5.</span> <span class="toc-text">LRU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Clock-Algorithm"><span class="toc-number">15.6.</span> <span class="toc-text">Clock Algorithm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D"><span class="toc-number">16.</span> <span class="toc-text">动态内存分配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#malloc-%E4%B8%8E-free"><span class="toc-number">16.1.</span> <span class="toc-text">malloc 与 free</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%8A%A8%E6%80%81%E5%88%86%E9%85%8D"><span class="toc-number">16.2.</span> <span class="toc-text">为什么需要动态分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sbrk"><span class="toc-number">16.3.</span> <span class="toc-text">sbrk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E9%BD%90%E8%A6%81%E6%B1%82"><span class="toc-number">16.4.</span> <span class="toc-text">对齐要求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E9%85%8D%E5%99%A8%E8%A6%81%E6%B1%82%E4%B8%8E%E6%8C%87%E6%A0%87"><span class="toc-number">17.</span> <span class="toc-text">分配器要求与指标</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%9E%E5%90%90"><span class="toc-number">17.1.</span> <span class="toc-text">吞吐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%A9%E7%94%A8%E7%8E%87"><span class="toc-number">17.2.</span> <span class="toc-text">内存利用率</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A2%8E%E7%89%87"><span class="toc-number">18.</span> <span class="toc-text">碎片</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E7%A2%8E%E7%89%87"><span class="toc-number">18.1.</span> <span class="toc-text">内部碎片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%96%E9%83%A8%E7%A2%8E%E7%89%87"><span class="toc-number">18.2.</span> <span class="toc-text">外部碎片</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%90%E5%BC%8F%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">19.</span> <span class="toc-text">隐式空闲链表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E6%A0%87%E8%AE%B0%E4%B8%8E%E5%B8%B8%E6%95%B0%E6%97%B6%E9%97%B4%E5%90%88%E5%B9%B6"><span class="toc-number">20.</span> <span class="toc-text">边界标记与常数时间合并</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%98%BE%E5%BC%8F%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">21.</span> <span class="toc-text">显式空闲链表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E7%AD%96%E7%95%A5"><span class="toc-number">21.1.</span> <span class="toc-text">插入策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E7%A6%BB%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">22.</span> <span class="toc-text">分离空闲链表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Simple-Segregated-Storage"><span class="toc-number">22.1.</span> <span class="toc-text">Simple Segregated Storage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Segregated-Fits"><span class="toc-number">22.2.</span> <span class="toc-text">Segregated Fits</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Buddy-System"><span class="toc-number">23.</span> <span class="toc-text">Buddy System</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Slab-Allocator"><span class="toc-number">24.</span> <span class="toc-text">Slab Allocator</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Resource-Pool"><span class="toc-number">24.1.</span> <span class="toc-text">Resource Pool</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Slab-%E5%86%85%E9%83%A8-free-list"><span class="toc-number">24.2.</span> <span class="toc-text">Slab 内部 free list</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Slab-%E7%AE%A1%E7%90%86%E9%97%AE%E9%A2%98"><span class="toc-number">24.3.</span> <span class="toc-text">Slab 管理问题</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/06/23/SE2302_06/">https://acannedfish.github.io/2026/06/23/SE2302_06/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/VM/">VM</a></div><div class="post-share"><div class="social-share" data-image="/img/background8.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/06/23/SE2302_07/" title="计算机系统基础-07：网络"><img class="cover" src="/img/background9.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统基础-07：网络</div></div></div></a><a class="pagination-related  no-desc" href="/2026/06/23/SE2302_05/" title="计算机系统基础-05：系统级 I/O"><img class="cover" src="/img/background7.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统基础-05：系统级 I/O</div></div></div></a></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">47</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98"><span class="toc-number">1.</span> <span class="toc-text">虚拟内存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E5%AF%BB%E5%9D%80"><span class="toc-number">1.1.</span> <span class="toc-text">物理寻址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%AF%BB%E5%9D%80"><span class="toc-number">1.2.</span> <span class="toc-text">虚拟寻址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-number">1.3.</span> <span class="toc-text">地址空间</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E4%B8%8E%E9%A1%B5%E8%A1%A8"><span class="toc-number">2.</span> <span class="toc-text">页与页表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5"><span class="toc-number">2.1.</span> <span class="toc-text">页</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E8%A1%A8"><span class="toc-number">2.2.</span> <span class="toc-text">页表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E7%BC%93%E5%AD%98"><span class="toc-number">3.</span> <span class="toc-text">虚拟内存作为缓存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Hit"><span class="toc-number">3.1.</span> <span class="toc-text">Page Hit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Fault"><span class="toc-number">3.2.</span> <span class="toc-text">Page Fault</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Page-Fault-%E7%9A%84%E4%B8%89%E7%B1%BB%E6%83%85%E5%86%B5"><span class="toc-number">3.3.</span> <span class="toc-text">Page Fault 的三类情况</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7"><span class="toc-number">4.</span> <span class="toc-text">虚拟内存作为内存管理工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%93%BE%E6%8E%A5%E4%B8%8E%E5%8A%A0%E8%BD%BD"><span class="toc-number">4.1.</span> <span class="toc-text">链接与加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E9%A1%B5%E5%88%86%E9%85%8D"><span class="toc-number">4.2.</span> <span class="toc-text">物理页分配</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E4%BD%9C%E4%B8%BA%E4%BF%9D%E6%8A%A4%E5%B7%A5%E5%85%B7"><span class="toc-number">5.</span> <span class="toc-text">虚拟内存作为保护工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E7%BF%BB%E8%AF%91"><span class="toc-number">6.</span> <span class="toc-text">地址翻译</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TLB-%E5%8A%A0%E9%80%9F"><span class="toc-number">7.</span> <span class="toc-text">TLB 加速</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">8.</span> <span class="toc-text">多级页表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#x86-32-%E4%B8%A4%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">8.1.</span> <span class="toc-text">x86-32 两级页表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#x86-64-%E5%9B%9B%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-number">8.2.</span> <span class="toc-text">x86-64 四级页表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Core-i7-%E5%86%85%E5%AD%98%E7%B3%BB%E7%BB%9F"><span class="toc-number">9.</span> <span class="toc-text">Core i7 内存系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E7%BB%93%E6%9E%84"><span class="toc-number">9.1.</span> <span class="toc-text">系统结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#VIPT-%E5%8A%A0%E9%80%9F"><span class="toc-number">9.2.</span> <span class="toc-text">VIPT 加速</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98"><span class="toc-number">10.</span> <span class="toc-text">Linux 虚拟内存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux-Page-Fault-Handling"><span class="toc-number">10.1.</span> <span class="toc-text">Linux Page Fault Handling</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Memory-Mapping"><span class="toc-number">10.2.</span> <span class="toc-text">Memory Mapping</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%98%A0%E5%B0%84"><span class="toc-number">10.2.1.</span> <span class="toc-text">文件映射</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mmap"><span class="toc-number">10.2.2.</span> <span class="toc-text">mmap</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#mmap-%E5%BF%AB%E9%80%9F%E6%96%87%E4%BB%B6%E5%A4%8D%E5%88%B6"><span class="toc-number">10.2.3.</span> <span class="toc-text">mmap 快速文件复制</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fork-%E4%B8%8E-COW"><span class="toc-number">10.3.</span> <span class="toc-text">fork 与 COW</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Shared-Object-%E4%B8%8E-Private-Object"><span class="toc-number">10.4.</span> <span class="toc-text">Shared Object 与 Private Object</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B5%E9%9D%A2%E7%BD%AE%E6%8D%A2%E7%AD%96%E7%95%A5"><span class="toc-number">11.</span> <span class="toc-text">页面置换策略</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AMAT"><span class="toc-number">11.1.</span> <span class="toc-text">AMAT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OPT"><span class="toc-number">11.2.</span> <span class="toc-text">OPT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FIFO-%E4%B8%8E-Belady-Anomaly"><span class="toc-number">11.3.</span> <span class="toc-text">FIFO 与 Belady Anomaly</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E4%B8%AA%E7%89%A9%E7%90%86%E9%A1%B5"><span class="toc-number">11.3.1.</span> <span class="toc-text">3 个物理页</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E4%B8%AA%E7%89%A9%E7%90%86%E9%A1%B5"><span class="toc-number">11.3.2.</span> <span class="toc-text">4 个物理页</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Second-Chance"><span class="toc-number">11.4.</span> <span class="toc-text">Second Chance</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#LRU"><span class="toc-number">11.5.</span> <span class="toc-text">LRU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Clock-Algorithm"><span class="toc-number">11.6.</span> <span class="toc-text">Clock Algorithm</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E6%80%81%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D"><span class="toc-number">12.</span> <span class="toc-text">动态内存分配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#malloc-%E4%B8%8E-free"><span class="toc-number">12.1.</span> <span class="toc-text">malloc 与 free</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%8A%A8%E6%80%81%E5%88%86%E9%85%8D"><span class="toc-number">12.2.</span> <span class="toc-text">为什么需要动态分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sbrk"><span class="toc-number">12.3.</span> <span class="toc-text">sbrk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E9%BD%90%E8%A6%81%E6%B1%82"><span class="toc-number">12.4.</span> <span class="toc-text">对齐要求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E9%85%8D%E5%99%A8%E8%A6%81%E6%B1%82%E4%B8%8E%E6%8C%87%E6%A0%87"><span class="toc-number">13.</span> <span class="toc-text">分配器要求与指标</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%9E%E5%90%90"><span class="toc-number">13.1.</span> <span class="toc-text">吞吐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%A9%E7%94%A8%E7%8E%87"><span class="toc-number">13.2.</span> <span class="toc-text">内存利用率</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A2%8E%E7%89%87"><span class="toc-number">14.</span> <span class="toc-text">碎片</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E9%83%A8%E7%A2%8E%E7%89%87"><span class="toc-number">14.1.</span> <span class="toc-text">内部碎片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%96%E9%83%A8%E7%A2%8E%E7%89%87"><span class="toc-number">14.2.</span> <span class="toc-text">外部碎片</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%90%E5%BC%8F%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">15.</span> <span class="toc-text">隐式空闲链表</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BE%B9%E7%95%8C%E6%A0%87%E8%AE%B0%E4%B8%8E%E5%B8%B8%E6%95%B0%E6%97%B6%E9%97%B4%E5%90%88%E5%B9%B6"><span class="toc-number">16.</span> <span class="toc-text">边界标记与常数时间合并</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%98%BE%E5%BC%8F%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">17.</span> <span class="toc-text">显式空闲链表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5%E7%AD%96%E7%95%A5"><span class="toc-number">17.1.</span> <span class="toc-text">插入策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E7%A6%BB%E7%A9%BA%E9%97%B2%E9%93%BE%E8%A1%A8"><span class="toc-number">18.</span> <span class="toc-text">分离空闲链表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Simple-Segregated-Storage"><span class="toc-number">18.1.</span> <span class="toc-text">Simple Segregated Storage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Segregated-Fits"><span class="toc-number">18.2.</span> <span class="toc-text">Segregated Fits</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Buddy-System"><span class="toc-number">19.</span> <span class="toc-text">Buddy System</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Slab-Allocator"><span class="toc-number">20.</span> <span class="toc-text">Slab Allocator</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Resource-Pool"><span class="toc-number">20.1.</span> <span class="toc-text">Resource Pool</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Slab-%E5%86%85%E9%83%A8-free-list"><span class="toc-number">20.2.</span> <span class="toc-text">Slab 内部 free list</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Slab-%E7%AE%A1%E7%90%86%E9%97%AE%E9%A2%98"><span class="toc-number">20.3.</span> <span class="toc-text">Slab 管理问题</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
   const showKatex = () => {
     document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
   }
