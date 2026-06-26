@@ -7,7 +7,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://acannedfish.github.io/img/background10.png">
 <meta property="article:published_time" content="2026-06-23T05:12:00.000Z">
-<meta property="article:modified_time" content="2026-06-26T10:09:18.627Z">
+<meta property="article:modified_time" content="2026-06-26T10:56:10.713Z">
 <meta property="article:author" content="aCannedFish">
 <meta property="article:tag" content="Concurrency">
 <meta name="twitter:card" content="summary">
@@ -18,7 +18,7 @@
   "url": "https://acannedfish.github.io/2026/06/23/SE2302_08/",
   "image": "https://acannedfish.github.io/img/background10.png",
   "datePublished": "2026-06-23T05:12:00.000Z",
-  "dateModified": "2026-06-26T10:09:18.627Z",
+  "dateModified": "2026-06-26T10:56:10.713Z",
   "author": [
     {
       "@type": "Person",
@@ -159,7 +159,7 @@
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
-}</script><link rel="stylesheet" href="/css/home-cards.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/background10.png);"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统基础-08：并发</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-23T05:12:00.000Z" title="发表于 2026-06-23 13:12:00">2026-06-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-26T10:09:18.627Z" title="更新于 2026-06-26 18:09:18">2026-06-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note-ICS/">Note(ICS)</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="并发编程">并发编程</h2>
+}</script><link rel="stylesheet" href="/css/home-cards.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/background10.png);"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统基础-08：并发</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-23T05:12:00.000Z" title="发表于 2026-06-23 13:12:00">2026-06-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-26T10:56:10.713Z" title="更新于 2026-06-26 18:56:10">2026-06-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note-ICS/">Note(ICS)</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="并发编程">并发编程</h2>
 <p>并发指多个逻辑控制流在时间上重叠执行。它出现在硬件异常处理、进程、Unix signal handler、线程和网络服务器等场景中。</p>
 <p>应用层并发的常见用途：</p>
 <ul>
@@ -220,6 +220,23 @@
 <p><strong>为什么 parent 必须关闭 <code>connfd</code>？</strong></p>
 <p><code>fork</code> 后，parent 和 child 都持有同一个 connected socket 的引用。若 parent 不关闭自己的 <code>connfd</code>，即使 child 结束并关闭 <code>connfd</code>，内核中的 socket 引用计数仍不为 0，连接无法按预期释放。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">After fork:</span><br><span class="line">refcnt(connfd) = 2</span><br><span class="line"></span><br><span class="line">child close(connfd)  -&gt; refcnt = 1</span><br><span class="line">parent close(connfd) -&gt; refcnt = 0，连接可关闭</span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+<p><strong>三个 <code>Close</code> 是否都必须保留？</strong></p>
+<p>Process-based concurrent server 中通常有三个 <code>Close</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (Fork() == <span class="number">0</span>) &#123;</span><br><span class="line">    Close(listenfd);</span><br><span class="line">    echo(connfd);</span><br><span class="line">    Close(connfd);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line">Close(connfd);</span><br></pre></td></tr></table></figure>
+<p>解析：</p>
+<ol>
+<li>Child 中的 <code>Close(listenfd)</code>：不是功能正确性的必要条件。Child 即使保留 <code>listenfd</code>，只要不调用 <code>accept</code>，就不会接收新连接；并且 child <code>exit</code> 时 OS 会关闭其描述符。但关闭它更清晰，可避免无关 descriptor 留在 child 的 descriptor table 中。</li>
+<li>Child 中的 <code>Close(connfd)</code>：若后面立即 <code>exit(0)</code>，从功能上也可由 OS 在进程退出时关闭。但显式关闭能表达连接服务结束，也避免未来修改代码时形成泄漏。</li>
+<li>Parent 中的 <code>Close(connfd)</code>：必须保留。Parent 是 long-running server，不会很快退出；若不关闭自己的 <code>connfd</code>，每次连接都会在 parent descriptor table 中留下一个无用引用，使 descriptor 和内核 socket 资源长期无法释放。</li>
+</ol>
+<p>因此，前两个 <code>Close</code> 主要是清理 child 不需要的资源；parent 的 <code>Close(connfd)</code> 是长期运行 server 中避免 resource leak 的关键。</p>
+</blockquote>
+<blockquote>
+<p><strong>第一次 <code>accept</code> 为什么常返回 <code>connfd = 4</code>？</strong></p>
+<p>Unix descriptor 按进程维护，通常从最小空闲编号分配。普通进程启动后，<code>0/1/2</code> 分别是 <code>stdin/stdout/stderr</code>；<code>open_listenfd</code> 创建 listening socket 后通常占用 <code>3</code>。第一次 <code>accept</code> 会创建新的 connected socket，因此常返回最低空闲 descriptor <code>4</code>。</p>
+<p><code>fork</code> 会复制 parent 的 descriptor table。复制后 parent 和 child 的 <code>listenfd</code>、<code>connfd</code> 指向相同的内核 file/socket object，对应引用计数增加。<code>Close</code> 只删除当前进程 descriptor table 中的一项，并使对应内核对象引用计数减一；引用计数降到 0 时，内核对象才会释放。</p>
 </blockquote>
 <blockquote>
 <p><strong>为什么需要回收 child？</strong></p>
@@ -334,6 +351,21 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">    connfd = Accept(listenfd, (SA *)&amp;clientaddr, &amp;clientlen);</span><br><span class="line">    Pthread_create(&amp;tid, <span class="literal">NULL</span>, thread, &amp;connfd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><code>connfd</code> 是 main thread 栈上的一个变量，循环下一次 <code>accept</code> 可能覆盖它。多个 worker thread 可能读到同一个地址中的新值，导致连接描述符混乱。</p>
 <p>正确做法：为每个连接分配独立 <code>int</code>，或用能安全承载整数的 <code>intptr_t</code> 做值传递。直接把 <code>int</code> 强转为 <code>void *</code> 在 64-bit 平台上不可移植。</p>
+</blockquote>
+<blockquote>
+<p><strong>为什么传 <code>&amp;connfd</code> 会产生 data race？</strong></p>
+<p><code>connfd</code> 是 main thread 栈上的同一个局部变量。Main thread 第一次 <code>accept</code> 后可能得到 <code>4</code>，创建 worker thread 后立刻进入下一轮 <code>accept</code>，并把同一内存位置覆盖为 <code>5</code>。若第一个 worker 还没来得及读取 <code>*connfdp</code>，它也可能读到 <code>5</code>。</p>
+<p>该错误不是因为 descriptor 本身不能共享，而是因为多个 thread 共享了同一个参数存放位置。动态分配 <code>int</code> 的作用是让每个 worker 拥有不同地址；worker 复制出 <code>connfd</code> 后立即 <code>Free(vargp)</code>，即可避免参数位置被下一轮循环覆盖。</p>
+</blockquote>
+<blockquote>
+<p><strong>如何比较 <code>pthread_create</code> 和 <code>fork</code> 的开销？</strong></p>
+<p>可以分别循环创建并回收大量 thread/process，记录总时间并除以次数。测量时应注意：</p>
+<ul>
+<li>每轮都要包含回收成本，例如 <code>pthread_join</code> 或 <code>waitpid</code>。</li>
+<li>子任务内容应尽量为空，避免业务逻辑掩盖创建成本。</li>
+<li>需要预热和重复测量，观察均值和波动。</li>
+<li>创建开销只是维度之一；process 还提供地址空间隔离，thread 则提供更低成本的数据共享。</li>
+</ul>
 </blockquote>
 <h2 id="Threads-Processes">Threads &amp; Processes</h2>
 <p>相同点：</p>
@@ -562,6 +594,23 @@
 <li><code>resource</code>：保护共享对象。</li>
 </ul>
 <p>核心约束是：writer 到达后先关闭 reader 入口；已有 reader 退出后，writer 尽快获得资源。</p>
+<p>一种等价的实现方式是使用 lock 和 condition variable 维护状态：</p>
+<ul>
+<li><code>readers</code>：正在读的 reader 数量。</li>
+<li><code>writers</code>：正在写的 writer 数量，取值通常为 0 或 1。</li>
+<li><code>waiting_writers</code>：正在等待写入的 writer 数量。</li>
+<li><code>ok_to_read</code> / <code>ok_to_write</code>：分别用于唤醒 reader 和 writer。</li>
+</ul>
+<p>Reader 获取读锁时，需要在 <code>writers &gt; 0</code> 或 <code>waiting_writers &gt; 0</code> 时等待；这表示只要有 writer 正在写或已经排队，新的 reader 就不能插队。Writer 获取写锁时，先增加 <code>waiting_writers</code>，然后等待 <code>readers == 0 &amp;&amp; writers == 0</code>，满足后减少 <code>waiting_writers</code> 并设置 <code>writers = 1</code>。</p>
+<p>释放规则：</p>
+<ul>
+<li>Reader 释放读锁后，若 <code>readers == 0</code> 且存在等待 writer，应 signal <code>ok_to_write</code>。</li>
+<li>Writer 释放写锁后，若仍有等待 writer，优先 signal 下一个 writer；否则 broadcast 给等待的 readers。</li>
+</ul>
+<blockquote>
+<p><strong>为什么该实现偏向 writer？</strong></p>
+<p>关键在于 reader 获取读锁时检查 <code>waiting_writers</code>。若某个 writer 已经到达并等待，即使当前还有 reader 在读，后续新 reader 也必须等待。这样已有 reader 退出后，writer 能尽快获得资源，避免 reader 连续到达导致 writer 长期 starvation。</p>
+</blockquote>
 <h2 id="Prethreaded-Concurrent-Server">Prethreaded Concurrent Server</h2>
 <p>Prethreaded server 在启动时创建 worker thread pool。Master thread 只负责 <code>accept</code> 连接并把 <code>connfd</code> 插入共享 buffer；worker threads 从 buffer 中取出 <code>connfd</code> 并服务 client。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Master thread:</span><br><span class="line">    accept connection</span><br><span class="line">    insert connfd into buffer</span><br><span class="line"></span><br><span class="line">Worker threads:</span><br><span class="line">    remove connfd from buffer</span><br><span class="line">    service client</span><br></pre></td></tr></table></figure>
@@ -582,6 +631,11 @@
 <p>需要通过压测确定。固定经验值不能替代实际负载下的测量。</p>
 </blockquote>
 <blockquote>
+<p><strong>shared buffer 大小如何设置？</strong></p>
+<p>Buffer 太小会使 master thread 频繁阻塞在插入 <code>connfd</code> 上，无法及时 <code>accept</code> 后续连接；buffer 太大会占用更多内存，并可能增加排队时间，使 client 连接已经建立但迟迟得不到 worker 处理。</p>
+<p>该大小应结合连接到达速率、平均服务时间、worker 数量和延迟目标确定。可以用压测观察队列长度、拒绝率和 tail latency，再调整 buffer 容量。</p>
+</blockquote>
+<blockquote>
 <p><strong>Android / HarmonyOS 中 prethreading 可用于什么？</strong></p>
 <p>可用于 Binder IPC 等服务线程池。系统服务提前准备线程处理 IPC 请求，避免每次请求临时创建线程，并通过线程池上限控制资源使用。</p>
 </blockquote>
@@ -596,12 +650,22 @@
 <li>若能避免共享写，就避免共享写。</li>
 <li>若不能避免同步，应增加每次同步之间的有效计算量，摊薄同步成本。</li>
 </ul>
+<blockquote>
+<p><strong>为什么 mutex 版本可能越并行越慢？</strong></p>
+<p>每次循环只做一次简单加法，但都要执行 <code>P/V</code>。同步操作需要原子修改、阻塞和唤醒等机制，开销远高于一次加法。</p>
+<p>单线程时 <code>P</code> 通常立即成功，<code>V</code> 也不需要唤醒其他 thread；多线程时会出现真实竞争，等待者可能阻塞，释放者可能唤醒其他 thread。若机器有 4 个 core，从 1 个 thread 增加到 4 个 thread 时，更多 thread 同时竞争同一把锁，contention 增强，运行时间可能上升。超过 core 数后，更多 thread 处于 run queue 中，性能变化还会受到调度、唤醒和缓存状态影响，不一定呈单调趋势。</p>
+</blockquote>
 <h3 id="并行求和：数组部分和">并行求和：数组部分和</h3>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">sum_array</span><span class="params">(<span class="type">void</span> *vargp)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> myid = *((<span class="type">int</span> *)vargp);</span><br><span class="line">    <span class="type">long</span> start = myid * nelems_per_thread;</span><br><span class="line">    <span class="type">long</span> end = start + nelems_per_thread;</span><br><span class="line">    <span class="type">long</span> i;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = start; i &lt; end; i++)</span><br><span class="line">        psum[myid] += i;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>每个 thread 写自己的 <code>psum[myid]</code>，main thread 在 join 后合并。该方法减少了锁竞争，但循环中仍持续写共享数组位置，可能有 cache 影响。</p>
 <h3 id="并行求和：local-sum">并行求和：local sum</h3>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> *<span class="title function_">sum_local</span><span class="params">(<span class="type">void</span> *vargp)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> myid = *((<span class="type">int</span> *)vargp);</span><br><span class="line">    <span class="type">long</span> start = myid * nelems_per_thread;</span><br><span class="line">    <span class="type">long</span> end = start + nelems_per_thread;</span><br><span class="line">    <span class="type">long</span> i, sum = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (i = start; i &lt; end; i++)</span><br><span class="line">        sum += i;</span><br><span class="line"></span><br><span class="line">    psum[myid] = sum;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>该版本在 local variable 中累加，最后写一次 <code>psum[myid]</code>，减少共享写和 cache coherence 流量。</p>
+<blockquote>
+<p><strong>并行求和的性能应如何核对？</strong></p>
+<p>若每个 thread 处理独立区间，且循环主体几乎没有同步，理想情况下 <code>p</code> 个 thread 的时间接近 <code>T1 / p</code>。实际性能会在 core 数附近到达平台瓶颈；例如 4-core 机器上，4 个 thread 后继续增加到 8 或 16 个 thread 通常不会继续线性加速。</p>
+<p>若测量结果不符合预期，应检查：是否仍有共享写、是否存在 false sharing、任务划分是否均匀、计时是否包含 thread 创建和 join、是否受内存带宽或其他后台任务影响。</p>
+</blockquote>
 <h2 id="Thread-Safe-与-Reentrant">Thread-Safe 与 Reentrant</h2>
 <p>Thread-safe function：被多个 concurrent threads 反复调用时，总能产生正确结果。</p>
 <p>常见 thread-unsafe 函数类别：</p>
@@ -671,6 +735,12 @@
 <li><code>errno</code>：每个 thread 维护独立错误码，避免互相覆盖。</li>
 </ul>
 <blockquote>
+<p><strong>同一条指令如何访问不同 thread 的 TLS 实例？</strong></p>
+<p>多个 thread 共享同一份 code，不能依赖 PC-relative addressing 区分 TLS 实例，因为执行到同一条指令时 PC 相同。常见实现是为每个 thread 维护 TLS base address，并把它放在专用寄存器或线程控制块中。</p>
+<p>编译器把 TLS 变量访问转换为“TLS base + 固定 offset”。Offset 在编译或链接阶段确定；TLS base 在 thread 创建时由运行时/内核设置。于是同一条机器指令在不同 thread 中使用不同 TLS base，最终访问不同内存位置。</p>
+<p>例如 <code>errno</code> 逻辑上像全局变量，但每个 thread 都有独立实例。一个 thread 的系统调用失败不应覆盖另一个 thread 看到的 <code>errno</code>。</p>
+</blockquote>
+<blockquote>
 <p><strong>Race 与 Deadlock 示例：</strong></p>
 <p>Race 的本质：程序正确性依赖“某个 thread 先到达控制点 x，另一个 thread 后到达控制点 y”。</p>
 <p>错误示例：</p>
@@ -696,6 +766,10 @@
 <li><strong>fairness</strong>：等待者是否可能长期得不到锁。</li>
 <li><strong>performance</strong>：低竞争和高竞争下开销是否可接受。</li>
 </ul>
+<blockquote>
+<p><strong>为什么锁的性能也重要？</strong></p>
+<p>Lock 本身不产生业务结果，它只是保护 critical section。若 critical section 中的有效计算很短，而加锁、等待、唤醒或 cache coherence 的开销很高，整体程序可能比单线程更慢。评价锁时要同时看正确性、公平性和开销：正确性保证互斥，公平性避免 starvation，性能决定并发是否真正带来收益。</p>
+</blockquote>
 <h2 id="构造-Lock：关闭中断">构造 Lock：关闭中断</h2>
 <p>单处理器系统可在 critical section 中关闭中断：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">lock</span><span class="params">()</span> &#123;</span><br><span class="line">    DisableInterrupts();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">unlock</span><span class="params">()</span> &#123;</span><br><span class="line">    EnableInterrupts();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>

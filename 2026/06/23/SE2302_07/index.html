@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统基础-07：网络 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="网络主机 多数网络应用基于 Client-Server 模型。一个 server 进程管理某类资源，client 进程通过请求让 server 对资源执行操作，然后接收响应。Client 和 server 都是运行在主机上的进程，可以位于同一台主机，也可以位于不同主机。 12client process -&gt; request  -&gt; server processclient proce">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统基础-07：网络 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="网络主机 多数网络应用基于 Client-Server 模型。一个 server 进程管理某类资源，client 进程通过请求让 server 对资源执行操作，然后接收响应。Client 和 server 都是运行在主机上的进程，可以位于同一台主机，也可以位于不同主机。  网络主机由 CPU、主存、I&#x2F;O bridge、I&#x2F;O bus、磁盘控制器、图形适配器、USB 控制器和 network ad">
 <meta property="og:type" content="article">
 <meta property="og:title" content="计算机系统基础-07：网络">
 <meta property="og:url" content="https://acannedfish.github.io/2026/06/23/SE2302_07/index.html">
 <meta property="og:site_name" content="aCannedFish&#39;s Home">
-<meta property="og:description" content="网络主机 多数网络应用基于 Client-Server 模型。一个 server 进程管理某类资源，client 进程通过请求让 server 对资源执行操作，然后接收响应。Client 和 server 都是运行在主机上的进程，可以位于同一台主机，也可以位于不同主机。 12client process -&gt; request  -&gt; server processclient proce">
+<meta property="og:description" content="网络主机 多数网络应用基于 Client-Server 模型。一个 server 进程管理某类资源，client 进程通过请求让 server 对资源执行操作，然后接收响应。Client 和 server 都是运行在主机上的进程，可以位于同一台主机，也可以位于不同主机。  网络主机由 CPU、主存、I&#x2F;O bridge、I&#x2F;O bus、磁盘控制器、图形适配器、USB 控制器和 network ad">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://acannedfish.github.io/img/background9.png">
 <meta property="article:published_time" content="2026-06-23T05:11:00.000Z">
-<meta property="article:modified_time" content="2026-06-26T10:06:00.422Z">
+<meta property="article:modified_time" content="2026-06-26T10:55:42.954Z">
 <meta property="article:author" content="aCannedFish">
 <meta property="article:tag" content="Network">
 <meta name="twitter:card" content="summary">
@@ -18,7 +18,7 @@
   "url": "https://acannedfish.github.io/2026/06/23/SE2302_07/",
   "image": "https://acannedfish.github.io/img/background9.png",
   "datePublished": "2026-06-23T05:11:00.000Z",
-  "dateModified": "2026-06-26T10:06:00.422Z",
+  "dateModified": "2026-06-26T10:55:42.954Z",
   "author": [
     {
       "@type": "Person",
@@ -159,10 +159,11 @@
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
-}</script><link rel="stylesheet" href="/css/home-cards.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/background9.png);"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统基础-07：网络</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-23T05:11:00.000Z" title="发表于 2026-06-23 13:11:00">2026-06-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-26T10:06:00.422Z" title="更新于 2026-06-26 18:06:00">2026-06-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note-ICS/">Note(ICS)</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="网络主机">网络主机</h2>
+}</script><link rel="stylesheet" href="/css/home-cards.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">52</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">48</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/background9.png);"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统基础-07：网络</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-23T05:11:00.000Z" title="发表于 2026-06-23 13:11:00">2026-06-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-26T10:55:42.954Z" title="更新于 2026-06-26 18:55:42">2026-06-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note-ICS/">Note(ICS)</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="网络主机">网络主机</h2>
 <p>多数网络应用基于 Client-Server 模型。一个 server 进程管理某类资源，client 进程通过请求让 server 对资源执行操作，然后接收响应。Client 和 server 都是运行在主机上的进程，可以位于同一台主机，也可以位于不同主机。</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">client process -&gt; request  -&gt; server process</span><br><span class="line">client process &lt;- response &lt;- server process</span><br></pre></td></tr></table></figure>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626183031533.png" alt=""></p>
 <p>网络主机由 CPU、主存、I/O bridge、I/O bus、磁盘控制器、图形适配器、USB 控制器和 network adapter 等部件组成。网络适配器连接主机与网络，协议软件运行在内核与用户程序之间，负责把用户数据封装为网络帧并交给硬件发送。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260626184306352.png" alt=""></p>
 <p>从程序员视角看，网络 I/O 最终通过描述符读写；从硬件视角看，网络数据经由 network adapter 进入主机，再通过中断、DMA 等机制交给操作系统处理。</p>
 <h2 id="局域网与-Ethernet">局域网与 Ethernet</h2>
 <p>计算机网络是按地理邻近性组织的层次系统，由通信链路和网络设备构成。底层通常是 LAN（Local Area Network），覆盖一个房间、楼层、建筑或校园。常见 LAN 技术是 Ethernet。</p>
@@ -183,10 +184,12 @@
 <p><strong>switch 如何构造 MAC table？</strong></p>
 <p>Switch 可通过 source MAC 学习端口映射。若从端口 1 收到源地址为 <code>Mac-A</code> 的 frame，就记录 <code>Mac-A -&gt; port 1</code>。后续收到目的地址为 <code>Mac-A</code> 的 frame 时，可直接转发到端口 1。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Port | MAC</span><br><span class="line">-----|------</span><br><span class="line">1    | Mac-A</span><br><span class="line">2    | Mac-B</span><br><span class="line">3    | Mac-C</span><br><span class="line">4    | Mac-D</span><br></pre></td></tr></table></figure>
+<p>如果 switch 尚未建立可用的 MAC table，仍可通过广播方式转发 frame：把收到的 frame 发到除入口外的其他端口，由各主机检查 destination MAC 是否匹配自己。该方法能工作，但会增加无关主机收到的 frame 数量，效率较低。MAC table 的作用是把广播式转发优化为定向转发。</p>
 </blockquote>
 <blockquote>
 <p><strong>只用 MAC 地址能否支撑大规模网络？</strong></p>
 <p>不适合。MAC 地址是网卡制造时确定的平面标识，不体现网络位置。若网络规模达到较多主机，路由设备难以用平面 MAC 地址表完成可扩展转发。因此需要具有层次结构的网络地址，即 IP 地址。</p>
+<p>IP 地址在主机接入网络时由网络配置分配，能反映当前所在网络的前缀；MAC 地址随网卡固定，不随物理位置变化。路由器可以按 IP 前缀聚合路由项，而不必记录每个网卡的全局位置。</p>
 </blockquote>
 <h2 id="子网、IP-地址与路由">子网、IP 地址与路由</h2>
 <p>IP 地址用于描述主机在网络层的位置。处于同一 subnet 的主机通常具有相同地址前缀，例如：</p>
@@ -233,6 +236,7 @@
 <blockquote>
 <p><strong>应用只给出目的 IP，如何得到下一跳 MAC？</strong></p>
 <p>使用 ARP（Address Resolution Protocol）。在同一链路内，主机可通过 ARP 查询某个 IP 对应的 MAC 地址。若目的 IP 不在本子网，则查询 gateway IP 对应的 MAC 地址。</p>
+<p>ARP 的基本流程：发送方在本子网广播“谁拥有某个 IP”，拥有该 IP 的主机返回自己的 MAC 地址。发送方记录 <code>IP -&gt; MAC</code> 映射后，再构造 Ethernet frame。ARP 只能在本链路广播范围内解析地址，因此跨子网时解析的是下一跳 gateway 的 MAC，而不是最终目的主机的 MAC。</p>
 </blockquote>
 <h2 id="Internet-Protocol">Internet Protocol</h2>
 <p>多个 LAN 可通过 router 连接成 internet。IP 协议提供两个核心功能：</p>
@@ -313,6 +317,39 @@
 </table>
 <p>应用通过 Berkeley sockets interface 访问网络。Socket I/O 与 Unix file I/O 使用相同的描述符抽象，区别在于 socket descriptor 的打开方式不同。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">User code</span><br><span class="line">  -&gt; sockets interface / system calls</span><br><span class="line">Kernel TCP/IP stack</span><br><span class="line">  -&gt; hardware interface</span><br><span class="line">Network adapter</span><br></pre></td></tr></table></figure>
+<p>从课程简化视角看，可把网络协议栈理解为四层：</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>主要内容</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Link layer</td>
+<td>Ethernet、MAC、switch</td>
+<td>在同一链路或局域网内传 frame</td>
+</tr>
+<tr>
+<td>Network layer</td>
+<td>IP、router</td>
+<td>通过 IP 地址和路由完成 host-to-host delivery</td>
+</tr>
+<tr>
+<td>Transport layer</td>
+<td>TCP、UDP</td>
+<td>在进程之间提供传输抽象</td>
+</tr>
+<tr>
+<td>Application layer</td>
+<td>HTTP、FTP、SMTP 等</td>
+<td>由应用约定 request/response 的格式和语义</td>
+</tr>
+</tbody>
+</table>
+<p>IP 只提供命名和尽力而为的转发。TCP 在 IP 之上处理丢包、乱序和重传，为应用提供可靠、有序的 byte stream；UDP 更轻量，不提供同等可靠性保证，应用可自行处理丢包和顺序问题。</p>
 <h2 id="程序员视角下的-Internet">程序员视角下的 Internet</h2>
 <p>程序员通常使用三类标识：</p>
 <ul>
@@ -324,7 +361,7 @@
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">0xca7828bc = 202.120.40.188</span><br></pre></td></tr></table></figure>
 <p>IP 地址在内存中按 network byte order 存储，即 big-endian byte order。</p>
 <h2 id="DNS">DNS</h2>
-<p>DNS（Domain Naming System）是在 Internet 中维护 domain name 与 IP address 映射的分布式数据库。</p>
+<p>DNS（Domain Name System）是在 Internet 中维护 domain name 与 IP address 映射的分布式数据库。</p>
 <p>DNS host entry 可视为 domain name 和 IP address 的等价类。常见映射关系包括：</p>
 <table>
 <thead>
@@ -439,6 +476,11 @@
 </ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bind(listenfd, p-&gt;ai_addr, p-&gt;ai_addrlen);</span><br><span class="line">listen(listenfd, LISTENQ);</span><br><span class="line">connfd = accept(listenfd, (SA *)&amp;clientaddr, &amp;clientlen);</span><br></pre></td></tr></table></figure>
 <p><code>listen</code> 的 backlog 参数提示内核可排队的未完成连接请求数量。<code>accept</code> 阻塞等待连接请求，成功后返回 connected descriptor，并填充 client address。</p>
+<blockquote>
+<p><strong>为什么 <code>accept</code> 返回的通常不是 <code>listenfd</code>？</strong></p>
+<p><code>listenfd</code> 只负责监听连接请求，可以长期存在并被反复传给 <code>accept</code>。一次 <code>accept</code> 成功后，内核会新建一个 connected descriptor，例如普通进程已占用 <code>0/1/2</code>，<code>open_listenfd</code> 得到 <code>listenfd = 3</code>，第一次 <code>accept</code> 常返回最低空闲描述符 <code>4</code>。</p>
+<p>后续读写 client 数据应使用 <code>connfd</code>，不能使用 <code>listenfd</code>。<code>listenfd</code> 留给 server 主循环继续接收新的连接请求；<code>connfd</code> 表示本次 TCP connection 的一个端点。</p>
+</blockquote>
 <p>Echo 函数用 Robust I/O 逐行读取，直到遇到 EOF：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">echo</span><span class="params">(<span class="type">int</span> connfd)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">size_t</span> n;</span><br><span class="line">    <span class="type">char</span> buf[MAXLINE];</span><br><span class="line">    <span class="type">rio_t</span> rio;</span><br><span class="line"></span><br><span class="line">    Rio_readinitb(&amp;rio, connfd);</span><br><span class="line">    <span class="keyword">while</span> ((n = Rio_readlineb(&amp;rio, buf, MAXLINE)) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;server received %d bytes\n&quot;</span>, n);</span><br><span class="line">        Rio_writen(connfd, buf, n);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>EOF 是连接状态，不是一个数据字节。通常由 client 调用 <code>close(clientfd)</code> 触发。</p>
@@ -489,7 +531,7 @@
 <li><strong>dynamic content</strong>：请求到达时由 server 执行程序生成，例如 CGI 程序。</li>
 </ul>
 <h2 id="URL">URL</h2>
-<p>URL（Universal Resource Locator）标识 server 管理的资源。</p>
+<p>URL（Uniform Resource Locator）标识 server 管理的资源。</p>
 <blockquote>
 <p>静态内容示例：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http://ipads.se.sjtu.edu.cn:80/courses/ics/index.shtml</span><br><span class="line">http://ipads.se.sjtu.edu.cn/courses/ics/</span><br></pre></td></tr></table></figure>
