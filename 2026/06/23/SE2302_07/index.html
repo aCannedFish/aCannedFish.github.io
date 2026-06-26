@@ -418,7 +418,50 @@
 <li><code>open_listenfd(port)</code>：server 端创建监听描述符。</li>
 </ul>
 <p>通信流程：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    subgraph Client[客户端 Client]</span><br><span class="line">        C1[getaddrinfo&lt;br/&gt;获取服务器地址信息]</span><br><span class="line">        C2[socket&lt;br/&gt;创建客户端套接字]</span><br><span class="line">        C3[connect&lt;br/&gt;向服务器发起连接请求]</span><br><span class="line">        C4[writen&lt;br/&gt;发送请求数据]</span><br><span class="line">        C5[readline&lt;br/&gt;读取服务器响应]</span><br><span class="line">        C6&#123;是否继续通信?&#125;</span><br><span class="line">        C7[close&lt;br/&gt;关闭连接]</span><br><span class="line">    end</span><br><span class="line"></span><br><span class="line">    subgraph Server[服务器 Server]</span><br><span class="line">        S1[getaddrinfo&lt;br/&gt;获取本机监听地址信息]</span><br><span class="line">        S2[socket&lt;br/&gt;创建监听套接字]</span><br><span class="line">        S3[bind&lt;br/&gt;绑定 IP 和端口]</span><br><span class="line">        S4[listen&lt;br/&gt;进入监听状态]</span><br><span class="line">        S5[accept&lt;br/&gt;等待并接受客户端连接]</span><br><span class="line">        S6[readline&lt;br/&gt;读取客户端请求]</span><br><span class="line">        S7[writen&lt;br/&gt;发送响应数据]</span><br><span class="line">        S8&#123;客户端是否关闭?&#125;</span><br><span class="line">        S9[readline 读到 EOF]</span><br><span class="line">        S10[close&lt;br/&gt;关闭本次连接]</span><br><span class="line">    end</span><br><span class="line"></span><br><span class="line">    C1 --&gt; C2 --&gt; C3</span><br><span class="line">    S1 --&gt; S2 --&gt; S3 --&gt; S4 --&gt; S5</span><br><span class="line"></span><br><span class="line">    C3 -- connection request --&gt; S5</span><br><span class="line"></span><br><span class="line">    S5 --&gt; S6</span><br><span class="line">    C3 --&gt; C4</span><br><span class="line"></span><br><span class="line">    C4 -- 请求数据 --&gt; S6</span><br><span class="line">    S6 --&gt; S7</span><br><span class="line">    S7 -- 响应数据 --&gt; C5</span><br><span class="line"></span><br><span class="line">    C5 --&gt; C6</span><br><span class="line">    C6 -- 是 --&gt; C4</span><br><span class="line">    C6 -- 否 --&gt; C7</span><br><span class="line"></span><br><span class="line">    C7 -- EOF --&gt; S9</span><br><span class="line">    S8 --&gt;|是| S9</span><br><span class="line">    S9 --&gt; S10</span><br><span class="line">    S10 --&gt; S5</span><br></pre></td></tr></table></figure>
+<pre><code class="highlight mermaid">flowchart TD
+    subgraph Client[客户端 Client]
+        C1[getaddrinfo&lt;br/&gt;获取服务器地址信息]
+        C2[socket&lt;br/&gt;创建客户端套接字]
+        C3[connect&lt;br/&gt;向服务器发起连接请求]
+        C4[writen&lt;br/&gt;发送请求数据]
+        C5[readline&lt;br/&gt;读取服务器响应]
+        C6&#123;是否继续通信?&#125;
+        C7[close&lt;br/&gt;关闭连接]
+    end
+
+    subgraph Server[服务器 Server]
+        S1[getaddrinfo&lt;br/&gt;获取本机监听地址信息]
+        S2[socket&lt;br/&gt;创建监听套接字]
+        S3[bind&lt;br/&gt;绑定 IP 和端口]
+        S4[listen&lt;br/&gt;进入监听状态]
+        S5[accept&lt;br/&gt;等待并接受客户端连接]
+        S6[readline&lt;br/&gt;读取客户端请求]
+        S7[writen&lt;br/&gt;发送响应数据]
+        S8&#123;客户端是否关闭?&#125;
+        S9[readline 读到 EOF]
+        S10[close&lt;br/&gt;关闭本次连接]
+    end
+
+    C1 --&gt; C2 --&gt; C3
+    S1 --&gt; S2 --&gt; S3 --&gt; S4 --&gt; S5
+
+    C3 -- connection request --&gt; S5
+
+    S5 --&gt; S6
+    C3 --&gt; C4
+
+    C4 -- 请求数据 --&gt; S6
+    S6 --&gt; S7
+    S7 -- 响应数据 --&gt; C5
+
+    C5 --&gt; C6
+    C6 -- 是 --&gt; C4
+    C6 -- 否 --&gt; C7
+
+    C7 -- EOF --&gt; S9
+    S8 --&gt;|是| S9
+    S9 --&gt; S10
+    S10 --&gt; S5</code></pre>
 <h2 id="Echo-Client">Echo Client</h2>
 <p>Echo client 从标准输入读取一行，写入 server，再读取 server 返回并输出。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> **argv)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> clientfd;</span><br><span class="line">    <span class="type">char</span> *host, *port, buf[MAXLINE];</span><br><span class="line">    <span class="type">rio_t</span> rio;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (argc != <span class="number">3</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">&quot;usage:%s &lt;host&gt; &lt;port&gt;\n&quot;</span>, argv[<span class="number">0</span>]);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    host = argv[<span class="number">1</span>];</span><br><span class="line">    port = argv[<span class="number">2</span>];</span><br><span class="line">    clientfd = open_clientfd(host, port);</span><br><span class="line">    Rio_readinitb(&amp;rio, clientfd);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (Fgets(buf, MAXLINE, <span class="built_in">stdin</span>) != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        Rio_writen(clientfd, buf, <span class="built_in">strlen</span>(buf));</span><br><span class="line">        Rio_readlineb(&amp;rio, buf, MAXLINE);</span><br><span class="line">        Fputs(buf, <span class="built_in">stdout</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Close(clientfd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
