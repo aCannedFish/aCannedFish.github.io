@@ -1,0 +1,19 @@
+/* Mermaid diagrams: fit article text width without interactive zoom. */
+#article-container .mermaid-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+#article-container .mermaid-wrap > svg {
+  display: block;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-width: 0 !important;
+  margin: 0 auto;
+}
+
+#article-container .mermaid-open-btn {
+  display: none !important;
+}
