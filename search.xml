@@ -222,7 +222,7 @@
       
         <tags>
             
-            <tag> Nonlinear System </tag>
+            <tag> NonlinearSystem </tag>
             
         </tags>
       
@@ -247,7 +247,7 @@
       
         <tags>
             
-            <tag> Linear System </tag>
+            <tag> LinearSystem </tag>
             
         </tags>
       
@@ -272,7 +272,7 @@
       
         <tags>
             
-            <tag> Opimization </tag>
+            <tag> Optimization </tag>
             
         </tags>
       
@@ -299,7 +299,7 @@
             
             <tag> Probability </tag>
             
-            <tag> Information Theory </tag>
+            <tag> InformationTheory </tag>
             
         </tags>
       
@@ -351,7 +351,7 @@
             
             <tag> Transformer </tag>
             
-            <tag> KV Cache </tag>
+            <tag> KVCache </tag>
             
         </tags>
       
@@ -501,7 +501,7 @@
       
         <tags>
             
-            <tag> Topological Sort </tag>
+            <tag> TopologicalSort </tag>
             
         </tags>
       
@@ -551,7 +551,7 @@
       
         <tags>
             
-            <tag> KD Tree </tag>
+            <tag> KDTree </tag>
             
         </tags>
       
@@ -576,7 +576,7 @@
       
         <tags>
             
-            <tag> Red-Black Tree </tag>
+            <tag> RedBlackTree </tag>
             
         </tags>
       
@@ -601,7 +601,7 @@
       
         <tags>
             
-            <tag> Splay Tree </tag>
+            <tag> SplayTree </tag>
             
         </tags>
       
@@ -628,7 +628,7 @@
             
             <tag> Set </tag>
             
-            <tag> Bloom Filter </tag>
+            <tag> BloomFilter </tag>
             
         </tags>
       
@@ -653,7 +653,7 @@
       
         <tags>
             
-            <tag> Skip List </tag>
+            <tag> SkipList </tag>
             
         </tags>
       
@@ -671,7 +671,7 @@
       
       <categories>
           
-          <category> Note(MIT6.S184) </category>
+          <category> Note(Flow&amp;Diffusion) </category>
           
       </categories>
       
@@ -696,7 +696,7 @@
       
       <categories>
           
-          <category> Note(MIT6.S184) </category>
+          <category> Note(Flow&amp;Diffusion) </category>
           
       </categories>
       
@@ -723,7 +723,7 @@
       
       <categories>
           
-          <category> Note(MIT6.S184) </category>
+          <category> Note(Flow&amp;Diffusion) </category>
           
       </categories>
       
@@ -750,14 +750,14 @@
       
       <categories>
           
-          <category> Note(MIT6.S184) </category>
+          <category> Note(Flow&amp;Diffusion) </category>
           
       </categories>
       
       
         <tags>
             
-            <tag> Score Function </tag>
+            <tag> ScoreFunction </tag>
             
             <tag> Diffusion </tag>
             
@@ -777,7 +777,7 @@
       
       <categories>
           
-          <category> Note(MIT6.S184) </category>
+          <category> Note(Flow&amp;Diffusion) </category>
           
       </categories>
       
@@ -802,7 +802,7 @@
       
       <categories>
           
-          <category> Note(MIT6.S184) </category>
+          <category> Note(Flow&amp;Diffusion) </category>
           
       </categories>
       
@@ -829,7 +829,7 @@
       
       <categories>
           
-          <category> Note(CS231n) </category>
+          <category> Note(DL4CV) </category>
           
       </categories>
       
@@ -838,9 +838,9 @@
             
             <tag> CS231n </tag>
             
-            <tag> Deep Learning </tag>
+            <tag> DeepLearning </tag>
             
-            <tag> Computer Vision </tag>
+            <tag> ComputerVision </tag>
             
             <tag> Attention </tag>
             
@@ -862,7 +862,7 @@
       
       <categories>
           
-          <category> Note(CS231n) </category>
+          <category> Note(DL4CV) </category>
           
       </categories>
       
@@ -871,11 +871,11 @@
             
             <tag> CS231n </tag>
             
-            <tag> Deep Learning </tag>
+            <tag> DeepLearning </tag>
             
-            <tag> Computer Vision </tag>
+            <tag> ComputerVision </tag>
             
-            <tag> Recurrent Neural Networks </tag>
+            <tag> RecurrentNeuralNetworks </tag>
             
         </tags>
       
@@ -893,7 +893,7 @@
       
       <categories>
           
-          <category> Note(CS231n) </category>
+          <category> Note(DL4CV) </category>
           
       </categories>
       
@@ -902,11 +902,11 @@
             
             <tag> CS231n </tag>
             
-            <tag> Deep Learning </tag>
+            <tag> DeepLearning </tag>
             
-            <tag> Computer Vision </tag>
+            <tag> ComputerVision </tag>
             
-            <tag> Convolutional Neural Networks </tag>
+            <tag> ConvolutionalNeuralNetworks </tag>
             
             <tag> Normalization </tag>
             
@@ -926,7 +926,7 @@
       
       <categories>
           
-          <category> Note(CS231n) </category>
+          <category> Note(DL4CV) </category>
           
       </categories>
       
@@ -935,15 +935,15 @@
             
             <tag> CS231n </tag>
             
-            <tag> Deep Learning </tag>
+            <tag> DeepLearning </tag>
             
-            <tag> Computer Vision </tag>
+            <tag> ComputerVision </tag>
             
-            <tag> Convolutional Neural Networks </tag>
-            
-            <tag> Residual Networks </tag>
+            <tag> ConvolutionalNeuralNetworks </tag>
             
             <tag> Normalization </tag>
+            
+            <tag> ResidualNetworks </tag>
             
         </tags>
       
@@ -961,7 +961,7 @@
       
       <categories>
           
-          <category> Note(CS231n) </category>
+          <category> Note(DL4CV) </category>
           
       </categories>
       
@@ -970,11 +970,11 @@
             
             <tag> CS231n </tag>
             
-            <tag> Deep Learning </tag>
+            <tag> DeepLearning </tag>
             
-            <tag> Computer Vision </tag>
+            <tag> ComputerVision </tag>
             
-            <tag> Convolutional Neural Networks </tag>
+            <tag> ConvolutionalNeuralNetworks </tag>
             
         </tags>
       
@@ -992,7 +992,7 @@
       
       <categories>
           
-          <category> Note(CS231n) </category>
+          <category> Note(DL4CV) </category>
           
       </categories>
       
@@ -1001,15 +1001,15 @@
             
             <tag> CS231n </tag>
             
-            <tag> Deep Learning </tag>
+            <tag> DeepLearning </tag>
             
-            <tag> Computer Vision </tag>
+            <tag> ComputerVision </tag>
             
             <tag> Optimization </tag>
             
             <tag> Backpropagation </tag>
             
-            <tag> Neural Networks </tag>
+            <tag> NeuralNetworks </tag>
             
         </tags>
       
@@ -1027,7 +1027,7 @@
       
       <categories>
           
-          <category> Note(CS231n) </category>
+          <category> Note(DL4CV) </category>
           
       </categories>
       
@@ -1036,13 +1036,13 @@
             
             <tag> CS231n </tag>
             
-            <tag> Deep Learning </tag>
+            <tag> DeepLearning </tag>
             
-            <tag> Computer Vision </tag>
+            <tag> ComputerVision </tag>
             
             <tag> Optimization </tag>
             
-            <tag> Gradient Descent </tag>
+            <tag> GradientDescent </tag>
             
         </tags>
       
@@ -1060,7 +1060,7 @@
       
       <categories>
           
-          <category> Note(CS231n) </category>
+          <category> Note(DL4CV) </category>
           
       </categories>
       
@@ -1069,9 +1069,9 @@
             
             <tag> CS231n </tag>
             
-            <tag> Deep Learning </tag>
+            <tag> DeepLearning </tag>
             
-            <tag> Computer Vision </tag>
+            <tag> ComputerVision </tag>
             
             <tag> Python </tag>
             
@@ -1091,7 +1091,7 @@
       
       <categories>
           
-          <category> Note(CS231n) </category>
+          <category> Note(DL4CV) </category>
           
       </categories>
       
@@ -1100,9 +1100,9 @@
             
             <tag> CS231n </tag>
             
-            <tag> Deep Learning </tag>
+            <tag> DeepLearning </tag>
             
-            <tag> Computer Vision </tag>
+            <tag> ComputerVision </tag>
             
         </tags>
       
@@ -1120,7 +1120,7 @@
       
       <categories>
           
-          <category> Note(CS231n) </category>
+          <category> Note(DL4CV) </category>
           
       </categories>
       
@@ -1129,9 +1129,9 @@
             
             <tag> CS231n </tag>
             
-            <tag> Deep Learning </tag>
+            <tag> DeepLearning </tag>
             
-            <tag> Computer Vision </tag>
+            <tag> ComputerVision </tag>
             
         </tags>
       
@@ -1149,7 +1149,7 @@
       
       <categories>
           
-          <category> Note(CS0501) </category>
+          <category> Note(DS) </category>
           
       </categories>
       
@@ -1158,7 +1158,7 @@
             
             <tag> CS0501 </tag>
             
-            <tag> Data Structure </tag>
+            <tag> DataStructure </tag>
             
             <tag> C++ </tag>
             
@@ -1178,7 +1178,7 @@
       
       <categories>
           
-          <category> Note(CS0501) </category>
+          <category> Note(DS) </category>
           
       </categories>
       
@@ -1187,7 +1187,7 @@
             
             <tag> CS0501 </tag>
             
-            <tag> Data Structure </tag>
+            <tag> DataStructure </tag>
             
             <tag> C++ </tag>
             
@@ -1207,7 +1207,7 @@
       
       <categories>
           
-          <category> Note(CS0501) </category>
+          <category> Note(DS) </category>
           
       </categories>
       
@@ -1216,7 +1216,7 @@
             
             <tag> CS0501 </tag>
             
-            <tag> Data Structure </tag>
+            <tag> DataStructure </tag>
             
             <tag> C++ </tag>
             
@@ -1236,7 +1236,7 @@
       
       <categories>
           
-          <category> Note(CS0501) </category>
+          <category> Note(DS) </category>
           
       </categories>
       
@@ -1245,7 +1245,7 @@
             
             <tag> CS0501 </tag>
             
-            <tag> Data Structure </tag>
+            <tag> DataStructure </tag>
             
             <tag> C++ </tag>
             
@@ -1265,7 +1265,7 @@
       
       <categories>
           
-          <category> Note(CS0501) </category>
+          <category> Note(DS) </category>
           
       </categories>
       
@@ -1274,7 +1274,7 @@
             
             <tag> CS0501 </tag>
             
-            <tag> Data Structure </tag>
+            <tag> DataStructure </tag>
             
             <tag> C++ </tag>
             
@@ -1294,7 +1294,7 @@
       
       <categories>
           
-          <category> Note(CS0501) </category>
+          <category> Note(DS) </category>
           
       </categories>
       
@@ -1303,7 +1303,7 @@
             
             <tag> CS0501 </tag>
             
-            <tag> Data Structure </tag>
+            <tag> DataStructure </tag>
             
             <tag> C++ </tag>
             
@@ -1323,7 +1323,7 @@
       
       <categories>
           
-          <category> Note(CS0501) </category>
+          <category> Note(DS) </category>
           
       </categories>
       
@@ -1332,7 +1332,7 @@
             
             <tag> CS0501 </tag>
             
-            <tag> Data Structure </tag>
+            <tag> DataStructure </tag>
             
             <tag> C++ </tag>
             
@@ -1352,7 +1352,7 @@
       
       <categories>
           
-          <category> Note(CS0501) </category>
+          <category> Note(DS) </category>
           
       </categories>
       
@@ -1361,7 +1361,7 @@
             
             <tag> CS0501 </tag>
             
-            <tag> Data Structure </tag>
+            <tag> DataStructure </tag>
             
             <tag> C++ </tag>
             
@@ -1381,7 +1381,7 @@
       
       <categories>
           
-          <category> Note(CS0501) </category>
+          <category> Note(DS) </category>
           
       </categories>
       
@@ -1390,7 +1390,7 @@
             
             <tag> CS0501 </tag>
             
-            <tag> Data Structure </tag>
+            <tag> DataStructure </tag>
             
             <tag> C++ </tag>
             
@@ -1410,7 +1410,7 @@
       
       <categories>
           
-          <category> Note(CS0501) </category>
+          <category> Note(DS) </category>
           
       </categories>
       
@@ -1419,7 +1419,7 @@
             
             <tag> CS0501 </tag>
             
-            <tag> Data Structure </tag>
+            <tag> DataStructure </tag>
             
             <tag> C++ </tag>
             
