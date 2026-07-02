@@ -145,9 +145,9 @@
       
         <tags>
             
-            <tag> Cache </tag>
-            
             <tag> Storage </tag>
+            
+            <tag> Cache </tag>
             
         </tags>
       
@@ -757,9 +757,9 @@
       
         <tags>
             
-            <tag> Diffusion </tag>
-            
             <tag> ScoreFunction </tag>
+            
+            <tag> Diffusion </tag>
             
         </tags>
       
