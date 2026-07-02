@@ -145,9 +145,9 @@
       
         <tags>
             
-            <tag> Storage </tag>
-            
             <tag> Cache </tag>
+            
+            <tag> Storage </tag>
             
         </tags>
       
@@ -999,13 +999,13 @@
       
         <tags>
             
-            <tag> Optimization </tag>
-            
             <tag> CS231n </tag>
             
             <tag> DeepLearning </tag>
             
             <tag> ComputerVision </tag>
+            
+            <tag> Optimization </tag>
             
             <tag> Backpropagation </tag>
             
@@ -1034,13 +1034,13 @@
       
         <tags>
             
-            <tag> Optimization </tag>
-            
             <tag> CS231n </tag>
             
             <tag> DeepLearning </tag>
             
             <tag> ComputerVision </tag>
+            
+            <tag> Optimization </tag>
             
             <tag> GradientDescent </tag>
             
