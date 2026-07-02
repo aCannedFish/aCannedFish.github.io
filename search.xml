@@ -145,9 +145,9 @@
       
         <tags>
             
-            <tag> Storage </tag>
-            
             <tag> Cache </tag>
+            
+            <tag> Storage </tag>
             
         </tags>
       
@@ -941,9 +941,9 @@
             
             <tag> ConvolutionalNeuralNetworks </tag>
             
-            <tag> Normalization </tag>
-            
             <tag> ResidualNetworks </tag>
+            
+            <tag> Normalization </tag>
             
         </tags>
       

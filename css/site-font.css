@@ -1,7 +1,11 @@
-/* Use Songti SC Black for normal site text while preserving code, formula and icon fonts. */
+/* Use Songti SC for site text while preserving code, formula and icon fonts. */
 :root {
-  --site-songti-font: "Songti-SC-Black", "Songti SC Black", "Songti SC", "Songti-SC", STSong, SimSun, serif;
-  --site-songti-weight: 900;
+  --site-songti-font: "Songti SC", "Songti-SC", STSong, SimSun, serif;
+  --site-strong-color: #006b3c;
+}
+
+[data-theme="dark"] {
+  --site-strong-color: #6ee787;
 }
 
 html,
@@ -37,5 +41,18 @@ input,
 textarea,
 button {
   font-family: var(--site-songti-font) !important;
-  font-weight: var(--site-songti-weight) !important;
+}
+
+#article-container strong,
+#article-container b {
+  color: var(--site-strong-color) !important;
+  font-weight: 700 !important;
+}
+
+#article-container em {
+  font-style: italic !important;
+}
+
+#page-header.full_page #site-title {
+  font-weight: 700 !important;
 }
