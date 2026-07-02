@@ -941,9 +941,9 @@
             
             <tag> ConvolutionalNeuralNetworks </tag>
             
-            <tag> Normalization </tag>
-            
             <tag> ResidualNetworks </tag>
+            
+            <tag> Normalization </tag>
             
         </tags>
       
