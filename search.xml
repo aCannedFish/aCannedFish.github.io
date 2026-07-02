@@ -757,9 +757,9 @@
       
         <tags>
             
-            <tag> ScoreFunction </tag>
-            
             <tag> Diffusion </tag>
+            
+            <tag> ScoreFunction </tag>
             
         </tags>
       
@@ -941,9 +941,9 @@
             
             <tag> ConvolutionalNeuralNetworks </tag>
             
-            <tag> ResidualNetworks </tag>
-            
             <tag> Normalization </tag>
+            
+            <tag> ResidualNetworks </tag>
             
         </tags>
       
