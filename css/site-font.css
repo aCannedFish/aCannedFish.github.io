@@ -1,0 +1,41 @@
+/* Use Songti SC Black for normal site text while preserving code, formula and icon fonts. */
+:root {
+  --site-songti-font: "Songti-SC-Black", "Songti SC Black", "Songti SC", "Songti-SC", STSong, SimSun, serif;
+  --site-songti-weight: 900;
+}
+
+html,
+body,
+#body-wrap,
+#page-header,
+#nav,
+#content-inner,
+#recent-posts,
+#aside-content,
+#page,
+#post,
+#archive,
+#tag,
+#category,
+#article-container,
+#article-container h1,
+#article-container h2,
+#article-container h3,
+#article-container h4,
+#article-container h5,
+#article-container h6,
+#article-container p,
+#article-container li,
+#article-container blockquote,
+#article-container table,
+#article-container figcaption,
+#pagination,
+.card-widget,
+.recent-post-item,
+.search-dialog,
+input,
+textarea,
+button {
+  font-family: var(--site-songti-font) !important;
+  font-weight: var(--site-songti-weight) !important;
+}
