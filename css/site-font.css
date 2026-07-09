@@ -1,6 +1,6 @@
-/* Use Songti SC for site text while preserving code, formula and icon fonts. */
+/* Use STZhongsong for site text while preserving code, formula and icon fonts. */
 :root {
-  --site-songti-font: "Songti SC", "Songti-SC", STSong, SimSun, serif;
+  --site-songti-font: "STZhongsong", "华文中宋", SimSun, serif;
   --site-strong-color: #006b3c;
 }
 
