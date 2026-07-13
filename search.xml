@@ -49,9 +49,9 @@
       
         <tags>
             
-            <tag> Concurrency </tag>
-            
             <tag> ParallelComputing </tag>
+            
+            <tag> Concurrency </tag>
             
         </tags>
       
@@ -192,9 +192,9 @@
       
         <tags>
             
-            <tag> Cache </tag>
-            
             <tag> MemoryHierarchy </tag>
+            
+            <tag> Cache </tag>
             
         </tags>
       
@@ -221,9 +221,9 @@
       
         <tags>
             
-            <tag> ParallelComputing </tag>
-            
             <tag> GPU </tag>
+            
+            <tag> ParallelComputing </tag>
             
         </tags>
       
@@ -422,9 +422,9 @@
             
             <tag> Transformer </tag>
             
-            <tag> KVCache </tag>
-            
             <tag> Cache </tag>
+            
+            <tag> KVCache </tag>
             
         </tags>
       
@@ -513,9 +513,9 @@
       
         <tags>
             
-            <tag> Concurrency </tag>
-            
             <tag> ParallelComputing </tag>
+            
+            <tag> Concurrency </tag>
             
         </tags>
       
@@ -1059,9 +1059,9 @@
             
             <tag> DeepLearning </tag>
             
-            <tag> ModelTraining </tag>
-            
             <tag> Normalization </tag>
+            
+            <tag> ModelTraining </tag>
             
         </tags>
       
@@ -1090,11 +1090,11 @@
             
             <tag> DeepLearning </tag>
             
-            <tag> Normalization </tag>
-            
             <tag> CNN </tag>
             
             <tag> ResNet </tag>
+            
+            <tag> Normalization </tag>
             
         </tags>
       
@@ -1392,9 +1392,9 @@
             
             <tag> DataStructure </tag>
             
-            <tag> Search </tag>
-            
             <tag> Tree </tag>
+            
+            <tag> Search </tag>
             
         </tags>
       
