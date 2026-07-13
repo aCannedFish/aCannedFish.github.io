@@ -102,8 +102,31 @@
 }
 
 .topic-collection__posts {
-  margin: 0 30px 20px;
-  border-top: 1px solid rgba(0, 0, 0, .08);
+  display: grid;
+  grid-template-rows: 0fr;
+  margin: 0 30px;
+  border-top: 1px solid transparent;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition:
+    grid-template-rows .36s cubic-bezier(.22, 1, .36, 1),
+    margin-bottom .36s cubic-bezier(.22, 1, .36, 1),
+    border-color .36s ease,
+    opacity .22s ease;
+}
+
+.topic-collection__posts-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.topic-collection[open] .topic-collection__posts {
+  grid-template-rows: 1fr;
+  margin-bottom: 20px;
+  border-top-color: rgba(0, 0, 0, .08);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .topic-collection__post {
@@ -151,7 +174,19 @@
   }
 
   .topic-collection__posts {
-    margin: 0 20px 18px;
+    margin-right: 20px;
+    margin-left: 20px;
+  }
+
+  .topic-collection[open] .topic-collection__posts {
+    margin-bottom: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topic-collection__posts,
+  .topic-collection__indicator {
+    transition: none;
   }
 }
 
