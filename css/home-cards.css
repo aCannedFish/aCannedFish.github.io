@@ -38,70 +38,14 @@
   display: none !important;
 }
 
-/* Topic pages start with the same card treatment as the list below. */
-.two-level-list-header {
-  margin: 0 0 1rem;
-  padding: 1.1rem 1.3rem;
-  background: rgba(255, 255, 255, 0.84);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 8px;
-  box-shadow: var(--card-box-shadow);
-  transition: all .3s;
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-}
-
-.two-level-list-header:hover {
-  box-shadow: var(--card-hover-box-shadow);
-}
-
-.two-level-list__back {
-  display: inline-flex;
-  align-items: center;
-  gap: .25rem;
-  color: var(--font-color);
-  font-size: .95rem;
-}
-
-.two-level-list__back:hover {
-  color: var(--theme-color);
-}
-
-.two-level-list__title {
-  margin: .5rem 0 0;
-  color: var(--font-color);
-  font-size: 1.55rem;
-}
-
-.two-level-list__subtitle {
-  margin: .3rem 0 0;
-  color: var(--font-color);
-  opacity: .65;
-  font-size: .9rem;
-}
-
-[data-theme="dark"] .two-level-list-header {
-  background: rgba(28, 28, 28, 0.80);
-  border-color: rgba(255, 255, 255, 0.06);
-}
-
-/* Two-level navigation uses a stable grid instead of the theme masonry script. */
-#recent-posts.two-level-root .recent-post-items,
-#recent-posts.two-level-topic .recent-post-items {
+/* Topic collections expand inline in the same homepage list. */
+#recent-posts.two-level-root .recent-post-items {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
 }
 
-#recent-posts.two-level-root .recent-post-items {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-#recent-posts.two-level-topic .recent-post-items {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-#recent-posts.two-level-root .recent-post-item,
-#recent-posts.two-level-topic .recent-post-item {
+#recent-posts.two-level-root .recent-post-item {
   display: block;
   width: auto;
   margin: 0;
@@ -117,7 +61,7 @@
   display: flex;
   box-sizing: border-box;
   flex-direction: column;
-  height: 100%;
+  min-height: 8.5rem;
   overflow: hidden;
 }
 
@@ -134,11 +78,70 @@
   -webkit-line-clamp: 2;
 }
 
-@media screen and (max-width: 768px) {
-  #recent-posts.two-level-topic .recent-post-items {
-    grid-template-columns: minmax(0, 1fr);
-  }
+#recent-posts.two-level-root .topic-collection[open] {
+  height: auto;
+  overflow: visible;
+}
 
+#recent-posts.two-level-root .topic-collection > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+#recent-posts.two-level-root .topic-collection > summary::-webkit-details-marker {
+  display: none;
+}
+
+.topic-collection__indicator {
+  margin-left: 10px !important;
+  transition: transform .25s ease;
+}
+
+.topic-collection[open] .topic-collection__indicator {
+  transform: rotate(180deg);
+}
+
+.topic-collection__posts {
+  margin: 0 30px 20px;
+  border-top: 1px solid rgba(0, 0, 0, .08);
+}
+
+.topic-collection__post {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 11px 0;
+  color: var(--font-color);
+  border-bottom: 1px solid rgba(0, 0, 0, .08);
+}
+
+.topic-collection__post:last-child {
+  border-bottom: 0;
+}
+
+.topic-collection__post:hover {
+  color: var(--theme-color);
+}
+
+.topic-collection__number {
+  flex: 0 0 1.75rem;
+  color: var(--card-meta);
+  font-size: .82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.topic-collection__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .topic-collection__posts,
+[data-theme="dark"] .topic-collection__post {
+  border-color: rgba(255, 255, 255, .10);
+}
+
+@media screen and (max-width: 768px) {
   #recent-posts.two-level-root .recent-post-item {
     height: 8.25rem;
   }
@@ -146,11 +149,10 @@
   #recent-posts.two-level-root .recent-post-info.no-cover {
     padding: 18px 20px;
   }
-}
 
-/* A topic page intentionally has no site hero: its header is the first card. */
-#body-wrap.type-note-index #content-inner {
-  padding-top: 24px;
+  .topic-collection__posts {
+    margin: 0 20px 18px;
+  }
 }
 
 /* Post-header card styling removed — revert to theme defaults so post
