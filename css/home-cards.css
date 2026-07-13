@@ -38,7 +38,47 @@
   display: none !important;
 }
 
+/* Note topic pages reuse the homepage card list and only add a quiet return
+   action above the list. */
+.two-level-list-header {
+  margin: 0 0 1rem;
+  padding: 1.1rem 1.3rem;
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.two-level-list__back {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  color: var(--font-color);
+  font-size: .95rem;
+}
+
+.two-level-list__back:hover {
+  color: var(--theme-color);
+}
+
+.two-level-list__title {
+  margin: .5rem 0 0;
+  color: var(--font-color);
+  font-size: 1.55rem;
+}
+
+.two-level-list__subtitle {
+  margin: .3rem 0 0;
+  color: var(--font-color);
+  opacity: .65;
+  font-size: .9rem;
+}
+
+[data-theme="dark"] .two-level-list-header {
+  background: rgba(28, 28, 28, 0.80);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
 /* Post-header card styling removed — revert to theme defaults so post
    cover/header is full-bleed and positioned by theme CSS. */
-
 
