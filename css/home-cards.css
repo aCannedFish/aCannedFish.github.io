@@ -51,10 +51,11 @@
   margin: 0;
 }
 
-/* The first-level index is a compact, predictable catalogue. */
+/* Keep a compact baseline while allowing Windows font metrics to grow cards. */
 #recent-posts.two-level-root .recent-post-item {
-  height: 8.5rem;
-  overflow: hidden;
+  min-height: 8.5rem;
+  height: auto;
+  overflow: visible;
 }
 
 #recent-posts.two-level-root .recent-post-info {
@@ -62,7 +63,8 @@
   box-sizing: border-box;
   flex-direction: column;
   min-height: 8.5rem;
-  overflow: hidden;
+  height: auto;
+  overflow: visible;
 }
 
 #recent-posts.two-level-root .recent-post-info.no-cover {
@@ -72,6 +74,17 @@
 #recent-posts.two-level-root .article-title,
 #recent-posts.two-level-root .content {
   overflow: hidden;
+}
+
+#recent-posts.two-level-root .article-title,
+#recent-posts.two-level-root .article-meta-wrap {
+  flex-shrink: 0;
+}
+
+#recent-posts.two-level-root .article-meta-wrap,
+#recent-posts.two-level-root .article-meta {
+  line-height: 1.5;
+  white-space: normal;
 }
 
 #recent-posts.two-level-root .content {
@@ -166,7 +179,8 @@
 
 @media screen and (max-width: 768px) {
   #recent-posts.two-level-root .recent-post-item {
-    height: 8.25rem;
+    min-height: 8.25rem;
+    height: auto;
   }
 
   #recent-posts.two-level-root .recent-post-info.no-cover {
