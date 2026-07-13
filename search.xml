@@ -49,6 +49,8 @@
       
         <tags>
             
+            <tag> ParallelComputing </tag>
+            
             <tag> Concurrency </tag>
             
         </tags>
@@ -103,7 +105,9 @@
       
         <tags>
             
-            <tag> VM </tag>
+            <tag> VirtualMemory </tag>
+            
+            <tag> MemoryManagement </tag>
             
         </tags>
       
@@ -130,7 +134,9 @@
       
         <tags>
             
-            <tag> Cache </tag>
+            <tag> SystemIO </tag>
+            
+            <tag> Filesystem </tag>
             
         </tags>
       
@@ -157,7 +163,9 @@
       
         <tags>
             
-            <tag> ECF </tag>
+            <tag> OperatingSystems </tag>
+            
+            <tag> ControlFlow </tag>
             
         </tags>
       
@@ -184,7 +192,7 @@
       
         <tags>
             
-            <tag> Storage </tag>
+            <tag> MemoryHierarchy </tag>
             
             <tag> Cache </tag>
             
@@ -215,6 +223,8 @@
             
             <tag> GPU </tag>
             
+            <tag> ParallelComputing </tag>
+            
         </tags>
       
     </entry>
@@ -241,6 +251,8 @@
         <tags>
             
             <tag> Optimization </tag>
+            
+            <tag> Performance </tag>
             
         </tags>
       
@@ -377,6 +389,10 @@
       
         <tags>
             
+            <tag> DataStructure </tag>
+            
+            <tag> Graph </tag>
+            
             <tag> PageRank </tag>
             
         </tags>
@@ -406,6 +422,8 @@
             
             <tag> Transformer </tag>
             
+            <tag> Cache </tag>
+            
             <tag> KVCache </tag>
             
         </tags>
@@ -432,6 +450,10 @@
       
       
         <tags>
+            
+            <tag> DataStructure </tag>
+            
+            <tag> Graph </tag>
             
             <tag> MST </tag>
             
@@ -460,6 +482,10 @@
       
         <tags>
             
+            <tag> DataStructure </tag>
+            
+            <tag> Hashing </tag>
+            
             <tag> Cuckoo </tag>
             
         </tags>
@@ -487,7 +513,9 @@
       
         <tags>
             
-            <tag> Parallel </tag>
+            <tag> ParallelComputing </tag>
+            
+            <tag> Concurrency </tag>
             
         </tags>
       
@@ -513,6 +541,8 @@
       
       
         <tags>
+            
+            <tag> StringAlgorithms </tag>
             
             <tag> KMP </tag>
             
@@ -541,6 +571,10 @@
       
         <tags>
             
+            <tag> DataStructure </tag>
+            
+            <tag> Graph </tag>
+            
             <tag> Dijkstra </tag>
             
         </tags>
@@ -567,6 +601,10 @@
       
       
         <tags>
+            
+            <tag> DataStructure </tag>
+            
+            <tag> Graph </tag>
             
             <tag> TopologicalSort </tag>
             
@@ -595,6 +633,8 @@
       
         <tags>
             
+            <tag> Statistics </tag>
+            
             <tag> Median </tag>
             
         </tags>
@@ -621,6 +661,10 @@
       
       
         <tags>
+            
+            <tag> DataStructure </tag>
+            
+            <tag> Tree </tag>
             
             <tag> KDTree </tag>
             
@@ -649,6 +693,10 @@
       
         <tags>
             
+            <tag> DataStructure </tag>
+            
+            <tag> Tree </tag>
+            
             <tag> RedBlackTree </tag>
             
         </tags>
@@ -675,6 +723,10 @@
       
       
         <tags>
+            
+            <tag> DataStructure </tag>
+            
+            <tag> Tree </tag>
             
             <tag> SplayTree </tag>
             
@@ -703,9 +755,11 @@
       
         <tags>
             
-            <tag> Set </tag>
+            <tag> DataStructure </tag>
             
             <tag> BloomFilter </tag>
+            
+            <tag> Hashing </tag>
             
         </tags>
       
@@ -731,6 +785,8 @@
       
       
         <tags>
+            
+            <tag> DataStructure </tag>
             
             <tag> SkipList </tag>
             
@@ -759,6 +815,8 @@
       
         <tags>
             
+            <tag> GenerativeModels </tag>
+            
             <tag> VAE </tag>
             
         </tags>
@@ -785,6 +843,8 @@
       
       
         <tags>
+            
+            <tag> GenerativeModels </tag>
             
             <tag> Flow </tag>
             
@@ -815,6 +875,8 @@
       
         <tags>
             
+            <tag> GenerativeModels </tag>
+            
             <tag> Flow </tag>
             
             <tag> Diffusion </tag>
@@ -844,9 +906,11 @@
       
         <tags>
             
+            <tag> GenerativeModels </tag>
+            
             <tag> Diffusion </tag>
             
-            <tag> ScoreFunction </tag>
+            <tag> ScoreMatching </tag>
             
         </tags>
       
@@ -872,6 +936,8 @@
       
       
         <tags>
+            
+            <tag> GenerativeModels </tag>
             
             <tag> Flow </tag>
             
@@ -899,6 +965,8 @@
       
       
         <tags>
+            
+            <tag> GenerativeModels </tag>
             
             <tag> Flow </tag>
             
@@ -929,11 +997,7 @@
       
         <tags>
             
-            <tag> CS231n </tag>
-            
             <tag> DeepLearning </tag>
-            
-            <tag> ComputerVision </tag>
             
             <tag> Attention </tag>
             
@@ -964,13 +1028,9 @@
       
         <tags>
             
-            <tag> CS231n </tag>
-            
             <tag> DeepLearning </tag>
             
-            <tag> ComputerVision </tag>
-            
-            <tag> RecurrentNeuralNetworks </tag>
+            <tag> RNN </tag>
             
         </tags>
       
@@ -997,15 +1057,11 @@
       
         <tags>
             
-            <tag> CS231n </tag>
-            
             <tag> DeepLearning </tag>
             
-            <tag> ComputerVision </tag>
-            
-            <tag> ConvolutionalNeuralNetworks </tag>
-            
             <tag> Normalization </tag>
+            
+            <tag> ModelTraining </tag>
             
         </tags>
       
@@ -1032,15 +1088,11 @@
       
         <tags>
             
-            <tag> CS231n </tag>
-            
             <tag> DeepLearning </tag>
             
-            <tag> ComputerVision </tag>
+            <tag> CNN </tag>
             
-            <tag> ConvolutionalNeuralNetworks </tag>
-            
-            <tag> ResidualNetworks </tag>
+            <tag> ResNet </tag>
             
             <tag> Normalization </tag>
             
@@ -1069,13 +1121,9 @@
       
         <tags>
             
-            <tag> CS231n </tag>
-            
             <tag> DeepLearning </tag>
             
-            <tag> ComputerVision </tag>
-            
-            <tag> ConvolutionalNeuralNetworks </tag>
+            <tag> CNN </tag>
             
         </tags>
       
@@ -1102,17 +1150,11 @@
       
         <tags>
             
-            <tag> CS231n </tag>
-            
             <tag> DeepLearning </tag>
             
-            <tag> ComputerVision </tag>
-            
-            <tag> Optimization </tag>
+            <tag> NeuralNetworks </tag>
             
             <tag> Backpropagation </tag>
-            
-            <tag> NeuralNetworks </tag>
             
         </tags>
       
@@ -1139,11 +1181,7 @@
       
         <tags>
             
-            <tag> CS231n </tag>
-            
-            <tag> DeepLearning </tag>
-            
-            <tag> ComputerVision </tag>
+            <tag> MachineLearning </tag>
             
             <tag> Optimization </tag>
             
@@ -1174,13 +1212,9 @@
       
         <tags>
             
-            <tag> CS231n </tag>
+            <tag> MachineLearning </tag>
             
-            <tag> DeepLearning </tag>
-            
-            <tag> ComputerVision </tag>
-            
-            <tag> Python </tag>
+            <tag> Regularization </tag>
             
         </tags>
       
@@ -1207,11 +1241,9 @@
       
         <tags>
             
-            <tag> CS231n </tag>
+            <tag> MachineLearning </tag>
             
-            <tag> DeepLearning </tag>
-            
-            <tag> ComputerVision </tag>
+            <tag> LossFunction </tag>
             
         </tags>
       
@@ -1238,11 +1270,11 @@
       
         <tags>
             
-            <tag> CS231n </tag>
+            <tag> MachineLearning </tag>
             
-            <tag> DeepLearning </tag>
+            <tag> Classification </tag>
             
-            <tag> ComputerVision </tag>
+            <tag> KNN </tag>
             
         </tags>
       
@@ -1269,11 +1301,9 @@
       
         <tags>
             
-            <tag> CS0501 </tag>
-            
             <tag> DataStructure </tag>
             
-            <tag> C++ </tag>
+            <tag> Graph </tag>
             
         </tags>
       
@@ -1300,11 +1330,11 @@
       
         <tags>
             
-            <tag> CS0501 </tag>
-            
             <tag> DataStructure </tag>
             
-            <tag> C++ </tag>
+            <tag> Tree </tag>
+            
+            <tag> Sorting </tag>
             
         </tags>
       
@@ -1331,11 +1361,9 @@
       
         <tags>
             
-            <tag> CS0501 </tag>
-            
             <tag> DataStructure </tag>
             
-            <tag> C++ </tag>
+            <tag> Sorting </tag>
             
         </tags>
       
@@ -1362,11 +1390,11 @@
       
         <tags>
             
-            <tag> CS0501 </tag>
-            
             <tag> DataStructure </tag>
             
-            <tag> C++ </tag>
+            <tag> Search </tag>
+            
+            <tag> Tree </tag>
             
         </tags>
       
@@ -1393,11 +1421,9 @@
       
         <tags>
             
-            <tag> CS0501 </tag>
-            
             <tag> DataStructure </tag>
             
-            <tag> C++ </tag>
+            <tag> Search </tag>
             
         </tags>
       
@@ -1424,11 +1450,9 @@
       
         <tags>
             
-            <tag> CS0501 </tag>
-            
             <tag> DataStructure </tag>
             
-            <tag> C++ </tag>
+            <tag> PriorityQueue </tag>
             
         </tags>
       
@@ -1455,11 +1479,9 @@
       
         <tags>
             
-            <tag> CS0501 </tag>
-            
             <tag> DataStructure </tag>
             
-            <tag> C++ </tag>
+            <tag> Tree </tag>
             
         </tags>
       
@@ -1486,11 +1508,9 @@
       
         <tags>
             
-            <tag> CS0501 </tag>
-            
             <tag> DataStructure </tag>
             
-            <tag> C++ </tag>
+            <tag> Queue </tag>
             
         </tags>
       
@@ -1517,11 +1537,9 @@
       
         <tags>
             
-            <tag> CS0501 </tag>
-            
             <tag> DataStructure </tag>
             
-            <tag> C++ </tag>
+            <tag> Stack </tag>
             
         </tags>
       
@@ -1548,11 +1566,9 @@
       
         <tags>
             
-            <tag> CS0501 </tag>
-            
             <tag> DataStructure </tag>
             
-            <tag> C++ </tag>
+            <tag> LinearList </tag>
             
         </tags>
       
