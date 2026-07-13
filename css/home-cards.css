@@ -85,9 +85,31 @@
   border-color: rgba(255, 255, 255, 0.06);
 }
 
+/* Two-level navigation uses a stable grid instead of the theme masonry script. */
+#recent-posts.two-level-root .recent-post-items,
+#recent-posts.two-level-topic .recent-post-items {
+  display: grid;
+  gap: 20px;
+}
+
+#recent-posts.two-level-root .recent-post-items {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#recent-posts.two-level-topic .recent-post-items {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#recent-posts.two-level-root .recent-post-item,
+#recent-posts.two-level-topic .recent-post-item {
+  display: block;
+  width: auto;
+  margin: 0;
+}
+
 /* The first-level index is a compact, predictable catalogue. */
 #recent-posts.two-level-root .recent-post-item {
-  height: 13rem;
+  height: 8.5rem;
   overflow: hidden;
 }
 
@@ -97,6 +119,10 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+}
+
+#recent-posts.two-level-root .recent-post-info.no-cover {
+  padding: 20px 30px;
 }
 
 #recent-posts.two-level-root .article-title,
@@ -109,8 +135,16 @@
 }
 
 @media screen and (max-width: 768px) {
+  #recent-posts.two-level-topic .recent-post-items {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   #recent-posts.two-level-root .recent-post-item {
-    height: 11.5rem;
+    height: 8.25rem;
+  }
+
+  #recent-posts.two-level-root .recent-post-info.no-cover {
+    padding: 18px 20px;
   }
 }
 
