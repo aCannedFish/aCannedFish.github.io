@@ -8,7 +8,7 @@
       <link href="/2026/07/13/BLOG001/"/>
       <url>/2026/07/13/BLOG001/</url>
       
-        <content type="html"><![CDATA[<p><strong>微软雅黑真的很丑！</strong></p><p>之前的感觉并不是很明显，因为屏幕本身分辨率不高。但是换了一个 4K 屏幕之后，就能清楚地看到微软雅黑字体周围的锯齿——使用 ClearType 怎么调整都没有用，在显示比较复杂的汉字时尤其明显。相比之下 Mac 的字体显示就清晰很多，于是受强迫症驱使开始尝试替换系统字体。</p><p>鉴于 MacType 或者 noMeiryoUI 修改不够彻底且容易出现各种兼容问题，于是在初步尝试后舍弃了这两个方案，而是尝试通过将苹方字体伪装成微软雅黑放在 <code>C:\Windows\Fonts</code> 下覆盖原来的文件实现。</p><h2 id="第一步-修改中文">第一步-修改中文</h2><blockquote><p>替换字体文件前务必保存原来的字体文件，如果后续出现问题便于恢复！</p></blockquote><p>参考视频：<a href="https://www.bilibili.com/video/BV1Fw4m1o7tn/?spm_id_from=333.1387.favlist.content.click&amp;vd_source=70598cd118edbcfd45cab8354ac6b3e9">【电脑教程】Windows全局替换苹方字体_哔哩哔哩_bilibili</a></p><p>视频中提供了苹方字体的包，将下载得到的压缩包解压得到以下文件：</p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713171241835.png" alt=""></p><p>为了方便，在 <code>C:\</code> 下创建一个 <code>Fonts</code> 文件夹，把上面这些文件放进去。</p><blockquote><p><code>simsun.ttc</code> 和 <code>simsunb.ttf</code> 对应的是宋体，替换后 Word 等软件的宋体就没法正常显示了（这很 Mac）。如果不打算替换就移除这两个文件，不替换默认宋体。</p></blockquote><p>进入设置-系统-恢复-高级启动-立即重新启动，重启电脑。</p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713172040519.png" alt=""></p><p>重启后从高级选项进入命令提示符，输入：</p><figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xcopy C:\Fonts C:\Windows\Fonts</span><br></pre></td></tr></table></figure><p>Shell 会提示替换五个文件，输入 A 替换，完成后重启，完成替换。</p><h2 id="第二步-修改英文">第二步-修改英文</h2><p>这个时候系统的中文字体已经变成苹方了，但是英文和数字仍然是原样。接下来替换 Segoe UI 字体。</p><p>原理是一样的，找到对应的字体伪装成系统字体就行了，但是手动伪装也挺麻烦的，况且 Segoe UI 有一大堆字体。于是本着懒得动手的原则，在 GitHub 上找了一个工具：<a href="https://github.com/SyrianTurk/SyrianSegoe">SyrianTurk/SyrianSegoe: A Next-Gen. Windows System Font Customization Tool</a></p><p>首先找一份全套的 San Francisco 字体：<a href="https://github.com/bradleyhodges/SFWindows">bradleyhodges/SFWindows: SFWindows - The entire collection of Apple fonts (San Francisco and New York families) for Windows 10/11 and other non-Apple platforms.</a></p><p>解压之后如下：</p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713173024699.png" alt=""></p><p>进入 SyrianSegoe，界面长这个样子：</p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713173210681.png" alt=""></p><p>先点上面一个 Local File，进到刚才下载的字体 <code>SF Pro\</code> 文件夹下，随便点一个，软件会根据粗细自动识别不同粗细字体的替换目标。再点下面一个 Local File，进入之前下载的 <code>SF Multilingual Extensions\SF Arabic\</code> 文件夹下，点击 <code>SF-Arabic.ttf</code> 上传。</p><p>接下来点击 Build &amp; Apply The new font 即可，重启就能看到效果。</p><h2 id="修改效果">修改效果</h2><p>果里果气，但是字体看起来舒适多了：</p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713173837249.png" alt=""></p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713174313279.png" alt=""></p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713173959964.png" alt=""></p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713174106887.png" alt=""></p>]]></content>
+        <content type="html"><![CDATA[<p><strong>微软雅黑真的很丑！</strong></p><p>之前的感觉并不是很明显，因为屏幕本身分辨率不高。但是换了一个 4K 屏幕之后，就能清楚地看到微软雅黑字体周围的锯齿——使用 ClearType 怎么调整都没有用，在显示比较复杂的汉字时尤其明显。相比之下 Mac 的字体显示就清晰很多，于是受强迫症驱使开始尝试替换系统字体。</p><p>鉴于 MacType 或者 noMeiryoUI 修改不够彻底且容易出现各种兼容问题，于是在初步尝试后舍弃了这两个方案，而是尝试通过将苹方字体伪装成微软雅黑放在 <code>C:\Windows\Fonts</code> 下覆盖原来的文件实现。</p><h2 id="第一步-修改中文">第一步-修改中文</h2><blockquote><p>替换字体文件前务必保存原来的字体文件，如果后续出现问题便于恢复！</p></blockquote><p>参考视频：<a href="https://www.bilibili.com/video/BV1Fw4m1o7tn/?spm_id_from=333.1387.favlist.content.click&amp;vd_source=70598cd118edbcfd45cab8354ac6b3e9">【电脑教程】Windows全局替换苹方字体_哔哩哔哩_bilibili</a></p><p>视频中提供了苹方字体的包，将下载得到的压缩包解压得到以下文件：</p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713171241835.png" alt=""></p><p>为了方便，在 <code>C:\</code> 下创建一个 <code>Fonts</code> 文件夹，把上面这些文件放进去。</p><blockquote><p><code>simsun.ttc</code> 和 <code>simsunb.ttf</code> 对应的是宋体，替换后 Word 等软件的宋体就没法正常显示了（这很 Mac）。如果不打算替换就移除这两个文件，不替换默认宋体。</p></blockquote><p>进入设置-系统-恢复-高级启动-立即重新启动，重启电脑。</p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713172040519.png" alt=""></p><p>重启后从高级选项进入命令提示符，输入：</p><figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xcopy C:\Fonts C:\Windows\Fonts</span><br></pre></td></tr></table></figure><p>Shell 会提示替换五个文件，输入 A 替换，完成后重启，完成替换。</p><h2 id="第二步-修改英文">第二步-修改英文</h2><p>这个时候系统的中文字体已经变成苹方了，但是英文和数字仍然是原样。接下来替换 Segoe UI 字体。</p><p>原理是一样的，找到对应的字体伪装成系统字体就行了，但是手动伪装也挺麻烦的，况且 Segoe UI 有一大堆字体。于是本着懒得动手的原则，在 GitHub 上找了一个工具：<a href="https://github.com/SyrianTurk/SyrianSegoe">SyrianTurk/SyrianSegoe: A Next-Gen. Windows System Font Customization Tool</a></p><p>首先找一份全套的 San Francisco 字体：<a href="https://github.com/bradleyhodges/SFWindows">bradleyhodges/SFWindows: SFWindows - The entire collection of Apple fonts (San Francisco and New York families) for Windows 10/11 and other non-Apple platforms.</a></p><p>解压之后如下：</p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713173024699.png" alt=""></p><p>进入 SyrianSegoe，界面长这个样子：</p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713173210681.png" alt=""></p><p>先点上面一个 Local File，进到刚才下载的字体 <code>SF Pro\</code> 文件夹下，随便点一个，软件会根据粗细自动识别不同粗细字体的替换目标。再点下面一个 Local File，进入之前下载的 <code>SF Multilingual Extensions\SF Arabic\</code> 文件夹下，点击 <code>SF-Arabic.ttf</code> 上传。</p><p>接下来点击 Build &amp; Apply The new font 即可，重启就能看到效果。</p><h2 id="修改效果">修改效果</h2><p>果里果气，但是字体看起来舒适多了：</p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713173837249.png" alt=""></p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713174313279.png" alt=""></p><p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260713174106887.png" alt=""></p>]]></content>
       
       
       <categories>
@@ -40,7 +40,9 @@
       
       <categories>
           
-          <category> Note(ICS) </category>
+          <category> Note </category>
+          
+          <category> 计算机系统基础 </category>
           
       </categories>
       
@@ -65,7 +67,9 @@
       
       <categories>
           
-          <category> Note(ICS) </category>
+          <category> Note </category>
+          
+          <category> 计算机系统基础 </category>
           
       </categories>
       
@@ -90,7 +94,9 @@
       
       <categories>
           
-          <category> Note(ICS) </category>
+          <category> Note </category>
+          
+          <category> 计算机系统基础 </category>
           
       </categories>
       
@@ -115,7 +121,9 @@
       
       <categories>
           
-          <category> Note(ICS) </category>
+          <category> Note </category>
+          
+          <category> 计算机系统基础 </category>
           
       </categories>
       
@@ -140,7 +148,9 @@
       
       <categories>
           
-          <category> Note(ICS) </category>
+          <category> Note </category>
+          
+          <category> 计算机系统基础 </category>
           
       </categories>
       
@@ -165,7 +175,9 @@
       
       <categories>
           
-          <category> Note(ICS) </category>
+          <category> Note </category>
+          
+          <category> 计算机系统基础 </category>
           
       </categories>
       
@@ -192,7 +204,9 @@
       
       <categories>
           
-          <category> Note(ICS) </category>
+          <category> Note </category>
+          
+          <category> 计算机系统基础 </category>
           
       </categories>
       
@@ -217,7 +231,9 @@
       
       <categories>
           
-          <category> Note(ICS) </category>
+          <category> Note </category>
+          
+          <category> 计算机系统基础 </category>
           
       </categories>
       
@@ -242,7 +258,9 @@
       
       <categories>
           
-          <category> Note(Math4CS) </category>
+          <category> Note </category>
+          
+          <category> 计算机科学的数学基础 </category>
           
       </categories>
       
@@ -267,7 +285,9 @@
       
       <categories>
           
-          <category> Note(Math4CS) </category>
+          <category> Note </category>
+          
+          <category> 计算机科学的数学基础 </category>
           
       </categories>
       
@@ -292,7 +312,9 @@
       
       <categories>
           
-          <category> Note(Math4CS) </category>
+          <category> Note </category>
+          
+          <category> 计算机科学的数学基础 </category>
           
       </categories>
       
@@ -317,7 +339,9 @@
       
       <categories>
           
-          <category> Note(Math4CS) </category>
+          <category> Note </category>
+          
+          <category> 计算机科学的数学基础 </category>
           
       </categories>
       
@@ -344,7 +368,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -369,7 +395,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -396,7 +424,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -421,7 +451,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -446,7 +478,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -471,7 +505,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -496,7 +532,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -521,7 +559,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -546,7 +586,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -571,7 +613,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -596,7 +640,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -621,7 +667,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -646,7 +694,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -673,7 +723,9 @@
       
       <categories>
           
-          <category> Note(ADS) </category>
+          <category> Note </category>
+          
+          <category> 高级数据结构 </category>
           
       </categories>
       
@@ -698,7 +750,9 @@
       
       <categories>
           
-          <category> Note(Flow&amp;Diffusion) </category>
+          <category> Note </category>
+          
+          <category> 流匹配与扩散模型 </category>
           
       </categories>
       
@@ -723,7 +777,9 @@
       
       <categories>
           
-          <category> Note(Flow&amp;Diffusion) </category>
+          <category> Note </category>
+          
+          <category> 流匹配与扩散模型 </category>
           
       </categories>
       
@@ -750,7 +806,9 @@
       
       <categories>
           
-          <category> Note(Flow&amp;Diffusion) </category>
+          <category> Note </category>
+          
+          <category> 流匹配与扩散模型 </category>
           
       </categories>
       
@@ -777,7 +835,9 @@
       
       <categories>
           
-          <category> Note(Flow&amp;Diffusion) </category>
+          <category> Note </category>
+          
+          <category> 流匹配与扩散模型 </category>
           
       </categories>
       
@@ -804,7 +864,9 @@
       
       <categories>
           
-          <category> Note(Flow&amp;Diffusion) </category>
+          <category> Note </category>
+          
+          <category> 流匹配与扩散模型 </category>
           
       </categories>
       
@@ -829,7 +891,9 @@
       
       <categories>
           
-          <category> Note(Flow&amp;Diffusion) </category>
+          <category> Note </category>
+          
+          <category> 流匹配与扩散模型 </category>
           
       </categories>
       
@@ -856,7 +920,9 @@
       
       <categories>
           
-          <category> Note(DL4CV) </category>
+          <category> Note </category>
+          
+          <category> 计算机视觉 </category>
           
       </categories>
       
@@ -889,7 +955,9 @@
       
       <categories>
           
-          <category> Note(DL4CV) </category>
+          <category> Note </category>
+          
+          <category> 计算机视觉 </category>
           
       </categories>
       
@@ -920,7 +988,9 @@
       
       <categories>
           
-          <category> Note(DL4CV) </category>
+          <category> Note </category>
+          
+          <category> 计算机视觉 </category>
           
       </categories>
       
@@ -953,7 +1023,9 @@
       
       <categories>
           
-          <category> Note(DL4CV) </category>
+          <category> Note </category>
+          
+          <category> 计算机视觉 </category>
           
       </categories>
       
@@ -968,9 +1040,9 @@
             
             <tag> ConvolutionalNeuralNetworks </tag>
             
-            <tag> Normalization </tag>
-            
             <tag> ResidualNetworks </tag>
+            
+            <tag> Normalization </tag>
             
         </tags>
       
@@ -988,7 +1060,9 @@
       
       <categories>
           
-          <category> Note(DL4CV) </category>
+          <category> Note </category>
+          
+          <category> 计算机视觉 </category>
           
       </categories>
       
@@ -1019,7 +1093,9 @@
       
       <categories>
           
-          <category> Note(DL4CV) </category>
+          <category> Note </category>
+          
+          <category> 计算机视觉 </category>
           
       </categories>
       
@@ -1054,7 +1130,9 @@
       
       <categories>
           
-          <category> Note(DL4CV) </category>
+          <category> Note </category>
+          
+          <category> 计算机视觉 </category>
           
       </categories>
       
@@ -1087,7 +1165,9 @@
       
       <categories>
           
-          <category> Note(DL4CV) </category>
+          <category> Note </category>
+          
+          <category> 计算机视觉 </category>
           
       </categories>
       
@@ -1118,7 +1198,9 @@
       
       <categories>
           
-          <category> Note(DL4CV) </category>
+          <category> Note </category>
+          
+          <category> 计算机视觉 </category>
           
       </categories>
       
@@ -1147,7 +1229,9 @@
       
       <categories>
           
-          <category> Note(DL4CV) </category>
+          <category> Note </category>
+          
+          <category> 计算机视觉 </category>
           
       </categories>
       
@@ -1176,7 +1260,9 @@
       
       <categories>
           
-          <category> Note(DS) </category>
+          <category> Note </category>
+          
+          <category> 数据结构 </category>
           
       </categories>
       
@@ -1205,7 +1291,9 @@
       
       <categories>
           
-          <category> Note(DS) </category>
+          <category> Note </category>
+          
+          <category> 数据结构 </category>
           
       </categories>
       
@@ -1234,7 +1322,9 @@
       
       <categories>
           
-          <category> Note(DS) </category>
+          <category> Note </category>
+          
+          <category> 数据结构 </category>
           
       </categories>
       
@@ -1263,7 +1353,9 @@
       
       <categories>
           
-          <category> Note(DS) </category>
+          <category> Note </category>
+          
+          <category> 数据结构 </category>
           
       </categories>
       
@@ -1292,7 +1384,9 @@
       
       <categories>
           
-          <category> Note(DS) </category>
+          <category> Note </category>
+          
+          <category> 数据结构 </category>
           
       </categories>
       
@@ -1321,7 +1415,9 @@
       
       <categories>
           
-          <category> Note(DS) </category>
+          <category> Note </category>
+          
+          <category> 数据结构 </category>
           
       </categories>
       
@@ -1350,7 +1446,9 @@
       
       <categories>
           
-          <category> Note(DS) </category>
+          <category> Note </category>
+          
+          <category> 数据结构 </category>
           
       </categories>
       
@@ -1379,7 +1477,9 @@
       
       <categories>
           
-          <category> Note(DS) </category>
+          <category> Note </category>
+          
+          <category> 数据结构 </category>
           
       </categories>
       
@@ -1408,7 +1508,9 @@
       
       <categories>
           
-          <category> Note(DS) </category>
+          <category> Note </category>
+          
+          <category> 数据结构 </category>
           
       </categories>
       
@@ -1437,7 +1539,9 @@
       
       <categories>
           
-          <category> Note(DS) </category>
+          <category> Note </category>
+          
+          <category> 数据结构 </category>
           
       </categories>
       
