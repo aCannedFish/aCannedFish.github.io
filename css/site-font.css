@@ -1,6 +1,6 @@
-/* Use STZhongsong for site text while preserving code, formula and icon fonts. */
+/* Follow the system UI font while preserving code, formula and icon fonts. */
 :root {
-  --site-songti-font: "STZhongsong", "华文中宋", SimSun, serif;
+  --site-system-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --site-strong-color: #006b3c;
 }
 
@@ -40,7 +40,7 @@ body,
 input,
 textarea,
 button {
-  font-family: var(--site-songti-font) !important;
+  font-family: var(--site-system-font) !important;
 }
 
 #article-container strong,
