@@ -38,15 +38,21 @@
   display: none !important;
 }
 
-/* Note topic pages reuse the homepage card list and only add a quiet return
-   action above the list. */
+/* Topic pages start with the same card treatment as the list below. */
 .two-level-list-header {
   margin: 0 0 1rem;
   padding: 1.1rem 1.3rem;
   background: rgba(255, 255, 255, 0.84);
   border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 8px;
+  box-shadow: var(--card-box-shadow);
+  transition: all .3s;
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+}
+
+.two-level-list-header:hover {
+  box-shadow: var(--card-hover-box-shadow);
 }
 
 .two-level-list__back {
@@ -79,6 +85,39 @@
   border-color: rgba(255, 255, 255, 0.06);
 }
 
+/* The first-level index is a compact, predictable catalogue. */
+#recent-posts.two-level-root .recent-post-item {
+  height: 13rem;
+  overflow: hidden;
+}
+
+#recent-posts.two-level-root .recent-post-info {
+  display: flex;
+  box-sizing: border-box;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+#recent-posts.two-level-root .article-title,
+#recent-posts.two-level-root .content {
+  overflow: hidden;
+}
+
+#recent-posts.two-level-root .content {
+  -webkit-line-clamp: 2;
+}
+
+@media screen and (max-width: 768px) {
+  #recent-posts.two-level-root .recent-post-item {
+    height: 11.5rem;
+  }
+}
+
+/* A topic page intentionally has no site hero: its header is the first card. */
+#body-wrap.type-note-index #content-inner {
+  padding-top: 24px;
+}
+
 /* Post-header card styling removed — revert to theme defaults so post
    cover/header is full-bleed and positioned by theme CSS. */
-
