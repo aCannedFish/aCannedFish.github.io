@@ -353,9 +353,9 @@
       
         <tags>
             
-            <tag> ParallelComputing </tag>
-            
             <tag> Concurrency </tag>
+            
+            <tag> ParallelComputing </tag>
             
         </tags>
       
@@ -496,9 +496,9 @@
       
         <tags>
             
-            <tag> MemoryHierarchy </tag>
-            
             <tag> Cache </tag>
+            
+            <tag> MemoryHierarchy </tag>
             
         </tags>
       
@@ -525,9 +525,9 @@
       
         <tags>
             
-            <tag> GPU </tag>
-            
             <tag> ParallelComputing </tag>
+            
+            <tag> GPU </tag>
             
         </tags>
       
@@ -724,11 +724,11 @@
       
         <tags>
             
-            <tag> Cache </tag>
-            
             <tag> Transformer </tag>
             
             <tag> KVCache </tag>
+            
+            <tag> Cache </tag>
             
         </tags>
       
@@ -817,9 +817,9 @@
       
         <tags>
             
-            <tag> ParallelComputing </tag>
-            
             <tag> Concurrency </tag>
+            
+            <tag> ParallelComputing </tag>
             
         </tags>
       
@@ -1301,11 +1301,11 @@
       
         <tags>
             
+            <tag> Transformer </tag>
+            
             <tag> DeepLearning </tag>
             
             <tag> Attention </tag>
-            
-            <tag> Transformer </tag>
             
         </tags>
       

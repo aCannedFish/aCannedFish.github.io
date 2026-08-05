@@ -38,6 +38,13 @@
   display: none !important;
 }
 
+/* Keep the desktop content area at 80%; mobile keeps the theme layout. */
+@media screen and (min-width: 769px) {
+  #content-inner.layout {
+    max-width: 80%;
+  }
+}
+
 /* Topic collections expand inline in the same homepage list. */
 #recent-posts.two-level-root .recent-post-items {
   display: grid;
