@@ -1,6 +1,6 @@
-/* Follow the system UI font while preserving code, formula and icon fonts. */
+/* Use the bold Songti face for page text while preserving code, formula and icon fonts. */
 :root {
-  --site-system-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --site-body-font: "Songti SC", "STSong", "SimSun", serif;
   --site-strong-color: #006b3c;
 }
 
@@ -40,7 +40,8 @@ body,
 input,
 textarea,
 button {
-  font-family: var(--site-system-font) !important;
+  font-family: var(--site-body-font) !important;
+  font-weight: 700 !important;
 }
 
 #article-container strong,

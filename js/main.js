@@ -1,6 +1,286 @@
 document.addEventListener('DOMContentLoaded', () => {
   let headerContentWidth, $nav
   let mobileSidebarOpen = false
+  let disposeScrollHandlers = null
+  let disposeTocHandlers = null
+  let mobileTocTransition = null
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  const codeMotionStates = new WeakMap()
+  const activeCodeFigures = new Set()
+
+  /**
+   * 将高频事件合并到下一次浏览器绘制，避免同一帧内重复读写布局。
+   * 返回的调度函数带有 cancel 方法，供 PJAX 切换前取消未执行的回调。
+   */
+  const createFrameScheduler = callback => {
+    let frameId = null
+    let latestArgs = []
+
+    const schedule = (...args) => {
+      latestArgs = args
+      if (frameId !== null) return
+
+      frameId = window.requestAnimationFrame(() => {
+        const callbackArgs = latestArgs
+        frameId = null
+        latestArgs = []
+        callback(...callbackArgs)
+      })
+    }
+
+    schedule.cancel = () => {
+      if (frameId !== null) window.cancelAnimationFrame(frameId)
+      frameId = null
+      latestArgs = []
+    }
+
+    return schedule
+  }
+
+  /**
+   * 清理移动目录的临时过渡。重复点击保留当前样式以支持顺畅反向过渡，
+   * PJAX 切换和过渡结束时则恢复由样式表管理的默认值。
+   */
+  const clearMobileTocTransition = (resetStyles = true) => {
+    if (!mobileTocTransition) return
+
+    const { element, onTransitionEnd } = mobileTocTransition
+    element.removeEventListener('transitionend', onTransitionEnd)
+    element.removeEventListener('transitioncancel', onTransitionEnd)
+
+    if (resetStyles) {
+      element.style.removeProperty('transition')
+      element.style.removeProperty('transform-origin')
+    }
+
+    mobileTocTransition = null
+  }
+
+  /** 获取代码块的持久动画状态，供快速反向与 PJAX 清理复用。 */
+  const getCodeMotionState = figure => {
+    let state = codeMotionStates.get(figure)
+
+    if (!state) {
+      state = {
+        animation: null,
+        inlineStyles: null,
+        limitButton: null,
+        limitExpanded: false,
+        motionId: 0,
+        motionType: null,
+        toolbar: null,
+        toolbarClosed: false
+      }
+      codeMotionStates.set(figure, state)
+    }
+
+    return state
+  }
+
+  /** 同步代码折叠控件的最终类名与辅助状态。 */
+  const commitCodeMotionState = state => {
+    if (state.toolbar) {
+      state.toolbar.classList.toggle('closed', state.toolbarClosed)
+      state.toolbar.classList.remove('is-collapsing')
+      state.toolbar.querySelector('.expand')?.setAttribute('aria-expanded', String(!state.toolbarClosed))
+    }
+
+    if (state.limitButton) {
+      state.limitButton.classList.toggle('expand-done', state.limitExpanded)
+      state.limitButton.classList.remove('is-collapsing')
+      state.limitButton.setAttribute('aria-expanded', String(state.limitExpanded))
+    }
+  }
+
+  /** 恢复动画前已有的行内样式，避免覆盖文章或插件的自定义值。 */
+  const restoreCodeInlineStyles = (figure, state) => {
+    if (!state.inlineStyles) return
+
+    figure.style.height = state.inlineStyles.height
+    figure.style.overflow = state.inlineStyles.overflow
+    figure.style.willChange = state.inlineStyles.willChange
+    state.inlineStyles = null
+  }
+
+  /** 将进行中的代码块动画立即落到其目标状态。 */
+  const settleCodeMotion = figure => {
+    const state = codeMotionStates.get(figure)
+    if (!state) return
+
+    state.motionId += 1
+    const animation = state.animation
+    state.animation = null
+    animation?.cancel()
+    commitCodeMotionState(state)
+    restoreCodeInlineStyles(figure, state)
+    state.motionType = null
+    activeCodeFigures.delete(figure)
+  }
+
+  /**
+   * 固定当前视觉高度并中断旧动画。不同控件同时操作时先提交旧状态，
+   * 同一控件连续点击则从当前帧自然反向。
+   */
+  const prepareCodeMotion = (figure, state, motionType) => {
+    if (state.animation && state.motionType !== motionType) settleCodeMotion(figure)
+
+    const startHeight = figure.getBoundingClientRect().height
+    state.motionId += 1
+    const motionId = state.motionId
+    const previousAnimation = state.animation
+    state.animation = null
+    previousAnimation?.cancel()
+
+    if (!state.inlineStyles) {
+      state.inlineStyles = {
+        height: figure.style.height,
+        overflow: figure.style.overflow,
+        willChange: figure.style.willChange
+      }
+    }
+
+    state.motionType = motionType
+    return { motionId, startHeight }
+  }
+
+  /** 使用 WAAPI 在当前高度与测量后的目标高度之间过渡。 */
+  const animateCodeHeight = (figure, state, startHeight, targetHeight, motionId) => {
+    figure.style.height = `${startHeight}px`
+    figure.style.overflow = 'hidden'
+    figure.style.willChange = 'height'
+    activeCodeFigures.add(figure)
+
+    const finish = () => {
+      if (state.motionId !== motionId) return
+
+      const animation = state.animation
+      state.animation = null
+      commitCodeMotionState(state)
+      restoreCodeInlineStyles(figure, state)
+      state.motionType = null
+      activeCodeFigures.delete(figure)
+      animation?.cancel()
+    }
+
+    if (reducedMotionQuery.matches || typeof figure.animate !== 'function' || Math.abs(targetHeight - startHeight) < 1) {
+      finish()
+      return
+    }
+
+    const distance = Math.abs(targetHeight - startHeight)
+    const duration = Math.min(400, Math.max(180, 190 + distance * 0.06))
+
+    try {
+      const animation = figure.animate(
+        [
+          { height: `${startHeight}px` },
+          { height: `${targetHeight}px` }
+        ],
+        {
+          duration,
+          easing: 'cubic-bezier(.32, .72, 0, 1)',
+          fill: 'both'
+        }
+      )
+
+      state.animation = animation
+      animation.finished.then(finish).catch(() => undefined)
+    } catch (error) {
+      console.debug('Code block motion could not start:', error)
+      finish()
+    }
+  }
+
+  /** 切换工具栏折叠状态，收起期间保留正文并由 figure 高度裁切。 */
+  const setHighlightCollapsed = (toolbar, collapsed) => {
+    const figure = toolbar.closest('figure.highlight')
+    if (!figure) return
+
+    const state = getCodeMotionState(figure)
+    if (state.toolbarClosed === collapsed && !state.animation) return
+
+    const { motionId, startHeight } = prepareCodeMotion(figure, state, 'toolbar')
+    state.toolbar = toolbar
+    state.toolbarClosed = collapsed
+
+    toolbar.classList.remove('closed')
+    toolbar.classList.toggle('is-collapsing', collapsed)
+    toolbar.querySelector('.expand')?.setAttribute('aria-expanded', String(!collapsed))
+
+    figure.style.height = 'auto'
+    const expandedHeight = figure.scrollHeight
+    const targetHeight = collapsed ? toolbar.getBoundingClientRect().height : expandedHeight
+    animateCodeHeight(figure, state, startHeight, targetHeight, motionId)
+  }
+
+  /** 切换高度限制状态；当前配置关闭此功能，但保持主题能力平滑可用。 */
+  const setCodeLimitExpanded = (button, expanded) => {
+    const figure = button.closest('figure.highlight')
+    if (!figure) return
+
+    const state = getCodeMotionState(figure)
+    if (state.limitExpanded === expanded && !state.animation) return
+
+    const { motionId, startHeight } = prepareCodeMotion(figure, state, 'limit')
+    state.limitButton = button
+    state.limitExpanded = expanded
+
+    button.classList.toggle('expand-done', expanded)
+    button.classList.remove('is-collapsing')
+    figure.style.height = 'auto'
+    const targetHeight = figure.scrollHeight
+
+    if (!expanded) {
+      button.classList.add('expand-done', 'is-collapsing')
+    }
+
+    button.setAttribute('aria-expanded', String(expanded))
+    animateCodeHeight(figure, state, startHeight, targetHeight, motionId)
+  }
+
+  /** 初始化新插入代码块的状态与键盘语义。 */
+  const initializeCodeMotion = figure => {
+    const state = getCodeMotionState(figure)
+    state.toolbar = figure.querySelector('.highlight-tools')
+    state.limitButton = figure.querySelector('.code-expand-btn')
+    state.toolbarClosed = Boolean(state.toolbar?.classList.contains('closed'))
+    state.limitExpanded = Boolean(state.limitButton?.classList.contains('expand-done'))
+
+    const expandIcon = state.toolbar?.querySelector('.expand')
+    if (expandIcon) {
+      expandIcon.setAttribute('role', 'button')
+      expandIcon.setAttribute('tabindex', '0')
+      expandIcon.setAttribute('aria-label', '展开或折叠代码')
+    }
+
+    if (state.limitButton) {
+      state.limitButton.setAttribute('role', 'button')
+      state.limitButton.setAttribute('tabindex', '0')
+      state.limitButton.setAttribute('aria-label', '展开或收起长代码')
+    }
+
+    commitCodeMotionState(state)
+  }
+
+  /** 清理代码动画和全屏滚动锁，供 PJAX 离开文章前调用。 */
+  const cleanupCodeMotion = () => {
+    Array.from(activeCodeFigures).forEach(settleCodeMotion)
+    const fullpageFigures = document.querySelectorAll('figure.highlight.code-fullpage')
+    if (fullpageFigures.length) {
+      fullpageFigures.forEach(figure => figure.classList.remove('code-fullpage'))
+      document.body.style.overflow = ''
+    }
+  }
+
+  const handleReducedCodeMotion = event => {
+    if (event.matches) Array.from(activeCodeFigures).forEach(settleCodeMotion)
+  }
+
+  if (typeof reducedMotionQuery.addEventListener === 'function') {
+    reducedMotionQuery.addEventListener('change', handleReducedCodeMotion)
+  } else if (typeof reducedMotionQuery.addListener === 'function') {
+    reducedMotionQuery.addListener(handleReducedCodeMotion)
+  }
 
   const adjustMenu = init => {
     const getAllWidth = ele => Array.from(ele).reduce((width, i) => width + i.offsetWidth, 0)
@@ -26,17 +306,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const sidebarFn = {
     open: () => {
       btf.overflowPaddingR.add()
-      btf.animateIn(document.getElementById('menu-mask'), 'to_show 0.5s')
+      document.getElementById('menu-mask').classList.add('open')
       document.getElementById('sidebar-menus').classList.add('open')
       mobileSidebarOpen = true
     },
     close: () => {
       btf.overflowPaddingR.remove()
-      btf.animateOut(document.getElementById('menu-mask'), 'to_hide 0.5s')
+      document.getElementById('menu-mask').classList.remove('open')
       document.getElementById('sidebar-menus').classList.remove('open')
       mobileSidebarOpen = false
     }
   }
+
+  // 移动导航属于持久外壳，PJAX 切页时主动收起并解除页面滚动锁。
+  btf.addGlobalFn('pjaxSend', () => {
+    if (mobileSidebarOpen) sidebarFn.close()
+  }, 'closeMobileSidebar')
 
   /**
    * 首頁top_img底下的箭頭
@@ -143,10 +428,17 @@ document.addEventListener('DOMContentLoaded', () => {
       $buttonParent.classList.remove('copy-true')
     }
 
-    const highlightShrinkFn = ele => ele.classList.toggle('closed')
+    const highlightShrinkFn = toolbar => {
+      const figure = toolbar.closest('figure.highlight')
+      if (!figure) return
+
+      const state = getCodeMotionState(figure)
+      setHighlightCollapsed(toolbar, !state.toolbarClosed)
+    }
 
     const codeFullpage = (item, clickEle) => {
       const wrapEle = item.closest('figure.highlight')
+      settleCodeMotion(wrapEle)
       const isFullpage = wrapEle.classList.toggle('code-fullpage')
 
       document.body.style.overflow = isFullpage ? 'hidden' : ''
@@ -155,14 +447,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const highlightToolsFn = e => {
-      const $target = e.target.classList
+      const action = e.target.closest('.expand, .copy-button, .fullpage-button')
       const currentElement = e.currentTarget
-      if ($target.contains('expand')) highlightShrinkFn(currentElement)
-      else if ($target.contains('copy-button')) highlightCopyFn(currentElement, e.target)
-      else if ($target.contains('fullpage-button')) codeFullpage(currentElement, e.target)
+      if (!action || !currentElement.contains(action)) return
+
+      if (action.classList.contains('expand')) highlightShrinkFn(currentElement)
+      else if (action.classList.contains('copy-button')) highlightCopyFn(currentElement, action)
+      else if (action.classList.contains('fullpage-button')) codeFullpage(currentElement, action)
     }
 
-    const expandCode = e => e.currentTarget.classList.toggle('expand-done')
+    const highlightToolsKeydownFn = e => {
+      if (!e.target.classList.contains('expand') || !['Enter', ' '].includes(e.key)) return
+
+      e.preventDefault()
+      highlightShrinkFn(e.currentTarget)
+    }
+
+    const expandCode = e => {
+      const button = e.currentTarget
+      const figure = button.closest('figure.highlight')
+      if (!figure) return
+
+      const state = getCodeMotionState(figure)
+      setCodeLimitExpanded(button, !state.limitExpanded)
+    }
+
+    const expandCodeKeydown = e => {
+      if (!['Enter', ' '].includes(e.key)) return
+
+      e.preventDefault()
+      expandCode(e)
+    }
 
     // 獲取隱藏狀態下元素的真實高度
     const getActualHeight = item => {
@@ -199,27 +514,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const createEle = (lang, item) => {
       const fragment = document.createDocumentFragment()
+      let hlTools = null
+      let codeExpandButton = null
 
       if (isShowTool) {
-        const hlTools = document.createElement('div')
+        hlTools = document.createElement('div')
         hlTools.className = `highlight-tools ${highlightShrinkClass}`
         hlTools.innerHTML = highlightMacStyleEle + highlightShrinkEle + lang + highlightCopyEle + highlightFullpageEle
         btf.addEventListenerPjax(hlTools, 'click', highlightToolsFn)
+        btf.addEventListenerPjax(hlTools, 'keydown', highlightToolsKeydownFn)
         fragment.appendChild(hlTools)
       }
 
       if (highlightHeightLimit && getActualHeight(item) > highlightHeightLimit + 30) {
-        const ele = document.createElement('div')
-        ele.className = 'code-expand-btn'
-        ele.innerHTML = '<i class="fas fa-angle-double-down"></i>'
-        btf.addEventListenerPjax(ele, 'click', expandCode)
-        fragment.appendChild(ele)
+        codeExpandButton = document.createElement('div')
+        codeExpandButton.className = 'code-expand-btn'
+        codeExpandButton.innerHTML = '<i class="fas fa-angle-double-down"></i>'
+        btf.addEventListenerPjax(codeExpandButton, 'click', expandCode)
+        btf.addEventListenerPjax(codeExpandButton, 'keydown', expandCodeKeydown)
+        fragment.appendChild(codeExpandButton)
       }
 
       isNotHighlightJs ? item.parentNode.insertBefore(fragment, item) : item.insertBefore(fragment, item.firstChild)
+      const figure = isNotHighlightJs ? item.parentElement : item
+      if (hlTools || codeExpandButton) initializeCodeMotion(figure)
     }
 
     $figureHighlight.forEach(item => {
+      if (item.dataset.highlightToolsReady === 'true') return
+      item.dataset.highlightToolsReady = 'true'
+
       let langName = ''
       if (isNotHighlightJs) {
         const newClassName = isPrismjs ? 'prismjs' : 'default'
@@ -239,6 +563,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       createEle(`<div class="code-lang">${langName}</div>`, item)
     })
+
+    btf.addGlobalFn('pjaxSendOnce', cleanupCodeMotion, 'highlightMotionCleanup')
   }
 
   /**
@@ -435,37 +761,40 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * 滾動處理
+   * 根据滚动方向同步顶栏、右下工具栏和阅读进度。
+   * 高频滚动事件按绘制帧合并，避免原 300ms 节流带来的视觉迟滞。
    */
   const scrollFn = () => {
+    disposeScrollHandlers?.()
+
     const $rightside = document.getElementById('rightside')
-    const innerHeight = window.innerHeight + 56
-    let initTop = 0
     const $header = document.getElementById('page-header')
+    if (!($rightside && $header)) return
+
+    let initTop = window.scrollY || document.documentElement.scrollTop
     const isChatBtn = typeof chatBtn !== 'undefined'
     const isShowPercent = GLOBAL_CONFIG.percent.rightside
 
-    // 檢查文檔高度是否小於視窗高度
+    // 文档较短时工具栏应始终可用，窗口尺寸变化时会在下一帧重新判断。
     const checkDocumentHeight = () => {
-      if (document.body.scrollHeight <= innerHeight) {
+      if (document.body.scrollHeight <= window.innerHeight + 56) {
         $rightside.classList.add('rightside-show')
         return true
       }
       return false
     }
 
-    // 如果文檔高度小於視窗高度,直接返回
+    // 保持短页面的既有展示行为，无需注册滚动监听。
     if (checkDocumentHeight()) return
 
-    // find the scroll direction
     const scrollDirection = currentTop => {
-      const result = currentTop > initTop // true is down & false is up
+      const isDown = currentTop > initTop
       initTop = currentTop
-      return result
+      return isDown
     }
 
     let flag = ''
-    const scrollTask = btf.throttle(() => {
+    const updateScrollState = () => {
       const currentTop = window.scrollY || document.documentElement.scrollTop
       const isDown = scrollDirection(currentTop)
       if (currentTop > 56) {
@@ -480,12 +809,10 @@ document.addEventListener('DOMContentLoaded', () => {
             isChatBtn && window.chatBtn.hide()
             flag = 'down'
           }
-        } else {
-          if (flag !== 'up') {
-            $header.classList.add('nav-visible')
-            isChatBtn && window.chatBtn.show()
-            flag = 'up'
-          }
+        } else if (flag !== 'up') {
+          $header.classList.add('nav-visible')
+          isChatBtn && window.chatBtn.show()
+          flag = 'up'
         }
       } else {
         flag = ''
@@ -496,113 +823,146 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       isShowPercent && rightsideScrollPercent(currentTop)
-      checkDocumentHeight()
-    }, 300)
+    }
 
-    btf.addEventListenerPjax(window, 'scroll', scrollTask, { passive: true })
+    const scrollTask = createFrameScheduler(updateScrollState)
+    const resizeTask = createFrameScheduler(checkDocumentHeight)
+    const scrollOptions = { passive: true }
+    const dispose = () => {
+      scrollTask.cancel()
+      resizeTask.cancel()
+      window.removeEventListener('scroll', scrollTask, scrollOptions)
+      window.removeEventListener('resize', resizeTask)
+      if (disposeScrollHandlers === dispose) disposeScrollHandlers = null
+    }
+
+    btf.addEventListenerPjax(window, 'scroll', scrollTask, scrollOptions)
+    btf.addEventListenerPjax(window, 'resize', resizeTask)
+    btf.addGlobalFn('pjaxSendOnce', dispose, 'mainScrollFrameCleanup')
+    disposeScrollHandlers = dispose
+    updateScrollState()
   }
 
   /**
-  * toc,anchor
-  */
+   * 同步文章目录、锚点和目录阅读进度，并在目录项变化时于同一帧完成定位。
+   * 所有临时调度和监听都会在 PJAX 发送前或重新初始化前被清理。
+   */
   const scrollFnToDo = () => {
+    disposeTocHandlers?.()
+
     const isToc = GLOBAL_CONFIG_SITE.isToc
     const isAnchor = GLOBAL_CONFIG.isAnchor
     const $article = document.getElementById('article-container')
-
     if (!($article && (isToc || isAnchor))) return
 
-    let $tocLink, $cardToc, autoScrollToc, $tocPercentage, isExpand
+    let $tocLink = []
+    let $cardToc
+    let $tocPercentage
+    let isExpand = false
+    let tocItemClickFn
+    let scheduleAutoScroll
+    let hasToc = false
 
     if (isToc) {
       const $cardTocLayout = document.getElementById('card-toc')
-      $cardToc = $cardTocLayout.querySelector('.toc-content')
-      $tocLink = $cardToc.querySelectorAll('.toc-link')
-      $tocPercentage = $cardTocLayout.querySelector('.toc-percentage')
-      isExpand = $cardToc.classList.contains('is-expand')
+      $cardToc = $cardTocLayout?.querySelector('.toc-content')
 
-      // toc元素點擊
-      const tocItemClickFn = e => {
-        const target = e.target.closest('.toc-link')
-        if (!target) return
+      if ($cardToc) {
+        hasToc = true
+        $tocLink = $cardToc.querySelectorAll('.toc-link')
+        $tocPercentage = $cardTocLayout.querySelector('.toc-percentage')
+        isExpand = $cardToc.classList.contains('is-expand')
 
-        e.preventDefault()
-        btf.scrollToDest(btf.getEleTop(document.getElementById(decodeURI(target.getAttribute('href')).replace('#', ''))), 300)
-        if (window.innerWidth < 900) {
-          $cardTocLayout.classList.remove('open')
+        // 目录点击保持原有平滑滚动，并在移动端自动收起目录面板。
+        tocItemClickFn = e => {
+          const target = e.target.closest('.toc-link')
+          if (!target) return
+
+          const targetEle = document.getElementById(decodeURI(target.getAttribute('href')).replace('#', ''))
+          if (!targetEle) return
+
+          e.preventDefault()
+          btf.scrollToDest(btf.getEleTop(targetEle), 300)
+          if (window.innerWidth < 900) {
+            $cardTocLayout.classList.remove('open')
+          }
         }
-      }
 
-      btf.addEventListenerPjax($cardToc, 'click', tocItemClickFn)
+        btf.addEventListenerPjax($cardToc, 'click', tocItemClickFn)
 
-      autoScrollToc = item => {
-        const sidebarHeight = $cardToc.clientHeight
-        const itemOffsetTop = item.offsetTop
-        const itemHeight = item.clientHeight
-        const scrollTop = $cardToc.scrollTop
-        const offset = itemOffsetTop - scrollTop
-        const middlePosition = (sidebarHeight - itemHeight) / 2
+        const autoScrollToc = item => {
+          if (!item.isConnected) return
 
-        if (offset !== middlePosition) {
-          $cardToc.scrollTop = scrollTop + (offset - middlePosition)
+          const sidebarHeight = $cardToc.clientHeight
+          const itemHeight = item.clientHeight
+          const maxScrollTop = Math.max(0, $cardToc.scrollHeight - sidebarHeight)
+          const targetScrollTop = Math.max(0, Math.min(maxScrollTop, item.offsetTop - (sidebarHeight - itemHeight) / 2))
+
+          if (Math.abs($cardToc.scrollTop - targetScrollTop) > 1) {
+            $cardToc.scrollTop = targetScrollTop
+          }
         }
-      }
 
-      // 處理 hexo-blog-encrypt 事件
-      $cardToc.style.display = 'block'
+        scheduleAutoScroll = createFrameScheduler(autoScrollToc)
+
+        // 处理 hexo-blog-encrypt 解密后重新生成的目录内容。
+        $cardToc.style.display = 'block'
+      }
     }
 
-    // find head position & add active class
-    const $articleList = $article.querySelectorAll('h1,h2,h3,h4,h5,h6')
+    const $articleList = Array.from($article.querySelectorAll('h1,h2,h3,h4,h5,h6'))
     let detectItem = ''
-
-    // Optimization: Cache header positions
     let headerList = []
+
+    // 缓存标题位置，滚动时只在内存中检索，避免重复测量文档布局。
     const updateHeaderPositions = () => {
-      headerList = Array.from($articleList).map(ele => ({
+      headerList = $articleList.map(ele => ({
         ele,
         top: btf.getEleTop(ele),
         id: ele.id
       }))
     }
 
-    updateHeaderPositions()
-    btf.addEventListenerPjax(window, 'resize', btf.throttle(updateHeaderPositions, 200))
-
     const findHeadPosition = top => {
       if (top === 0) return false
 
       let currentId = ''
       let currentIndex = ''
+      let startIndex = 0
+      let endIndex = headerList.length - 1
 
-      for (let i = 0; i < headerList.length; i++) {
-        const item = headerList[i]
+      // 标题位置按文档顺序有序，二分查找可降低长文滚动时的计算量。
+      while (startIndex <= endIndex) {
+        const middleIndex = Math.floor((startIndex + endIndex) / 2)
+        const item = headerList[middleIndex]
+
         if (top > item.top - 80) {
           currentId = item.id ? '#' + encodeURI(item.id) : ''
-          currentIndex = i
+          currentIndex = middleIndex
+          startIndex = middleIndex + 1
         } else {
-          break
+          endIndex = middleIndex - 1
         }
       }
 
       if (detectItem === currentIndex) return
 
       if (isAnchor) btf.updateAnchor(currentId)
-
       detectItem = currentIndex
 
-      if (isToc) {
+      if (hasToc) {
         $cardToc.querySelectorAll('.active').forEach(i => i.classList.remove('active'))
 
         if (currentId) {
           const currentActive = $tocLink[currentIndex]
-          currentActive.classList.add('active')
+          if (!currentActive) return
 
-          setTimeout(() => autoScrollToc(currentActive), 0)
+          currentActive.classList.add('active')
+          scheduleAutoScroll(currentActive)
 
           if (!isExpand) {
             let parent = currentActive.parentNode
-            while (!parent.matches('.toc')) {
+            while (parent && !parent.matches('.toc')) {
               if (parent.matches('li')) parent.classList.add('active')
               parent = parent.parentNode
             }
@@ -611,16 +971,37 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // main of scroll
-    const tocScrollFn = btf.throttle(() => {
+    const updateTocState = () => {
       const currentTop = window.scrollY || document.documentElement.scrollTop
-      if (isToc && GLOBAL_CONFIG.percent.toc) {
+      if (hasToc && GLOBAL_CONFIG.percent.toc && $tocPercentage) {
         $tocPercentage.textContent = btf.getScrollPercent(currentTop, $article)
       }
       findHeadPosition(currentTop)
-    }, 100)
+    }
 
-    btf.addEventListenerPjax(window, 'scroll', tocScrollFn, { passive: true })
+    updateHeaderPositions()
+
+    const tocScrollTask = createFrameScheduler(updateTocState)
+    const tocResizeTask = createFrameScheduler(() => {
+      updateHeaderPositions()
+      updateTocState()
+    })
+    const scrollOptions = { passive: true }
+    const dispose = () => {
+      tocScrollTask.cancel()
+      tocResizeTask.cancel()
+      scheduleAutoScroll?.cancel()
+      if (hasToc) $cardToc.removeEventListener('click', tocItemClickFn)
+      window.removeEventListener('scroll', tocScrollTask, scrollOptions)
+      window.removeEventListener('resize', tocResizeTask)
+      if (disposeTocHandlers === dispose) disposeTocHandlers = null
+    }
+
+    btf.addEventListenerPjax(window, 'scroll', tocScrollTask, scrollOptions)
+    btf.addEventListenerPjax(window, 'resize', tocResizeTask)
+    btf.addGlobalFn('pjaxSendOnce', dispose, 'mainTocFrameCleanup')
+    disposeTocHandlers = dispose
+    updateTocState()
   }
 
   const handleThemeChange = mode => {
@@ -695,20 +1076,31 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     'mobile-toc-button': (p, item) => { // Show mobile toc
       const tocEle = document.getElementById('card-toc')
-      tocEle.style.transition = 'transform 0.3s ease-in-out'
+      if (!tocEle) return
 
       const tocEleHeight = tocEle.clientHeight
       const btData = item.getBoundingClientRect()
-
       const tocEleBottom = window.innerHeight - btData.bottom - 30
+
+      // 连续点击时保留正在运行的 transform，以便目录自然反向过渡。
+      clearMobileTocTransition(false)
+      tocEle.style.transition = 'transform 0.3s ease-in-out'
+      tocEle.style.removeProperty('transform-origin')
+
       if (tocEleHeight > tocEleBottom) {
         tocEle.style.transformOrigin = `right ${tocEleHeight - tocEleBottom - btData.height / 2}px`
       }
 
+      const onTransitionEnd = e => {
+        if (e.target !== tocEle || e.propertyName !== 'transform') return
+        clearMobileTocTransition()
+      }
+
+      mobileTocTransition = { element: tocEle, onTransitionEnd }
+      tocEle.addEventListener('transitionend', onTransitionEnd)
+      tocEle.addEventListener('transitioncancel', onTransitionEnd)
+      btf.addGlobalFn('pjaxSendOnce', clearMobileTocTransition, 'mainMobileTocTransitionCleanup')
       tocEle.classList.toggle('open')
-      tocEle.addEventListener('transitionend', () => {
-        tocEle.style.cssText = ''
-      }, { once: true })
     },
     'chat-btn': () => { // Show chat
       window.chatBtnFn()

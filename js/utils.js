@@ -121,6 +121,11 @@
       const isNavFixed = document.getElementById('page-header').classList.contains('fixed')
       if (currentPos > pos || isNavFixed) pos = pos - 70
 
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        window.scrollTo(0, pos)
+        return
+      }
+
       if ('scrollBehavior' in document.documentElement.style) {
         window.scrollTo({
           top: pos,

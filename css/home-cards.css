@@ -1,18 +1,3 @@
-/* Homepage-only cards: subtle transparency with a very light frosted effect */
-#recent-posts .recent-post-item,
-#recent-posts ~ #aside-content .card-widget {
-    background: rgba(255, 255, 255, 0.84);
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-}
-
-[data-theme="dark"] #recent-posts .recent-post-item,
-[data-theme="dark"] #recent-posts ~ #aside-content .card-widget {
-    background: rgba(28, 28, 28, 0.80);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
 /* Homepage hero: transparent layer so global background is always visible */
 #page-header.full_page {
   background: transparent !important;
@@ -56,6 +41,18 @@
   display: block;
   width: auto;
   margin: 0;
+  transition: background-color .24s ease,
+    box-shadow .3s cubic-bezier(.32, .72, 0, 1),
+    transform .3s cubic-bezier(.32, .72, 0, 1);
+  transform: translateY(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #recent-posts.two-level-root .recent-post-item:hover,
+  #recent-posts.two-level-root .recent-post-item:focus-within {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .12);
+    transform: translateY(-2px);
+  }
 }
 
 /* Keep a compact baseline while allowing Windows font metrics to grow cards. */
@@ -98,14 +95,15 @@
   -webkit-line-clamp: 2;
 }
 
-#recent-posts.two-level-root .topic-collection[open] {
-  height: auto;
-  overflow: visible;
-}
-
 #recent-posts.two-level-root .topic-collection > summary {
   cursor: pointer;
   list-style: none;
+}
+
+#recent-posts.two-level-root .topic-collection > summary:focus-visible {
+  outline: 2px solid var(--theme-color);
+  outline-offset: -4px;
+  border-radius: inherit;
 }
 
 #recent-posts.two-level-root .topic-collection > summary::-webkit-details-marker {
@@ -114,39 +112,41 @@
 
 .topic-collection__indicator {
   margin-left: 10px !important;
-  transition: transform .25s ease;
+  transform: rotate(0deg);
+  transform-origin: center;
 }
 
 .topic-collection[open] .topic-collection__indicator {
   transform: rotate(180deg);
 }
 
+/* JavaScript sets this attribute before each WAAPI transition. It keeps the
+   indicator aligned with the intended state while details stays open to play
+   a closing animation. */
+html.site-motion-ready .topic-collection[data-topic-expanded="false"] .topic-collection__indicator {
+  transform: rotate(0deg);
+}
+
+html.site-motion-ready .topic-collection[data-topic-expanded="true"] .topic-collection__indicator {
+  transform: rotate(180deg);
+}
+
+/* The native details element remains the source of truth. The panel's actual
+   height, opacity, margin and divider are animated by site-motion.js, so no
+   grid-template-rows transition is required. */
 .topic-collection__posts {
-  display: grid;
-  grid-template-rows: 0fr;
   margin: 0 30px;
   border-top: 1px solid transparent;
-  opacity: 0;
   overflow: hidden;
-  pointer-events: none;
-  transition:
-    grid-template-rows .36s cubic-bezier(.22, 1, .36, 1),
-    margin-bottom .36s cubic-bezier(.22, 1, .36, 1),
-    border-color .36s ease,
-    opacity .22s ease;
 }
 
 .topic-collection__posts-inner {
-  min-height: 0;
-  overflow: hidden;
+  min-height: 1px;
 }
 
 .topic-collection[open] .topic-collection__posts {
-  grid-template-rows: 1fr;
   margin-bottom: 20px;
   border-top-color: rgba(0, 0, 0, .08);
-  opacity: 1;
-  pointer-events: auto;
 }
 
 .topic-collection__post {
@@ -156,6 +156,7 @@
   padding: 11px 0;
   color: var(--font-color);
   border-bottom: 1px solid rgba(0, 0, 0, .08);
+  transition: color .22s ease, background-color .22s ease, transform .28s cubic-bezier(.32, .72, 0, 1);
 }
 
 .topic-collection__post:last-child {
@@ -164,6 +165,7 @@
 
 .topic-collection__post:hover {
   color: var(--theme-color);
+  transform: translateX(4px);
 }
 
 .topic-collection__number {
@@ -205,11 +207,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .topic-collection__posts,
   .topic-collection__indicator {
     transition: none;
   }
 }
 
-/* Post-header card styling removed — revert to theme defaults so post
-   cover/header is full-bleed and positioned by theme CSS. */
+/* Article header transparency is owned by site-motion.css; homepage card
+   rules intentionally stay scoped to the two-level topic list. */
