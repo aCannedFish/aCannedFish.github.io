@@ -434,6 +434,7 @@
     document.addEventListener('pjax:send', () => {
       settleActiveTransitions()
       window.clearTimeout(routeCompleteTimer)
+      document.documentElement.classList.add('has-pjax-navigation')
       document.documentElement.classList.remove('is-route-complete')
       document.documentElement.classList.add('is-route-loading')
     })
