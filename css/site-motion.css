@@ -122,13 +122,6 @@ html.is-route-complete::after {
 /* Let the mobile drawer clear the viewport before the incoming route fades
    in. Direct menu dismissals keep the normal spring duration. */
 @media screen and (max-width: 768px) {
-  /* Butterfly's legacy page-enter animation targets the persistent layout.
-     Mobile WebKit restarts it when PJAX updates that layout, which replays the
-     same bottom-to-top motion after the route content has already entered. */
-  html.has-pjax-navigation #content-inner {
-    animation: none;
-  }
-
   html.is-route-loading #sidebar-menus {
     transition-duration: .16s;
   }
