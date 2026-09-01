@@ -4,25 +4,6 @@
   
     
     <entry>
-      <title>论文阅读（CV）</title>
-      <link href="/2026/09/01/BLOG003/"/>
-      <url>/2026/09/01/BLOG003/</url>
-      
-        <content type="html"><![CDATA[]]></content>
-      
-      
-      <categories>
-          
-          <category> Blog </category>
-          
-      </categories>
-      
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>论文阅读（3D）</title>
       <link href="/2026/08/28/BLOG002/"/>
       <url>/2026/08/28/BLOG002/</url>
@@ -429,9 +410,9 @@
       
         <tags>
             
-            <tag> 序列模型 </tag>
-            
             <tag> Transformer </tag>
+            
+            <tag> 序列模型 </tag>
             
         </tags>
       
@@ -810,11 +791,11 @@
       
         <tags>
             
-            <tag> 序列模型 </tag>
-            
             <tag> 生成模型 </tag>
             
             <tag> 扩散模型 </tag>
+            
+            <tag> 序列模型 </tag>
             
             <tag> 马尔可夫链 </tag>
             
@@ -876,11 +857,11 @@
       
         <tags>
             
+            <tag> 生成模型 </tag>
+            
             <tag> CNN </tag>
             
             <tag> Transformer </tag>
-            
-            <tag> 生成模型 </tag>
             
         </tags>
       
@@ -1060,9 +1041,9 @@
       
         <tags>
             
-            <tag> 图像分割 </tag>
-            
             <tag> 表征学习 </tag>
+            
+            <tag> 图像分割 </tag>
             
             <tag> 多模态 </tag>
             
@@ -1211,9 +1192,9 @@
             
             <tag> CNN </tag>
             
-            <tag> 序列模型 </tag>
-            
             <tag> Transformer </tag>
+            
+            <tag> 序列模型 </tag>
             
         </tags>
       
@@ -1267,9 +1248,9 @@
       
         <tags>
             
-            <tag> 序列模型 </tag>
-            
             <tag> Transformer </tag>
+            
+            <tag> 序列模型 </tag>
             
         </tags>
       
