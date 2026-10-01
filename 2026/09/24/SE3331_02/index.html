@@ -1,0 +1,916 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-02：文件系统 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="从磁盘到文件 大型网站要让文件服务器、数据库、缓存、应用服务器、负载均衡、CDN 和消息队列共同工作。这些分布式组件最终仍运行在单机的系统抽象之上。本讲先研究一个基于 inode 的单机文件系统：磁盘只认识编号的扇区，应用却希望操作有名字、可增长、断电后仍存在的文件。文件可以看成比原始内存更高层的字节序列抽象，名称和持久性是它区别于一段临时内存的重要性质。 磁盘驱动程序可简化为 Read(bloc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机系统工程-02：文件系统">
+<meta property="og:url" content="https://acannedfish.github.io/2026/09/24/SE3331_02/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="从磁盘到文件 大型网站要让文件服务器、数据库、缓存、应用服务器、负载均衡、CDN 和消息队列共同工作。这些分布式组件最终仍运行在单机的系统抽象之上。本讲先研究一个基于 inode 的单机文件系统：磁盘只认识编号的扇区，应用却希望操作有名字、可增长、断电后仍存在的文件。文件可以看成比原始内存更高层的字节序列抽象，名称和持久性是它区别于一段临时内存的重要性质。 磁盘驱动程序可简化为 Read(bloc">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background7.png">
+<meta property="article:published_time" content="2026-09-24T08:11:00.000Z">
+<meta property="article:modified_time" content="2026-10-01T13:52:33.315Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="文件系统">
+<meta property="article:tag" content="inode">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background7.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机系统工程-02：文件系统",
+  "url": "https://acannedfish.github.io/2026/09/24/SE3331_02/",
+  "image": "https://acannedfish.github.io/img/background7.png",
+  "datePublished": "2026-09-24T08:11:00.000Z",
+  "dateModified": "2026-10-01T13:52:33.315Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/09/24/SE3331_02/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机系统工程-02：文件系统',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">85</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-02：文件系统&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-02：文件系统</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-24T08:11:00.000Z" title="发表于 2026-09-24 16:11:00">2026-09-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-01T13:52:33.315Z" title="更新于 2026-10-01 21:52:33">2026-10-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="从磁盘到文件">从磁盘到文件</h2>
+<p>大型网站要让文件服务器、数据库、缓存、应用服务器、负载均衡、CDN 和消息队列共同工作。这些分布式组件最终仍运行在单机的系统抽象之上。本讲先研究一个基于 inode 的单机文件系统：磁盘只认识编号的扇区，应用却希望操作有名字、可增长、断电后仍存在的文件。文件可以看成比原始内存更高层的字节序列抽象，名称和持久性是它区别于一段临时内存的重要性质。</p>
+<p>磁盘驱动程序可简化为 <code>Read(block_idx)</code> 和 <code>Write(block_idx, data)</code>。其底层读写单位通常是扇区，常见大小有 512 B 或 4 KiB；一个文件却可能远大于一个扇区，还需要名称、权限、目录等功能。文件系统在硬件和应用之间建立多层映射，对上提供 <code>open</code>、<code>read</code>、<code>write</code> 等接口，对下把操作转换成块地址。</p>
+<p>从接口形式也能看到抽象差别：设备接受“读第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi></mrow><annotation encoding="application/x-tex">b</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">b</span></span></span></span> 个块”，文件系统对应用提供“读名称为 <code>a.txt</code> 的文件，从偏移 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>o</mi></mrow><annotation encoding="application/x-tex">o</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">o</span></span></span></span> 取 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> 字节”。文件系统先用名称找到 inode，再把 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>o</mi></mrow><annotation encoding="application/x-tex">o</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">o</span></span></span></span> 换算成文件内块索引与块内位置，最终才得到设备块号。应用请求的长度可以跨越多个块，文件系统必须拼接结果。</p>
+<p>Unix 文件系统接口还包括 <code>append</code>、<code>seek</code>、<code>close</code>、<code>fsync</code>，查询或修改元数据的 <code>stat</code>、<code>chmod</code>、<code>chown</code>，修改命名关系的 <code>rename</code>、<code>link</code>、<code>unlink</code>、<code>symlink</code>，以及目录和挂载相关的 <code>mkdir</code>、<code>chdir</code>、<code>chroot</code>、<code>mount</code>、<code>umount</code>。这些 API 分别解决数据访问、持久化、权限、命名和命名空间问题。</p>
+<p>其中 <code>seek</code> 改变打开文件的当前偏移，<code>stat</code> 返回文件属性，<code>chmod</code> 和 <code>chown</code> 修改权限及所有者；<code>fsync</code> 则请求把相关待写数据和必要元数据推进到持久存储。<code>link</code>、<code>unlink</code> 改变名称与 inode 的绑定，<code>rename</code> 需要协调源和目标目录项。<code>chroot</code> 改变进程看到的路径根，<code>mount</code> 把另一个文件系统接入现有目录树。这些操作说明文件系统除保存字节外，还维护访问控制与全局命名关系。</p>
+<p>从应用到磁盘的一次读取可拆成三步：应用把文件名和偏移交给文件系统；文件系统查元数据，算出要读的磁盘块；驱动程序再按块号从设备取回数据。课件的系统结构图还区分用户态应用、内核中的文件系统与磁盘驱动、以及硬件磁盘。文件系统负责解释“文件”，驱动负责执行设备 I/O。把这两个职责分开后，应用无需知道设备扇区号，文件系统也不必直接处理每种磁盘控制器的命令。</p>
+<p>例如读取 <code>report.txt</code> 从第 5000 字节开始的 100 字节，驱动只会收到“读取某个块”这样的请求。文件系统必须先解析名字，找到文件元数据，再把文件内的第 5000 字节换算成块号和块内位置。后文将把这条链路逐层展开。</p>
+<h3 id="连续存储">连续存储</h3>
+<p>一种朴素方案是每个文件占一段连续扇区，直接用起始扇区编号表示文件。它会遇到：</p>
+<ul>
+<li>磁盘上哪些位置空闲？每次全盘扫描代价太高。</li>
+<li>文件末尾后面的扇区已被别的文件使用时，扩容可能需要搬迁整个文件。</li>
+<li>扇区编号不能提供好记的字符串文件名。</li>
+<li>权限、所属用户等信息没有统一存放位置。</li>
+</ul>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215006117.png" alt="用连续扇区和起始扇区号表示文件的朴素方案"></p>
+<p>课件图中红色为已占用扇区，三个文件分别从 101、107、113 开始。文件 107 当前占用 107、108，后面的 109 至 112 可以用于追加；继续增长到 113 时就会撞上另一个文件。即使磁盘其他位置还有空闲扇区，要求文件必须连续也会迫使系统搬迁文件或改变布局。</p>
+<p>起始扇区号还把“文件身份”绑在物理位置上：一旦移动文件，107 这个名字便失去原意。后续的 inode 层把文件身份与数据块位置分开，目录层再给文件提供人能记住的名称，逐层解决这里的限制。</p>
+<p>inode 文件系统通过多层名字与地址映射逐步解决这些问题。</p>
+<h2 id="七层命名">七层命名</h2>
+<p>课件以 Unix Version 6 的思路，把从磁盘到路径的映射分成七层。图中的层次是理解模型，并不表示所有现代文件系统都原样采用相同的磁盘布局。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260924160513888.png" alt="Unix 文件系统七层命名结构"></p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>输入</th>
+<th>输出</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 块层</td>
+<td>块号</td>
+<td>磁盘块</td>
+<td>找到物理存储单位</td>
+</tr>
+<tr>
+<td>2 文件层</td>
+<td>inode 与文件偏移</td>
+<td>文件内容所在的块</td>
+<td>组织可增长的文件</td>
+</tr>
+<tr>
+<td>3 inode 编号层</td>
+<td>inode 号</td>
+<td>inode</td>
+<td>给文件元数据稳定编号</td>
+</tr>
+<tr>
+<td>4 文件名层</td>
+<td>目录 inode 与文件名</td>
+<td>子项 inode 号</td>
+<td>提供人能阅读的名字</td>
+</tr>
+<tr>
+<td>5 路径层</td>
+<td>工作目录与相对路径</td>
+<td>inode 号</td>
+<td>逐级查找目录</td>
+</tr>
+<tr>
+<td>6 绝对路径层</td>
+<td>根目录与绝对路径</td>
+<td>inode 号</td>
+<td>统一所有用户的起点</td>
+</tr>
+<tr>
+<td>7 符号链接层</td>
+<td>链接中的路径字符串</td>
+<td>目标路径</td>
+<td>为另一条路径建立别名</td>
+</tr>
+</tbody>
+</table>
+<p>“名字”在不同层有不同含义：物理块有块号，inode 有 inode 号，同一 inode 可以有多个目录项名字。理解每层输入和输出，才能看清一次路径查找到底做了哪些工作。</p>
+<p>读这张课件图时可以从下往上看：驱动先识别磁盘块；inode 把一组块组织成文件；inode 号给元数据编号；目录把人类可读的名称连到 inode 号；路径把多个目录查找串起来；根目录为绝对路径提供共同起点；符号链接让一个路径再指向另一个路径。反过来，真正读取 <code>/a/b.txt</code> 时，系统从路径这一侧逐层向下转换，最终到达块号。图右侧标出的 machine-oriented names 与 user-oriented names，正是从机器编号过渡到用户名称的边界。</p>
+<h2 id="块与超级块">块与超级块</h2>
+<h3 id="块层">块层</h3>
+<p>文件系统通常按 <strong>块（block）</strong> 管理数据。块不小于设备的最小读写单位，可以由多个连续扇区组成。例如 1 KiB 扇区组成 4 KiB 文件系统块时，管理同样大小的文件所需记录的块号约减少到四分之一。块大一些能减少元数据与定位开销，但一个只占几字节的小文件也可能占用整块，造成块内碎片。因此块大小需要在效率与空间利用率之间权衡。</p>
+<p>设磁盘有 4 TiB，文件系统采用 4 KiB 块，仅数据区就可能涉及约 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>30</mn></msup></mrow><annotation encoding="application/x-tex">2^{30}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">30</span></span></span></span></span></span></span></span></span></span></span></span> 个块。文件系统不可能每次访问都从头检查十亿个位置，必须长期保存块分配状态。若改用 1 KiB 块，块号数量会再增至四倍；若改用更大的块，小文件末块浪费的空间又会增加。块大小本质上同时决定索引粒度与分配粒度。</p>
+<p>块号到内容的映射在教学模型中可写为 <code>BLOCK_NUMBER_TO_BLOCK(b) = devices[b]</code>。真正驱动程序还要把块号换算到设备地址，并处理 I/O 排队和错误。</p>
+<h3 id="超级块与位图">超级块与位图</h3>
+<p>系统必须知道块大小、文件系统总规模、空闲块和 inode 的位置。超级块（superblock）保存这些文件系统级元数据；挂载时内核读取超级块，才能解释后续磁盘内容。课件示意的布局包含引导块、超级块、空闲块位图、inode 表与文件数据块。</p>
+<p>空闲位图用每一位记录一个块是否可分配。一个字节可表示 8 个块，扫描位图可以寻找空闲块；分配时更新位，释放时清除相应状态。课件也提到超级块中的空闲块列表；这是不同实现或教学抽象中的组织方式，不必假定“列表”和“位图”在所有文件系统中同时以图示方式工作。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215006118.png" alt="文件系统在磁盘上保存超级块、空闲位图与文件块"></p>
+<p>图把磁盘分成几类区域：引导块用于启动相关信息，超级块说明如何解释文件系统，位图记录块分配状态，后方的文件块保存内容。位图也占磁盘空间，但每个数据块只需要一个状态位；例如 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>30</mn></msup></mrow><annotation encoding="application/x-tex">2^{30}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">30</span></span></span></span></span></span></span></span></span></span></span></span> 个块的位图约占 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>30</mn></msup><mi mathvariant="normal">/</mi><mn>8</mn><mo>=</mo><mn>128</mn></mrow><annotation encoding="application/x-tex">2^{30}/8=128</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">30</span></span></span></span></span></span></span></span></span><span class="mord">/8</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">128</span></span></span></span> MiB，远小于对应的数据容量。图没有指定 0、1 各表示空闲还是已用，实现中必须统一约定。</p>
+<p>例如位图的第 42 位代表块 42。创建文件并分配此块时，分配器先确认它空闲，再修改位图并把块号记入文件索引。释放文件时顺序相反：先保证没有目录项或文件索引继续引用这个块，随后才能把它标为空闲。否则同一块可能被两个文件同时使用。超级块提供解释位图和 inode 表所需的总参数，位图负责逐块状态。</p>
+<h2 id="inode-与数据块">inode 与数据块</h2>
+<h3 id="文件层">文件层</h3>
+<p>文件对应用表现为可随时间增长或缩小的字节序列。inode（index node）保存文件的元数据，例如大小、类型、权限、所有者、链接计数，以及定位数据块所需的索引。目录项中的文件名通常不在 inode 内。</p>
+<p>读文件偏移 <code>offset</code> 时，先算出文件内逻辑块号 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi><mo>=</mo><mo stretchy="false">⌊</mo><mi>o</mi><mi>f</mi><mi>f</mi><mi>s</mi><mi>e</mi><mi>t</mi><mi mathvariant="normal">/</mi><mi>B</mi><mi>L</mi><mi>O</mi><mi>C</mi><mi>K</mi><mi>S</mi><mi>I</mi><mi>Z</mi><mi>E</mi><mo stretchy="false">⌋</mo></mrow><annotation encoding="application/x-tex">q=\lfloor offset / BLOCKSIZE\rfloor</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">⌊</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal">se</span><span class="mord mathnormal">t</span><span class="mord">/</span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span><span class="mord mathnormal">L</span><span class="mord mathnormal" style="margin-right:0.07153em;">OC</span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord mathnormal" style="margin-right:0.05764em;">ZE</span><span class="mclose">⌋</span></span></span></span>，再由 inode 的索引找到磁盘块号；块内字节位置是 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi><mo>=</mo><mi>o</mi><mi>f</mi><mi>f</mi><mi>s</mi><mi>e</mi><mi>t</mi><mtext> </mtext><mo lspace="0.22em" rspace="0.22em"><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">d</mi></mrow></mo><mtext> </mtext><mi>B</mi><mi>L</mi><mi>O</mi><mi>C</mi><mi>K</mi><mi>S</mi><mi>I</mi><mi>Z</mi><mi>E</mi></mrow><annotation encoding="application/x-tex">r=offset\bmod BLOCKSIZE</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal">se</span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.0556em;"></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin"><span class="mord"><span class="mord mathrm">mod</span></span></span><span class="mspace" style="margin-right:0.0556em;"></span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span><span class="mord mathnormal">L</span><span class="mord mathnormal" style="margin-right:0.07153em;">OC</span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord mathnormal" style="margin-right:0.05764em;">ZE</span></span></span></span>。如果一次读取跨越块边界，就要重复定位后续逻辑块。文件长度与块号都必须检查，不能把未分配位置当作已有数据。</p>
+<p>inode 内直接记录若干块号，能快速处理小文件；大文件还需要一级间接块、二级间接块甚至三级间接块。间接块不存普通文件内容，而是存下一层块号。若一个块能容纳 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi></mrow><annotation encoding="application/x-tex">K</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span></span></span></span> 个块号，一项一级间接索引可覆盖 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi></mrow><annotation encoding="application/x-tex">K</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span></span></span></span> 个数据块，一项二级间接索引可覆盖约 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>K</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">K^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> 个数据块。代价是访问目标数据块前可能先读取一到数个索引块。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260924163110310.png" alt="inode 的直接、一级、二级和三级间接索引"></p>
+<p>图左侧的长条是 inode，右侧的 Data 方框才存文件字节。最上方的直接指针从 inode 一步到 Data；浅橙色的一级间接指针先到一个索引块，再到 Data；粉色和深红色的指针分别多经过一层、两层索引块。箭头增加的是查找层数，换来的是可表示的文件大小。</p>
+<p>假设块长 4 KiB、一个块号占 4 B，则一个间接块能存 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi><mo>=</mo><mn>4096</mn><mi mathvariant="normal">/</mi><mn>4</mn><mo>=</mo><mn>1024</mn></mrow><annotation encoding="application/x-tex">K=4096/4=1024</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">4096/4</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1024</span></span></span></span> 个块号。一个一级间接入口可覆盖 4 MiB 数据；一个二级间接入口可覆盖 4 GiB 数据。这里只计算该入口能寻址的数据，不含 inode 中其他直接入口和其他元数据。读小文件常能直接定位；读落在二级间接范围内的数据，若相关索引块未缓存，就需要先读两级索引，再读最终数据块。</p>
+<h3 id="inode-编号层">inode 编号层</h3>
+<p>inode 本身也要存放在磁盘上。课件的简单模型把 inode 表放在固定区域，<strong>inode 号就是表中的索引</strong>。文件系统还要记录哪些 inode 号已经使用，可通过空闲列表或位图实现。布局也可以不同，课程后续实验会讨论替代设计。</p>
+<p>有了 inode 号，系统已经能定位文件内容，但普通用户不会愿意记住一个数字。因此下一步要在目录里保存“名字到 inode 号”的映射。</p>
+<p>inode 号与磁盘块号不能混用。inode 号定位的是一条文件元数据记录；这条记录中的索引才给出数据块号。课件的 <code>INODE_NUMBER_TO_BLOCK(offset, inode_number)</code> 正是先查 inode 表，再根据 <code>offset</code> 查文件内逻辑块，最后把块号交给块层读取。拆成多个函数，是为了让每一层只负责一个映射。</p>
+<h2 id="目录与路径">目录与路径</h2>
+<h3 id="文件名层">文件名层</h3>
+<p><strong>目录本身也是文件</strong>：其数据由多个目录项组成，每项把一个名称映射到 inode 号，inode 的类型字段则区分普通文件、目录等。查找 <code>notes.md</code> 时，系统先拿到当前工作目录的 inode，读出目录数据，再比较各目录项的名称；匹配后返回对应 inode 号。如果目录特别大，逐项线性比较会变慢，现代文件系统可使用索引等更高效的组织方式。目录项只负责命名，读取文件前还需检查 inode 中记录的权限；<code>chmod</code> 与 <code>chown</code> 分别修改权限和所有者。</p>
+<p>课件中的 <code>LOOKUP(dir, filename)</code> 可按以下顺序理解：检查 <code>dir</code> 对应 inode 的类型确为目录；从该 inode 定位目录数据块；逐个取出目录项，把保存的名字与 <code>filename</code> 比较；找到后返回目录项中的 inode 号，直到目录末尾仍未找到则返回失败。示意伪代码省略了跨块读取、目录项边界和错误处理，不能直接照搬为实现。</p>
+<p>目录 inode 的数据存的是索引项，而普通文件 inode 的数据存的是用户字节。文件系统复用“inode + 块”的存储机制来保存两类内容，差别由 inode 类型与读写规则决定。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215006714.png" alt="目录数据将文件名映射到 inode 号"></p>
+<p>图中的目录保存两条映射：<code>helloworld.txt → 12</code>、<code>cse2021.md → 73</code>。查找 <code>cse2021.md</code> 时，系统从给定目录 inode 读取这些目录项，字符串比较命中后返回 73；下一层再用 73 查 inode 表，取得文件大小与块索引。目录项里的 73 是 inode 号，不是该文件第一个数据块的块号。</p>
+<p>查找还依赖目录上下文。在另一个目录里，<code>cse2021.md</code> 可以指向完全不同的 inode。函数的两个输入“目录 inode 号”和“名称”共同决定结果；路径解析就是不断把上一轮找到的目录 inode 当作下一轮上下文。</p>
+<p>Unix V6 的目录项使用固定长度名称字段，课件指出其文件名最多 14 字节。这里的限制是<strong>字节数</strong>，多字节编码的字符可能占不止一个字节。不要把这一历史限制套用到现代 ext4。</p>
+<h3 id="路径层">路径层</h3>
+<p>相对路径 <code>projects/paper</code> 从当前工作目录开始：先在当前目录查 <code>projects</code>，确认找到的是目录，再在其中查 <code>paper</code>。绝对路径以根目录 <code>/</code> 开始；课件示例把根目录 inode 号设为 1，路径 <code>/programs/pong.c</code> 的查找过程如下：</p>
+<ol>
+<li>从根目录 inode 1 读取其目录块。</li>
+<li>在根目录中找到名称 <code>programs</code>，得到 inode 号 7。</li>
+<li>读取 inode 7 指向的目录数据，找到 <code>pong.c</code> 对应 inode 号 9。</li>
+<li>读取 inode 9 中的块索引，找到文件数据块 61、44、15，再按文件偏移读取其中字节。</li>
+</ol>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260924163110831.png" alt="从绝对路径逐级查到文件数据块"></p>
+<p>图中从左到右依次是 inode 表、由块号定位的内容、根目录项、<code>/programs</code> 目录项以及 <code>pong.c</code> 文件。虚线表示“名字或编号对应到下一层”，实线框中可看到根 inode 1、目录 inode 7、文件 inode 9。最右边的数据块 61 只是文件的第一个磁盘块；同一 inode 还列出了块 44、15，说明文件逻辑上连续的字节不要求物理块号连续。</p>
+<p>假定图中的文件系统块长为 4096 B，读取 <code>/programs/pong.c</code> 的偏移 5000 时，文件内逻辑块号为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">⌊</mo><mn>5000</mn><mi mathvariant="normal">/</mi><mn>4096</mn><mo stretchy="false">⌋</mo><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\lfloor5000/4096\rfloor=1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">⌊</span><span class="mord">5000/4096</span><span class="mclose">⌋</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span>，块内位置为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>5000</mn><mo>−</mo><mn>4096</mn><mo>=</mo><mn>904</mn></mrow><annotation encoding="application/x-tex">5000-4096=904</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">5000</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4096</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">904</span></span></span></span>。inode 9 的第二个数据块号是 44，因此驱动读取磁盘块 44，并从该块第 904 字节开始取数据。这里的 4096 B 是为了演示换算选定的块长，并非课件图上给出的设备参数。</p>
+<p>工作目录只决定相对路径的查找起点；绝对路径从 <code>/</code> 查起。用户登录后通常有默认的 HOME 目录，根目录则让不同用户的路径进入同一个命名空间。根目录中的 <code>.</code> 和 <code>..</code> 都指向根目录自身。课件示例的根 inode 号属于其教学模型，其他文件系统的编号可能不同。</p>
+<h3 id="查看目录数据">查看目录数据</h3>
+<p>课件用 <code>ls -ai</code> 查目录项名称和 inode 号，再用 <code>debugfs</code> 导出 ext4 目录内容，最后用 <code>xxd</code> 查看原始字节，证明目录确实保存“名称到 inode 号”的映射。ext4 目录项示例包含：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th style="text-align:right">大小</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inode_number</code></td>
+<td style="text-align:right">4 B</td>
+<td>目标 inode 号</td>
+</tr>
+<tr>
+<td><code>dir_entry_length</code></td>
+<td style="text-align:right">2 B</td>
+<td>当前目录项占用的总字节数</td>
+</tr>
+<tr>
+<td><code>file_name_length</code></td>
+<td style="text-align:right">1 B</td>
+<td>名称长度</td>
+</tr>
+<tr>
+<td><code>file_type</code></td>
+<td style="text-align:right">1 B</td>
+<td>文件类型</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td style="text-align:right">可变</td>
+<td>名称字节</td>
+</tr>
+</tbody>
+</table>
+<p>图中的首个目录项开头为 <code>0d 01 73 00 0c 00 01 02 2e 00 00 00</code>。小端序下，前四字节的 inode 号是 <code>0x0073010d</code>，<code>0c 00</code> 表示目录项长度为 12 字节，<code>01</code> 表示名称长 1 字节，<code>02</code> 表示目录，<code>2e</code> 对应字符 <code>.</code>。随后 <code>..</code> 对应父目录。课件图中一处文字把 <code>.</code> 项的类型写成 regular file，与其原始字节 <code>02</code> 不符，这里按字节值解释。</p>
+<p>第一个目录项占用 12 字节，故第二个目录项从十六进制偏移 <code>0x0c</code> 开始。第二项的名称长度是 2，对应 <code>..</code>。这说明 <code>dir_entry_length</code> 用于跳到下一项，<code>file_name_length</code> 只说明名字本身有几个字节；两者并不相同。课件还列出 ext4 文件类型码：<code>0x1</code> 是普通文件、<code>0x2</code> 是目录、<code>0x7</code> 是符号链接，其他值可表示字符设备、块设备、FIFO 或 socket。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260924160514705.png" alt="ext4 目录项的结构与十六进制内容"></p>
+<p>这张图展示的是 <strong>ext4 目录项格式</strong>，前面的 14 字节名称限制来自 <strong>Unix V6</strong>。两者都支持“目录项指向 inode”的概念，具体字段布局不同。</p>
+<h2 id="硬链接">硬链接</h2>
+<p><code>link(old, new)</code> 在目录中增加另一个名字，使两个名字指向同一个 inode。没有哪一个天生是“原名”，它们都是平等的硬链接。inode 中的链接计数随新目录项增加而加一；<code>unlink(path)</code> 删除一个名称映射，并使计数减一。最后一个硬链接被删除时，文件不再能通过名称访问；实际释放时机还受已打开文件句柄等因素影响。</p>
+<p>假设 <code>a.txt</code> 指向 inode 25，当前链接计数为 1。执行 <code>link(&quot;a.txt&quot;, &quot;b.txt&quot;)</code> 后，两项都记录 inode 25，计数变成 2。修改 <code>a.txt</code> 的内容，随后从 <code>b.txt</code> 读取会看到同样的改动，因为两者定位到同一个 inode 和同一组数据块。删除 <code>a.txt</code> 只移去一个目录项，计数回到 1，<code>b.txt</code> 仍可使用。硬链接不保存“目标路径字符串”，所以把 <code>a.txt</code> 改名或删除也不会使 <code>b.txt</code> 失效。</p>
+<p>硬链接直接引用同一文件系统内的 inode，因此不能跨文件系统。硬链接把严格树形的路径关系变成图。若允许普通用户随意给目录添加硬链接，就可能形成环：删除入口后，环内目录还相互引用，引用计数无法降到零，却又无法从根目录到达。课件因此限制普通硬链接指向目录；<code>.</code> 和 <code>..</code> 是文件系统管理的特殊目录项。删除非空目录通常也会受限制，因为其中仍有要处理的子项。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260924160513889.png" alt="给目录建立硬链接后形成不可达环的例子"></p>
+<p>图按三个状态展示问题：起初根路径可进入目录 <code>a</code>，其 inode 25 的计数为 1；若允许再把内部目录的某项连回 <code>a</code>，计数升为 2，并形成环；随后从根目录移除 <code>a</code>，计数只降到 1。剩下的引用困在已从根断开的环内，用户既无法沿根路径进入，也无法靠简单计数回收。限制目录硬链接，是为了让命名图保持可管理的树形结构。</p>
+<h3 id="重命名">重命名</h3>
+<p>文本编辑器常先写临时文件，再把临时文件改成正式名称。若用 <code>unlink(to_name)</code>、<code>link(from_name, to_name)</code>、<code>unlink(from_name)</code> 三步模拟替换，第一步和第二步之间崩溃会让目标名称暂时消失。重命名需要比这种简单组合更强的原子性保证。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215006715.png" alt="先移除目标名称的重命名方案存在断电空窗"></p>
+<p>图中 <code>from_name</code> 可以理解为已经写好的临时文件 <code>.a.txt.swp</code>，<code>to_name</code> 是用户熟悉的 <code>a.txt</code>。第一步删去 <code>a.txt</code>，第二步才把这个名字连到新 inode。若恰好在两步之间断电，临时文件可能还在，但用户原来访问的 <code>a.txt</code> 已经不存在。对用户而言，保存操作把一个可见文件变成了缺失文件，因此这个中间状态不可接受。</p>
+<p>课件随后给出较弱的方案：先让目标名称指向源 inode，再删除源名称；若中途崩溃，要在恢复阶段修正 inode 的链接计数。若目标名称原本就存在，这个顺序至少避免了先删目标造成的名字空窗。它仍没有完整解决崩溃恢复和所有观察者看到的原子性，现代文件系统要用日志等机制处理这些边界。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215006716.png" alt="先更新目标绑定，再删除源名称的方案"></p>
+<p>第二张图把目标名字先改为指向临时文件的 inode，再移除临时名字。两步之间崩溃时，新 inode 可能同时有两个名字，恢复过程要让目录项与链接计数一致。图里的 <code>LINK(from_name, to_name)</code> 表达“建立或更新目标绑定”的教学步骤；真实 POSIX <code>link</code> 在目标已经存在时会失败，因此不能把这两行直接作为可运行的 rename 实现。图比较的是更新顺序与中间状态，完整的原子性仍由文件系统协议保证。</p>
+<p>可以把断电点列出来检查：</p>
+<table>
+<thead>
+<tr>
+<th>写入顺序</th>
+<th>断电位置</th>
+<th>可能看到的名称</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>先删目标，再加新目标</td>
+<td>删除目标后</td>
+<td>旧目标已不见，新目标尚未出现</td>
+</tr>
+<tr>
+<td>先加新目标，再删源</td>
+<td>两步之间</td>
+<td>两个名称可能同时指向源 inode</td>
+</tr>
+<tr>
+<td>完成所有步骤</td>
+<td>最后</td>
+<td>只保留目标名称</td>
+</tr>
+</tbody>
+</table>
+<p>这个表格讨论课件的分步模拟，不等于断言真实 <code>rename</code> 系统调用就是按这些 API 逐个执行。真实实现需要明确崩溃前后允许的结果，并保证目录项与 inode 计数恢复后相符。</p>
+<h2 id="符号链接">符号链接</h2>
+<p>符号链接（symlink）是一种单独的 inode 类型，其内容保存目标的路径字符串。访问链接时，系统按该路径继续解析。硬链接直接指向 inode；符号链接通过名字重新查找，因此可跨文件系统，也可能在目标被删后成为悬空链接。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260924160514706.png" alt="硬链接与符号链接的指向方式"></p>
+<p>例如 <code>ln -s /tmp/abc s-link</code> 把 <code>/tmp/abc</code> 写入链接。<code>readlink s-link</code> 可读出该字符串；<code>cat s-link</code> 会尝试访问目标。若目标不存在，读取失败；创建目标后，再读链接便能得到文件内容。<code>ls -l</code> 中此符号链接显示大小 8，是目标路径 <code>/tmp/abc</code> 的字节长度，不是目标文件内容的大小。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215006717.png" alt="创建悬空符号链接后，再创建目标文件的终端示例"></p>
+<p>按图中的命令顺序，可以观察“链接自身”与“解析后的目标”：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>观察结果</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>创建 <code>s-link</code></td>
+<td>链接创建成功</td>
+<td>创建链接只需保存目标路径，目标可以尚不存在</td>
+</tr>
+<tr>
+<td><code>readlink s-link</code></td>
+<td>返回 <code>/tmp/abc</code></td>
+<td>读取链接自身保存的路径字符串</td>
+</tr>
+<tr>
+<td>第一次 <code>cat s-link</code></td>
+<td>报目标不存在</td>
+<td><code>cat</code> 跟随路径去读目标文件</td>
+</tr>
+<tr>
+<td>创建 <code>/tmp/abc</code> 并写入文本</td>
+<td>目标开始存在</td>
+<td>原链接内容无需修改</td>
+</tr>
+<tr>
+<td>再次 <code>cat s-link</code></td>
+<td>读到 <code>hello, world</code></td>
+<td>同一目标路径现在能解析成功</td>
+</tr>
+</tbody>
+</table>
+<p>图中大小 8 的计算是 1 个斜杠、3 个字符 <code>tmp</code>、另一个斜杠和 3 个字符 <code>abc</code>，合计 8 B。后来目标文件内容变长，也不会自动改变链接里这 8 B 的路径字符串。</p>
+<table>
+<thead>
+<tr>
+<th>比较点</th>
+<th>硬链接</th>
+<th>符号链接</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>目录项最终指向</td>
+<td>目标文件的 inode</td>
+<td>链接自身的 inode</td>
+</tr>
+<tr>
+<td>链接内容</td>
+<td>不单独保存目标路径</td>
+<td>保存目标路径字符串</td>
+</tr>
+<tr>
+<td>目标被删除</td>
+<td>只要还有硬链接，文件仍可访问</td>
+<td>链接可能悬空</td>
+</tr>
+<tr>
+<td>跨文件系统</td>
+<td>不可直接跨越</td>
+<td>可指向已挂载文件系统中的路径</td>
+</tr>
+</tbody>
+</table>
+<p>课件“Two Types of Links”图中，<code>myfile.txt</code> 与 <code>my-hard-link</code> 的箭头都直接抵达同一 inode；<code>my-soft-link</code> 的箭头先到 <code>myfile.txt</code> 这个名字，再由名字解析到 inode。符号链接还可能指向另一个符号链接，因此路径解析要防止循环。</p>
+<p>符号链接可以指向已挂载的另一文件系统中的路径。<strong>挂载</strong>是把一个文件系统接入现有目录树；符号链接只保存并引用一个路径，两者的作用不同。</p>
+<p>符号链接也改变路径解释的上下文。若 <code>/CSE-web</code> 指向 <code>/Scholarly/programs/www</code>，shell 逻辑路径下执行 <code>cd /CSE-web</code> 再 <code>cd ..</code>，通常回到 <code>/</code>；按真实目录层次解析时，父目录是 <code>/Scholarly/programs</code>。<code>cd -P ..</code> 使用物理路径，<code>pwd -P</code> 可查看物理位置。shell 通过逻辑工作目录记录用户输入的路径；课件把这一行为简化描述为记住先前位置，应以逻辑路径与物理路径的区别来理解。</p>
+<h2 id="核心关系">核心关系</h2>
+<p>文件名是<strong>目录的数据</strong>，也属于文件系统的命名元数据；它通常不存放在普通文件 inode 里。同一 inode 可以由多个硬链接命名，目录项只需记录名称和 inode 号，所以“文件夹”并不是一个装满文件内容的容器。沿着“路径名 → 目录项 → inode 号 → inode → 块号 → 数据块”逐层追踪，就能解释文件打开、读取、链接与删除的大部分基本行为。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/09/24/SE3331_02/">https://acannedfish.github.io/2026/09/24/SE3331_02/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">文件系统</a><a class="post-meta__tags" href="/tags/inode/">inode</a></div><div class="post-share"><div class="social-share" data-image="/img/background7.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/09/24/SE3331_03/" title="计算机系统工程-03：远程调用"><img class="cover" src="/img/background4.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统工程-03：远程调用</div></div></div></a><a class="pagination-related  no-desc" href="/2026/09/24/SE3331_01/" title="计算机系统工程-01：系统扩展"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info text-right"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-01：系统扩展</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/09/29/SE3331_04/" title="计算机系统工程-04：分布式文件系统"><img class="cover" src="/img/background8.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-29</div><div class="info-item-2">计算机系统工程-04：分布式文件系统</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">85</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8E%E7%A3%81%E7%9B%98%E5%88%B0%E6%96%87%E4%BB%B6"><span class="toc-number">1.</span> <span class="toc-text">从磁盘到文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9E%E7%BB%AD%E5%AD%98%E5%82%A8"><span class="toc-number">1.1.</span> <span class="toc-text">连续存储</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E5%B1%82%E5%91%BD%E5%90%8D"><span class="toc-number">2.</span> <span class="toc-text">七层命名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9D%97%E4%B8%8E%E8%B6%85%E7%BA%A7%E5%9D%97"><span class="toc-number">3.</span> <span class="toc-text">块与超级块</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%97%E5%B1%82"><span class="toc-number">3.1.</span> <span class="toc-text">块层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B6%85%E7%BA%A7%E5%9D%97%E4%B8%8E%E4%BD%8D%E5%9B%BE"><span class="toc-number">3.2.</span> <span class="toc-text">超级块与位图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#inode-%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%9D%97"><span class="toc-number">4.</span> <span class="toc-text">inode 与数据块</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%B1%82"><span class="toc-number">4.1.</span> <span class="toc-text">文件层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#inode-%E7%BC%96%E5%8F%B7%E5%B1%82"><span class="toc-number">4.2.</span> <span class="toc-text">inode 编号层</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E5%BD%95%E4%B8%8E%E8%B7%AF%E5%BE%84"><span class="toc-number">5.</span> <span class="toc-text">目录与路径</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%90%8D%E5%B1%82"><span class="toc-number">5.1.</span> <span class="toc-text">文件名层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%B1%82"><span class="toc-number">5.2.</span> <span class="toc-text">路径层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%9B%AE%E5%BD%95%E6%95%B0%E6%8D%AE"><span class="toc-number">5.3.</span> <span class="toc-text">查看目录数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E9%93%BE%E6%8E%A5"><span class="toc-number">6.</span> <span class="toc-text">硬链接</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%8D%E5%91%BD%E5%90%8D"><span class="toc-number">6.1.</span> <span class="toc-text">重命名</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%A6%E5%8F%B7%E9%93%BE%E6%8E%A5"><span class="toc-number">7.</span> <span class="toc-text">符号链接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%85%B3%E7%B3%BB"><span class="toc-number">8.</span> <span class="toc-text">核心关系</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/site-navigation.js" defer></script><script src="/js/site-motion.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#route-state","#page-header","#route-content","#aside-content","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+  const navigationSwitches = window.SiteNavigation ? window.SiteNavigation.switches : {}
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    switches: navigationSwitches,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: true,
+    // Route switches position new pages before their first painted frame.
+    scrollTo: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

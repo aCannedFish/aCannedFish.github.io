@@ -1,0 +1,1079 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-04：分布式文件系统 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="远程文件 单机文件系统把路径、inode 和磁盘块连接起来，RPC 让程序调用另一台机器上的过程。将二者结合后，应用便可以读取远端服务器上的文件，但还需要决定由谁保存打开状态、如何识别文件、缓存何时失效，以及多份副本按什么顺序接受写入。 访问远端文件有两种常见方式。FTP、网盘等要求用户显式连接或上传下载，应用知道资源在远端；透明访问则把远端文件接入文件接口，让应用继续使用路径和读写操作。NFS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机系统工程-04：分布式文件系统">
+<meta property="og:url" content="https://acannedfish.github.io/2026/09/29/SE3331_04/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="远程文件 单机文件系统把路径、inode 和磁盘块连接起来，RPC 让程序调用另一台机器上的过程。将二者结合后，应用便可以读取远端服务器上的文件，但还需要决定由谁保存打开状态、如何识别文件、缓存何时失效，以及多份副本按什么顺序接受写入。 访问远端文件有两种常见方式。FTP、网盘等要求用户显式连接或上传下载，应用知道资源在远端；透明访问则把远端文件接入文件接口，让应用继续使用路径和读写操作。NFS">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background8.png">
+<meta property="article:published_time" content="2026-09-29T08:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-01T13:54:51.480Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="分布式系统">
+<meta property="article:tag" content="文件系统">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background8.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机系统工程-04：分布式文件系统",
+  "url": "https://acannedfish.github.io/2026/09/29/SE3331_04/",
+  "image": "https://acannedfish.github.io/img/background8.png",
+  "datePublished": "2026-09-29T08:00:00.000Z",
+  "dateModified": "2026-10-01T13:54:51.480Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/09/29/SE3331_04/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机系统工程-04：分布式文件系统',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">85</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-04：分布式文件系统&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-04：分布式文件系统</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-29T08:00:00.000Z" title="发表于 2026-09-29 16:00:00">2026-09-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-01T13:54:51.480Z" title="更新于 2026-10-01 21:54:51">2026-10-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="远程文件">远程文件</h2>
+<p>单机文件系统把路径、inode 和磁盘块连接起来，RPC 让程序调用另一台机器上的过程。将二者结合后，应用便可以读取远端服务器上的文件，但还需要决定由谁保存打开状态、如何识别文件、缓存何时失效，以及多份副本按什么顺序接受写入。</p>
+<p>访问远端文件有两种常见方式。FTP、网盘等要求用户显式连接或上传下载，应用知道资源在远端；透明访问则把远端文件接入文件接口，让应用继续使用路径和读写操作。NFS 尽量保留普通文件系统的使用方式，GFS 针对大规模数据处理设计专用接口，3FS 则结合文件接口与面向高性能 I/O 的原生接口。</p>
+<p>本讲的比较要始终联系工作负载：工作站共享文件、批量处理巨型文件、随机读取训练样本，对系统提出的要求不同。相同的“远程读取”功能可以由很不一样的结构实现。</p>
+<h2 id="NFS">NFS</h2>
+<p>NFS（Network File System）由 Sun 在 1980 年代面向工作站设计。它希望任意机器都能成为客户端或服务器，支持没有本地磁盘的工作站，并让不同硬件、操作系统和本地文件系统共同使用远端文件。RPC 与统一数据表示解决跨机通信，客户端缓存和预读改善性能，无状态服务则简化故障恢复。</p>
+<p>以下先讨论课件采用的经典 NFSv2/v3 无状态模型。后面的 NFSv4 引入了更多服务器状态，不能把这一模型直接套到所有版本上。</p>
+<h3 id="接口映射">接口映射</h3>
+<p>本地文件 API 与线上 RPC 不需要一一对应。应用仍然调用 <code>open</code>、<code>read</code>、<code>close</code>，NFS 客户端却可以在本机完成一部分工作，仅把必要信息发送给服务器。</p>
+<p>课件回顾的接口还包括切换目录、创建文件与目录、硬链接和符号链接、追加、同步、挂载与卸载。分析它们时都要先区分：修改的是客户端上下文，还是远端文件或目录。例如 <code>chdir</code> 改变进程的路径解析起点，<code>seek</code> 改变本地游标；创建目录、修改目录项和写文件则需要与服务器交互。</p>
+<table>
+<thead>
+<tr>
+<th>本地操作</th>
+<th>典型 NFS RPC</th>
+<th>变化</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>open(path, mode)</code></td>
+<td><code>LOOKUP(dirfh, name)</code></td>
+<td>按目录句柄查名字，客户端建立打开状态</td>
+</tr>
+<tr>
+<td><code>read(fd, buf, n)</code></td>
+<td><code>READ(fh, offset, count)</code></td>
+<td>发送文件句柄与明确偏移</td>
+</tr>
+<tr>
+<td><code>write(fd, buf, n)</code></td>
+<td><code>WRITE(fh, offset, count, data)</code></td>
+<td>发送位置、长度和内容</td>
+</tr>
+<tr>
+<td><code>seek(fd, offset)</code></td>
+<td>无对应 RPC</td>
+<td>修改客户端保存的游标</td>
+</tr>
+<tr>
+<td><code>close(fd)</code></td>
+<td>无独立 CLOSE RPC</td>
+<td>清理本地状态，必要时先提交缓存写入</td>
+</tr>
+<tr>
+<td><code>stat(path)</code></td>
+<td><code>GETATTR(fh)</code></td>
+<td>用文件句柄查询属性</td>
+</tr>
+<tr>
+<td><code>mkdir(path)</code></td>
+<td><code>MKDIR(dirfh, name, attr)</code></td>
+<td>在指定目录创建子项</td>
+</tr>
+<tr>
+<td><code>unlink(path)</code></td>
+<td><code>REMOVE(dirfh, name)</code></td>
+<td>删除目录中的名称绑定</td>
+</tr>
+<tr>
+<td><code>rename(from, to)</code></td>
+<td><code>RENAME(dirfh, name, tofh, toname)</code></td>
+<td>指定源目录、目标目录及名称</td>
+</tr>
+</tbody>
+</table>
+<p>这里 <code>fd</code> 是应用进程中的文件描述符，<code>fh</code> 是服务器能解释的文件句柄。两者承担不同层次的命名职责：应用通过 <code>fd</code> 找到本地打开文件记录，客户端再从该记录取出 <code>fh</code>，向服务器说明要访问哪个远端文件。</p>
+<h3 id="挂载">挂载</h3>
+<p>服务器先配置允许共享的目录，例如在 <code>/etc/exports</code> 中声明导出目录。客户端执行 <code>mount 192.168.1.100:/users/paul /home/paul</code>，把服务器的 <code>/users/paul</code> 接入本机的 <code>/home/paul</code> 挂载点。</p>
+<p>客户端联系服务器，请求访问导出的目录树；服务器检查访问条件，并返回该目录的文件句柄。客户端在挂载点建立 VFS 对象，记录这一路径后续应由 NFS 操作处理。应用打开 <code>/home/paul/a.txt</code> 时，路径解析进入挂载点后，客户端就以远端目录的 <code>fh</code> 为起点继续查询。</p>
+<p>VFS（Virtual File System）提供统一的文件系统接口。应用可以用相同的系统调用访问本地磁盘和 NFS，内核根据路径所属的文件系统选择实现。透明访问隐藏了服务器位置与协议细节，但远端延迟、错误以及一致性约定仍会影响应用。</p>
+<h3 id="读取流程">读取流程</h3>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161619372.png" alt="NFS 中 open、read、close 与线上 RPC 的对应关系"></p>
+<p>图中有 Application、NFS Client、NFS Server 三条时间线。沿箭头可以把读取过程分为六步：</p>
+<ol>
+<li>应用调用 <code>OPEN(&quot;f&quot;, 0)</code>，请求到达本机 NFS 客户端。</li>
+<li>客户端向服务器发送 <code>LOOKUP(dirfh, &quot;f&quot;)</code>。对于多级路径，需要逐级解析，已缓存的名称映射可以减少查询。</li>
+<li>服务器查目录项，返回文件句柄 <code>fh</code> 和文件属性。客户端建立 <code>fd → fh</code> 的本地映射，并保存访问模式与当前偏移。</li>
+<li>应用调用 <code>READ(fd, buf, n)</code>，客户端把它转成 <code>READ(fh, 0, n)</code>。图中第一次读取从偏移 0 开始。</li>
+<li>服务器读取文件并返回数据和属性。客户端把数据交给应用，并推进本地游标。</li>
+<li>应用调用 <code>CLOSE(fd)</code>，客户端释放本地打开记录。若存在脏数据，还要先完成相应写回；线上没有与本地 <code>close</code> 完全对应的独立 CLOSE RPC。</li>
+</ol>
+<p>假设第一次读取 100 B，第二次读取请求就应携带偏移 100。服务器不必记住“这个客户端已经读到哪里”，因为请求已经提供位置。</p>
+<h3 id="无状态服务">无状态服务</h3>
+<p>本地 <code>open</code> 通常需要解析路径、检查权限，并建立包含 inode 引用、打开模式和文件位置的记录。若把这套状态原样放到远端，服务器就要维护“客户端 A 的 fd 3 指向哪个文件、当前游标是多少”。客户端崩溃后如何释放记录、服务器重启后如何恢复游标，都会成为额外问题。</p>
+<p>经典 NFS 将这些会话状态放在客户端，每个 RPC 携带执行所需的信息。服务器重启后，只要文件和文件句柄仍有效，就可以根据新的 <code>READ(fh, offset, count)</code> 请求继续服务。一个客户端失联也不会遗留必须等待 CLOSE 才释放的打开文件表项。</p>
+<p>无状态不等于服务器没有任何数据。磁盘文件、目录和权限当然要保存；“无状态”主要指正常处理请求不依赖先前的 OPEN 会话及隐含游标。课件用文本生成接口类比：客户端在请求中携带所需历史，服务端便不必依赖此前在某个实例上的会话。这个类比强调状态放置，并不要求所有服务接口都采用同一种模式。</p>
+<p>无状态还有利于重试，但不能自动消除重复执行。例如同一偏移的 READ 重试通常不会多产生副作用，某些名称修改操作则可能在第一次执行后改变条件。NFS 可以为 RPC 加 <code>xid</code> 并保存回复缓存，用于识别近期重复请求。这是可重建或可丢弃的软状态；缓存淘汰、重启及故障恢复后的语义仍要单独考虑。</p>
+<h3 id="文件句柄">文件句柄</h3>
+<p>服务器没有每客户端的 fd 表，因此 <code>fh</code> 必须直接帮助服务器定位文件。课件依次排除了“只保存路径”和“只保存 inode 号”两种方案。</p>
+<p>先看重命名。客户端 1 在 <code>dir1</code> 下打开 <code>f</code>，客户端 2 随后把 <code>dir1</code> 改名为 <code>dir2</code>，再把另一个 <code>dir3</code> 改名为 <code>dir1</code>。客户端 1 已打开的描述符应继续指向原文件，也就是现在的 <code>dir2/f</code>。如果句柄只存字符串 <code>dir1/f</code>，下一次读取会重新解析这个名字，可能读到另一份文件。文件身份必须能跨越路径变化保持稳定。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215007925.png" alt="两个客户端交错执行打开、目录重命名和读取"></p>
+<p>图中时间从上往下。第 2 步的 OPEN 已经选定原 <code>dir1</code> 中的文件；第 3 步只把包含它的目录改名为 <code>dir2</code>，并没有把已打开文件的内容换掉；第 4 步又让名称 <code>dir1</code> 指向另一个目录。第 5 步若仍按旧字符串查找，就会进入新的 <code>dir1</code>。因此描述符应保留对象身份，而不能把它理解成“每次读取都重新执行原路径字符串”。</p>
+<table>
+<thead>
+<tr>
+<th>时刻</th>
+<th>路径 <code>dir1/f</code></th>
+<th>已打开的 fd</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OPEN 刚完成</td>
+<td>原文件</td>
+<td>指向原文件</td>
+</tr>
+<tr>
+<td>原目录改名为 <code>dir2</code></td>
+<td>原路径暂时不存在</td>
+<td>仍指向原文件</td>
+</tr>
+<tr>
+<td><code>dir3</code> 改名为 <code>dir1</code></td>
+<td>可能指向另一个文件</td>
+<td>应继续读取现在位于 <code>dir2/f</code> 的原文件</td>
+</tr>
+</tbody>
+</table>
+<p>inode 号能解决重命名，却还要处理编号复用。文件删除后，其 inode 号可能分配给新文件；旧句柄如果只包含该编号，就可能错误地访问新对象。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161619374.png" alt="用 generation number 区分复用同一 inode 号的不同文件"></p>
+<p>图中的旧文件使用 inode 7、代数 1。客户端 2 打开后得到句柄 <code>(7, gen 1)</code>；客户端 1 删除文件，再创建同名新文件，服务器复用了 inode 7，但把代数增加到 2。客户端 2 用旧句柄读取时，服务器比较发现 <code>gen 1 ≠ gen 2</code>，返回失效句柄错误，避免把新文件当成旧文件。</p>
+<p>因此，句柄在概念上包含文件系统标识、inode 或类似对象标识，以及 generation number。客户端把句柄视为不透明值，具体布局由服务器解释。代数是在编号用于新对象时变化，不能理解为每次修改文件内容都增加的版本号。</p>
+<p>这里也体现了语义取舍：本地 Unix 文件在 <code>unlink</code> 后，只要仍有打开引用，进程通常还能读取旧内容；课件的无状态 NFS 模型可能返回错误。它优先保证旧句柄不会误读新文件，但未完全复制本地文件的打开后删除行为。</p>
+<h3 id="缓存一致性">缓存一致性</h3>
+<p>网络文件访问的性能取决于服务器、网络、请求大小和缓存命中情况，未必总比本地存储慢。客户端可缓存三类信息：</p>
+<ul>
+<li>文件数据，减少远端 READ。</li>
+<li>文件属性，例如大小、权限、修改时间，减少 GETATTR。</li>
+<li>路径与目录项映射，减少 LOOKUP、READLINK、READDIR 等查询。</li>
+</ul>
+<p>服务器还可利用本机文件系统的缓冲区缓存磁盘内容。缓存减少 RPC，却让不同客户端可能看到不同版本。写入若先留在客户端内存，其他客户端暂时只能读到服务器上的旧值。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161619375.png" alt="写回时机决定另一客户端何时看到新版本"></p>
+<p>图中服务器最初保存 <code>v1</code>。客户端 1 打开文件并写入 <code>v2</code>，但新值还在它自己的缓存里；此时客户端 2 打开并读取，得到 <code>v1</code>。客户端 1 关闭文件时把脏数据写回，服务器变成 <code>v2</code>；客户端 2 随后重新打开并验证缓存，才能读到新版本。</p>
+<p>这对应 <strong>close-to-open consistency</strong>：写入者关闭文件时提交修改，读取者之后打开文件时检查服务器属性，以便观察已提交的数据。它适合“写完并关闭，再由别人打开”的共享模式，不保证两个长期打开的文件描述符在每一次读写后都立即相互可见。</p>
+<p>一种典型验证方法是获取修改时间，与缓存中记录的时间比较；若服务器内容已变化，就丢弃旧数据缓存。课件还给出打开文件约 3 s、目录约 30 s 的缓存有效期示例，以及按操作验证的更强读写一致性思路。这些数值属于课件中的实现示例，不能当作所有 NFS 版本和挂载配置的固定规则。定时失效限制旧值停留时间，但不等于每次读取都获得最新写入。</p>
+<p>大块传输和预读进一步改善顺序读取。课件以 8 KB 传输大小为历史示例：一次 RPC 读取更多数据，可以摊薄固定网络开销；预读则在应用请求下一块之前先发出请求。随机访问时，提前取来的数据可能用不上，因此优化是否有效仍依赖访问模式。</p>
+<h3 id="版本演进">版本演进</h3>
+<p>课件将 NFSv3 与 NFSv4 的扩展并列展示，说明协议会随着性能与共享需求变化：</p>
+<table>
+<thead>
+<tr>
+<th>方向</th>
+<th>课件列出的改进</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NFSv3</td>
+<td>64 位文件大小、TCP 与较大传输、COMMIT、配合稳定存储改善写入</td>
+</tr>
+<tr>
+<td>相关实现机制</td>
+<td>锁管理、客户端磁盘缓存、重试策略与非易失存储支持</td>
+</tr>
+<tr>
+<td>NFSv4</td>
+<td>更多打开与缓存状态、文件变化通知、统一导出命名空间、复合 RPC、扩展属性与 ACL、挂载时协商安全机制</td>
+</tr>
+</tbody>
+</table>
+<p>COMMIT 一类操作让“服务器接收了写入”和“写入进入稳定存储”有更明确的区分；复合 RPC 可以把相关步骤合并，减少往返。经典无状态设计简化恢复，而新版本也会为更强的共享与缓存管理引入状态，二者反映不同阶段的取舍。</p>
+<h2 id="GFS">GFS</h2>
+<p>GFS（Google File System）面向大规模数据密集型应用，原论文发表于 SOSP 2003。它的设计前提与工作站文件共享不同：多 GB 文件很常见，组件故障是日常事件，应用多做大规模顺序读取和追加，随机覆盖写相对较少。</p>
+<p>例如网页抓取系统不断把新网页追加到已有数据集，后续任务成批扫描这些内容。此时系统更关注大量客户端的总吞吐、容量扩展和故障容忍，而不必把每一种桌面文件访问模式都做到同样高效。课件因此强调，文件系统 API 可以与应用共同设计。</p>
+<h3 id="接口与架构">接口与架构</h3>
+<p>GFS 通过链接到应用中的用户态客户端库提供接口，没有完整采用标准 POSIX 系统调用接口。课件列出的基本操作包括 create、delete、open、close、read、write，另外提供 snapshot 和 append，且不提供普通 Unix 硬链接、符号链接。</p>
+<p>课件将 rename 也列为不支持，这一点与原论文不符：<a target="_blank" rel="noopener" href="https://storage.googleapis.com/gweb-research2023-media/pubtools/4446.pdf">GFS 原论文第 2.7.2 节</a>明确描述了写完文件后原子地改为正式名称的用法。因此应记为“GFS 不实现完整 POSIX API，但支持原子重命名”，不能把缺少标准接口等同于缺少 rename。</p>
+<p>snapshot 用于低成本地得到文件或目录树某个时刻的副本视图；append 让应用表达“把记录追加到文件尾”的意图，而不必自行协调所有客户端的追加偏移。操作接口收窄后，系统可以围绕主要负载安排数据布局和一致性机制。</p>
+<p>原论文中的 record append 保证记录原子地追加至少一次，失败重试可能留下重复记录或填充区域。因此应用需要用记录标识和校验信息判断有效内容，不能把“原子追加”理解为“绝不重复”。这一点与上一讲 RPC 的至少一次语义相联系。</p>
+<p>一个 GFS 集群由一个逻辑 master 和多个 chunkserver 组成。master 管理命名空间与文件到 chunk 的映射；chunkserver 保存实际数据及其副本。应用查询元数据时联系 master，传输数据时直接联系 chunkserver。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161619376.png" alt="GFS 将文件切成大块，并把每块复制到多个 chunkserver"></p>
+<p>图上方的文件被分为 C0、C1、C2 等 chunk。下方四台 chunkserver 各保存其中一部分，同一 chunk 出现于多台机器。例如 C0 在服务器 1、2、3 上，C1 在服务器 2、3、4 上。master 保存两级映射：文件对应哪些 chunk，以及每个 chunk 当前有哪些副本位置。数据流不经过 master，因此大文件读取不会把全部字节压到一台元数据服务器上。</p>
+<h3 id="大块存储">大块存储</h3>
+<p>经典 GFS 的默认 chunk 大小为 64 MB，每个 chunk 有 master 分配的全局唯一 64 位 handle，通常保存三份副本。chunk 在存储节点上作为普通 Linux 文件保存，底层仍依靠本地文件系统管理磁盘。每个 chunk 内的 64 KB 数据单元另有 32 位校验和，用于发现数据损坏。</p>
+<p>大 chunk 有三个直接收益：一个文件需要的 chunk 元数据更少；连续读取较长范围时不必频繁询问 master；客户端可在同一 chunkserver 上复用已建立的 TCP 连接。若把课件所写的 64 MB 按二进制 64 MiB 估算，1 TiB 文件只需 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>40</mn></msup><mi mathvariant="normal">/</mi><msup><mn>2</mn><mn>26</mn></msup><mo>=</mo><mn>16384</mn></mrow><annotation encoding="application/x-tex">2^{40}/2^{26}=16384</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">40</span></span></span></span></span></span></span></span></span><span class="mord">/</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">26</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">16384</span></span></span></span> 个 chunk；若以 4 KiB 为远端定位粒度，条目数会大得多。</p>
+<p>课件的连接图比较了读取 3 MB 数据、每次请求 1 MB 的情况。小 chunk 分布于不同服务器且没有可复用连接时，三个请求可能各自建立连接；若全部落在同一个 64 MB chunk 中，一条持久连接即可服务多次请求。这个例子展示大块带来的复用机会，并不意味着小块系统必然每读一块都重新握手。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215007926.png" alt="同样读取 3 MB，大 chunk 让连续请求复用一条连接"></p>
+<p>图上半部分的三次 1 MB 读取分别落到 C0、C1、C2，目标是三台不同 chunkserver。每组橙色往返先建立连接，蓝色往返才传输读请求和数据，所以图中有三次握手。下半部分三个范围都在 C0 内，第一次建立连接后，后两次直接使用这条连接发送数据请求。传输的数据总量仍是 3 MB，减少的是连接建立及相关管理开销。</p>
+<p>代价是小文件或热点范围可能集中在少量 chunk 上；热门文件可增加副本来分散读取。64 MB 是逻辑 chunk 上限，不能仅凭 chunk 大小就断言每个短文件都预占完整的 64 MB 物理空间。</p>
+<h3 id="元数据">元数据</h3>
+<p>单 master 让命名空间修改和元数据协调更简单。课件区分两类元数据：</p>
+<table>
+<thead>
+<tr>
+<th>映射</th>
+<th>保存与恢复方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文件名、文件到 chunk 的映射</td>
+<td>常驻内存以快速查询，并通过操作日志持久化</td>
+</tr>
+<tr>
+<td>chunk 到副本位置的映射</td>
+<td>保存在内存中，启动时向 chunkserver 查询，之后通过心跳更新</td>
+</tr>
+</tbody>
+</table>
+<p>chunk 的实际位置会因机器故障、复制与迁移变化。master 从 chunkserver 报告恢复这张位置表，可以减少对另一份持久位置记录的同步维护。文件身份和命名空间则不能靠扫描副本位置直接恢复，因此需要日志及相应恢复机制。</p>
+<p>客户端缓存 chunk handle 与副本位置，减少元数据查询。GFS 本身没有为应用数据再设计一套客户端数据缓存，主要负载的大规模流式读取复用机会较少；底层操作系统的缓冲区缓存仍然存在。“不缓存数据”不能理解为所有层都禁用内存缓存。</p>
+<h3 id="读取流程-2">读取流程</h3>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161620574.png" alt="GFS 先查询元数据，再直接从副本读取数据"></p>
+<p>图的左半段是元数据阶段，右半段是数据阶段。客户端先按文件偏移计算 chunk 索引，例如 chunk 大小为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span></span></span></span> 时：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>i</mi><mo>=</mo><mrow><mo fence="true">⌊</mo><mfrac><mrow><mi>o</mi><mi>f</mi><mi>f</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow><mi>C</mi></mfrac><mo fence="true">⌋</mo></mrow><mo separator="true">,</mo><mspace width="2em"/><mi>r</mi><mo>=</mo><mi>o</mi><mi>f</mi><mi>f</mi><mi>s</mi><mi>e</mi><mi>t</mi><mtext> </mtext><mo lspace="0.22em" rspace="0.22em"><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">d</mi></mrow></mo><mtext> </mtext><mi>C</mi></mrow><annotation encoding="application/x-tex">i=\left\lfloor\frac{offset}{C}\right\rfloor,\qquad r=offset\bmod C
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord mathnormal">i</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.4em;vertical-align:-0.95em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">⌊</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal">se</span><span class="mord mathnormal">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">⌋</span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal">se</span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.0556em;"></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin"><span class="mord"><span class="mord mathrm">mod</span></span></span><span class="mspace" style="margin-right:0.0556em;"></span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span></span></span></span></span></p>
+<p>客户端把文件名与索引 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord mathnormal">i</span></span></span></span> 发给 master，得到 chunk handle 和副本列表，再向一个可用副本发送 handle 与块内字节范围。图中实际数据从 chunkserver 2 直接返回客户端，master 不参与传输。</p>
+<p>随后读取同一 chunk 的另一范围时，客户端命中元数据缓存，可以跳过 master。跨 chunk 的读取则需要分别确定相应 handle 和副本位置。若缓存位置失效或副本不可用，客户端需要改选副本、重新获取元数据或执行重试。</p>
+<h3 id="写入顺序">写入顺序</h3>
+<p>副本增加了可靠性，也带来并发写顺序问题。假设两个客户端向同一范围分别写 A 和 B：服务器 1、2 先收到 A 再收到 B，最终保存 B；服务器 3 先收到 B 再收到 A，最终保存 A。每个服务器都成功执行两次写入，副本仍然不一致。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161620575.png" alt="各副本独立按到达顺序写入会得到不同结果"></p>
+<p>图中蓝色 A 和绿色 B 的箭头交错，说明网络到达顺序不能充当全局写入顺序。GFS 为每个 chunk 指定一个 primary，由它对修改排序，其他副本作为 secondary 按相同顺序应用修改。</p>
+<p>primary 的身份来自 master 授予的租约。课件给出的租约时长是 60 s，可通过心跳续期。租约有有效期，能够限制某个副本在失去协调后继续长期扮演 primary；角色切换和故障恢复还需要配套的版本与协议检查。</p>
+<h3 id="两阶段写入">两阶段写入</h3>
+<p>GFS 将数据传输与写入控制分开。第一阶段把较大的数据内容送到各副本缓冲区，第二阶段由 primary 确定应用顺序。这里的“两阶段”描述两类工作，不应与分布式事务的两阶段提交协议混为一谈。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161620576.png" alt="第一阶段沿副本链推送数据，副本先缓冲内容"></p>
+<p>先看第一张图：客户端向 master 查询 chunk 的 primary 和 secondary，并缓存结果；随后把数据沿副本链转发。图中数据先到一个 secondary，再到 primary，再到另一个 secondary。每个节点收到后保存到缓冲区并确认接收，此时“收到数据”不等于“已按确定顺序修改文件”。</p>
+<p>数据传输链不必以 primary 为首，系统可根据网络位置选择合适路径。这样客户端不用对所有副本各发送一遍完整数据，副本之间还可以流水转发。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161620577.png" alt="第二阶段由 primary 分配序号，并通知所有 secondary 执行"></p>
+<p>第二张图中，客户端在数据就绪后向 primary 发送写请求，引用此前缓冲的数据。primary 为修改分配顺序，并通知 secondary 按该顺序执行。secondary 完成后回复 primary，primary 汇总结果再回复客户端。控制消息主要描述“应用哪份数据、写到哪里、按什么顺序”，它与传输数据的链路可以不同。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161621447.png" alt="primary 统一选择 A、B 的顺序，使各副本一致"></p>
+<p>第三张图把两个并发写放在一起：所有副本已缓冲 A、B，primary 选择 A 在前、B 在后；即使消息到达各 secondary 的时间不同，它们仍按这一顺序执行，最终都保存 B。序号解决的是同一 chunk 的修改顺序，并不自动提供跨 chunk 事务，也不保证失败写入一定全部回滚。</p>
+<p>master 还维护 chunk version number，用来识别在租约变化或更新期间落后的副本。过期副本不能继续作为最新数据正常提供服务，需要恢复或重新复制。这里的版本号与 NFS 句柄的 generation number 用途不同：前者识别副本状态是否过期，后者区分被复用的对象编号。</p>
+<p>课件还展示了 GFS 与集群调度器一起运行的历史部署量级，包括数百到数千个活动任务、PB 级文件系统和几十 GB/s 的读写负载。这些数字说明其面向大规模批处理的环境，不是对当前 Google 基础设施规模的描述。</p>
+<h2 id="HDFS">HDFS</h2>
+<p>HDFS（Hadoop Distributed File System）是 Hadoop 应用的重要存储系统，设计受到 GFS 启发，同样面向普通硬件、大文件、高吞吐和组件故障。课件通过替换架构图中的角色名称说明两者的对应关系：</p>
+<table>
+<thead>
+<tr>
+<th>GFS</th>
+<th>HDFS</th>
+<th>主要职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>master</td>
+<td>NameNode</td>
+<td>管理文件命名空间与块元数据</td>
+</tr>
+<tr>
+<td>chunkserver</td>
+<td>DataNode</td>
+<td>保存实际数据块与副本</td>
+</tr>
+<tr>
+<td>chunk</td>
+<td>block</td>
+<td>文件切分后的存储单位</td>
+</tr>
+<tr>
+<td>checkpoint image</td>
+<td>FSImage</td>
+<td>保存命名空间元数据的检查点</td>
+</tr>
+<tr>
+<td>operation log</td>
+<td>EditLog</td>
+<td>记录检查点之后的元数据修改</td>
+</tr>
+</tbody>
+</table>
+<p>NameNode 在内存中维护供查询使用的元数据，FSImage 与 EditLog 支持持久化和恢复；块的实际副本位置需要结合 DataNode 报告维护。FSImage 并不包含用户文件的全部数据内容，那些内容仍在 DataNode 上。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215007927.png" alt="HDFS 将文件块放在 DataNode，将命名空间与块映射交给 NameNode"></p>
+<p>图上方一个大文件被切成 B0、B1 等块。中间每个 DataNode 框里列出本机持有的块，例如 B0 出现在节点 1、2、3 上。下方 NameNode 的内存表先给出“文件包含哪些块”，再给出“每块在哪些节点”。右侧 FSImage 与 EditLog 属于元数据持久化材料，不能沿着它们读取 B0 的用户内容；真正读数据仍需访问中间的 DataNode。</p>
+<p>可以用一个故障情形检查这张图：DataNode 1 离线后，B0 在节点 2、3 还有副本。更新位置视图后，读者仍有其他位置可选。若丢失的是文件名到块序列的元数据，仅有散落的数据块不足以直接还原所有文件路径，所以数据副本与元数据恢复同样重要。</p>
+<p>课件沿用 64 MB 的示意块大小来对比 GFS 与 HDFS。这里应掌握“大块、元数据与数据分离、多个数据副本”的设计关系，不能将图中数值视为所有 HDFS 版本与部署的默认设置。相似的角色结构也不代表两者每一种写入或一致性协议都完全相同。</p>
+<h2 id="3FS">3FS</h2>
+<p>3FS（Fire-Flyer File System）面向 AI 训练与推理中的共享文件访问。它保留目录、文件和统一命名空间等接口，但工作负载与硬件条件已经发生变化：训练启动会打开大量文件，dataloader 随机取样，检查点集中写入，推理还可能从存储读取 KV cache。</p>
+<h3 id="AI-负载">AI 负载</h3>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161621448.png" alt="AI 数据准备、样本读取、检查点与 KV cache 对存储的不同要求"></p>
+<p>图中四条访问路径分别说明：</p>
+<ul>
+<li>数据准备读写大量中间文件，要求方便地组织与管理文件。</li>
+<li>dataloader 从数据集中随机读取样本，每次访问可能只有几 KB，也可能达到数 MB；顺序预读的效果有限。</li>
+<li>训练检查点周期性保存模型状态，会形成突发写入。课件列出的案例需求超过每节点 10 GiB/s。</li>
+<li>推理中的 KV cache 读取可能形成高带宽负载，课件给出峰值 40 GiB/s 的案例。</li>
+</ul>
+<p>这些数字是课件引用的负载或部署观察，应与普遍的系统保证区分。它们共同说明，存储既要处理大吞吐，也要处理大量小请求和元数据操作。</p>
+<p>课件将早期 GFS 节点的两块 80 GB 磁盘、100 Mbps 以太网，与 3FS 案例中的 16 块 NVMe SSD、两条 200 Gbps RDMA 链路对比。只看名义网络带宽，400 Gbps 与 100 Mbps 相差 4000 倍；这不代表端到端文件系统吞吐也提高 4000 倍，因为软件、内存复制和请求协调可能成为新瓶颈。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215008556.png" alt="课件比较 GFS 与 3FS 所面对的存储、网络和访问方式"></p>
+<p>这张图要同时看上下两部分。上方从磁盘、低带宽以太网变成多块 NVMe 与 RDMA，意味着每秒能够处理的数据和请求更多；下方从大文件顺序扫描、追加，变成 dataloader 对许多文件和样本的随机读取。前者要求减少软件路径开销，后者要求减少每次新文件、新 chunk 带来的元数据往返。因此 3FS 的多元数据服务、布局计算和 native I/O 都与这组条件相关，不能只归因于“换了更快的磁盘”。</p>
+<h3 id="四类组件">四类组件</h3>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161621449.png" alt="3FS 的客户端、元数据服务、存储服务与集群管理器"></p>
+<p>图中的四种角色各自负责不同工作：</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>client</td>
+<td>接收应用文件操作，查询元数据，直接发起数据 I/O</td>
+</tr>
+<tr>
+<td>meta service</td>
+<td>实现目录、inode 与文件布局等元数据操作</td>
+</tr>
+<tr>
+<td>storage service</td>
+<td>管理本地 SSD，保存分块数据和副本</td>
+</tr>
+<tr>
+<td>cluster manager</td>
+<td>管理成员、配置与路由信息，通过心跳掌握服务状态</td>
+</tr>
+</tbody>
+</table>
+<p>图中元数据请求走向上方的 meta service，文件数据走向下方的 storage service，延续了 GFS 将元数据移出数据传输路径的做法。存储数据仍按 chunk 分片并复制，客户端又能通过 FUSE 使用熟悉的文件接口。</p>
+<p>meta service 的持久状态存放在事务型键值存储中，因此客户端可以向多个元数据服务实例请求。某个实例崩溃时，文件元数据仍在共享存储里，其他实例可接替处理。这里的“无状态”描述服务实例无需独占某份持久会话，系统整体仍有文件、事务和集群配置状态。</p>
+<p>心跳与租约帮助识别服务故障及控制成员变化。它们不能使故障检测绝对准确，服务端还需要遵守失联后的停止服务规则，客户端也要使用更新后的路由信息，避免继续访问已经失效的副本。</p>
+<h3 id="事务元数据">事务元数据</h3>
+<p>GFS 把全部主要元数据集中在一个 master 的内存中，设计简单，但大量小文件和高频元数据请求会增加内存与处理压力。3FS 将 inode、目录项等表示成键值对，存入 FoundationDB 一类事务型键值存储，由多个 meta service 并行处理请求。</p>
+<p>课件用两种键说明目录项与 inode 的存储方式：</p>
+<table>
+<thead>
+<tr>
+<th>键</th>
+<th>值</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>目录项键</td>
+<td>inode 7</td>
+<td>前缀 DENT、父目录 inode 2、名称 <code>a.txt</code></td>
+</tr>
+<tr>
+<td>inode 键</td>
+<td>属性和数据布局</td>
+<td>前缀 INOD、目标 inode 7</td>
+</tr>
+</tbody>
+</table>
+<p><code>DENT|2|a.txt</code> 的键包含父目录 inode 2 和名称 <code>a.txt</code>；值给出目标 inode 7。同一目录内的目录项可以组织成相邻键范围，方便列目录。<code>INOD|7</code> 则保存 inode 属性，仍然延续了第二讲“目录名称与 inode 分离”的结构。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161621450.png" alt="把跨目录 rename 表示为一个键值事务"></p>
+<p>图中 <code>/x</code> 的 inode 为 2，<code>/y</code> 的 inode 为 5。把 <code>/x/a.txt</code> 移到 <code>/y/a.txt</code>，至少需要删除旧目录项 <code>DENT|2|a.txt</code>，并增加 <code>DENT|5|a.txt → inode 7</code>。若只完成其中一步，就可能丢失名称或留下不符合预期的两份映射，因此两项修改要放进同一个事务。</p>
+<p>图中的跨目录重命名可以写成一组事务步骤：</p>
+<ol>
+<li>开始事务，读取并检查相关目录项。</li>
+<li>执行 <code>CLEAR(&quot;DENT|2|a.txt&quot;)</code>，移除旧名称。</li>
+<li>执行 <code>SET(&quot;DENT|5|a.txt&quot;, inode_7)</code>，在目标目录建立新名称。</li>
+<li>提交事务。若并发的 <code>unlink</code> 与本事务冲突，重新读取状态并重试。</li>
+</ol>
+<p>事务保证相关修改一起提交或一起不生效。真实 rename 还要检查目标是否存在、权限、类型以及目录环等条件，示例只突出元数据原子性。</p>
+<p>图中另一 meta service 同时执行 <code>unlink(&quot;/x/a.txt&quot;)</code>，与 rename 访问重叠键。事务存储检测冲突后，使其中一个事务重试，从而让多个服务实例在共享元数据上协调。扩展服务实例可以分散请求处理，但事务冲突、后端 KV 存储和热点目录仍可能限制扩展效果。</p>
+<h3 id="打开与删除">打开与删除</h3>
+<p>记录每个只读打开会产生大量会话元数据。训练开始时，许多 worker 同时打开样本文件，如果每一次 OPEN 都要向元数据存储写入记录，启动过程就会造成明显压力。</p>
+<p>3FS 的课件案例只跟踪以写模式打开的文件描述符，不为只读打开维护同类会话。只读文件被删除后，系统不再保证已打开的读者一直能读到旧内容；有活动写会话的文件则推迟删除，直到相关会话关闭或按故障处理规则清理。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161622076.png" alt="3FS 只记录写打开会话，对读打开采用较轻的处理"></p>
+<p>图右侧表格中，worker 0、1 的 R 记录被划去，worker 2 对检查点的 W 记录保留。清理任务删除样本 <code>s0001</code> 时，没有读会话阻止删除；删除仍在写的 <code>ckpt-7</code> 时，系统会等待相应写会话结束。</p>
+<p>这一取舍与 NFS 的打开后删除例子相呼应。NFS 的主要出发点是简化服务器恢复，3FS 则还要降低大量只读 OPEN 的成本。应用如果依赖“文件删除后仍能通过已打开描述符一直读取”，就需要注意这项语义差异。跟踪写会话也有必要：删除与并发写入交错，可能产生难以回收的数据块，不能简单把所有打开状态都省掉。</p>
+<h3 id="块位置计算">块位置计算</h3>
+<p>GFS 客户端通过 master 获取 chunk handle 与副本列表，并缓存结果。大 chunk 与顺序读取使同一份映射可以复用较久；大量随机读取会触及更多 chunk，频繁的位置查询可能成为负担。</p>
+<p>3FS 在打开文件时让客户端取得文件布局，包括 chunk 大小、条带配置及相关复制链。随后客户端根据 inode 号和 chunk 索引构造 chunk ID，并从缓存的布局计算应访问哪条复制链。课件用下面的简化公式表达：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>i</mi><mo>=</mo><mrow><mo fence="true">⌊</mo><mfrac><mrow><mi>o</mi><mi>f</mi><mi>f</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow><mi>C</mi></mfrac><mo fence="true">⌋</mo></mrow><mo separator="true">,</mo><mspace width="2em"/><mi>c</mi><mi>h</mi><mi>u</mi><mi>n</mi><mi>k</mi><mi mathvariant="normal">_</mi><mi>i</mi><mi>d</mi><mo>=</mo><mo stretchy="false">(</mo><mi>i</mi><mi>n</mi><mi>o</mi><mi>d</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>i</mi><mi>d</mi><mo separator="true">,</mo><mi>i</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">i=\left\lfloor\frac{offset}{C}\right\rfloor,\qquad
+chunk\_id=(inode\_id,i)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6595em;"></span><span class="mord mathnormal">i</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.4em;vertical-align:-0.95em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">⌊</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal">se</span><span class="mord mathnormal">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">⌋</span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">h</span><span class="mord mathnormal">u</span><span class="mord mathnormal" style="margin-right:0.03148em;">nk</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">i</span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mopen">(</span><span class="mord mathnormal">in</span><span class="mord mathnormal">o</span><span class="mord mathnormal">d</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">i</span><span class="mord mathnormal">d</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">i</span><span class="mclose">)</span></span></span></span></span></p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>c</mi><mi>h</mi><mi>a</mi><mi>i</mi><mi>n</mi><mo>=</mo><mi>c</mi><mi>h</mi><mi>a</mi><mi>i</mi><mi>n</mi><mi>s</mi><mo stretchy="false">[</mo><mi>i</mi><mtext> </mtext><mo lspace="0.22em" rspace="0.22em"><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">d</mi></mrow></mo><mtext> </mtext><mi>s</mi><mi>t</mi><mi>r</mi><mi>i</mi><mi>p</mi><mi>e</mi><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">chain=chains[i\bmod stripe]
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">hain</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">hain</span><span class="mord mathnormal">s</span><span class="mopen">[</span><span class="mord mathnormal">i</span><span class="mspace" style="margin-right:0.0556em;"></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin"><span class="mord"><span class="mord mathrm">mod</span></span></span><span class="mspace" style="margin-right:0.0556em;"></span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">i</span><span class="mord mathnormal">p</span><span class="mord mathnormal">e</span><span class="mclose">]</span></span></span></span></span></p>
+<p>其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span></span></span></span> 是 chunk 大小，<code>stripe</code> 是示例布局中参与轮转的链数，<code>chains</code> 是文件布局给出的有序链列表。这是从布局选择复制链的教学简式；真正的链成员、节点地址和版本仍需要集群配置与路由信息，不能仅凭 inode 号凭空推导出来。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161622077.png" alt="打开时取得布局，后续不同 chunk 的读取直接进入存储路径"></p>
+<p>图中打开 <code>a.txt</code> 后，客户端获得 inode 7 的布局。假设布局有三条链，索引从 0 开始，则 chunk 3 选择 <code>chains[0]</code>，chunk 4 选择 <code>chains[1]</code>。请求分别携带 <code>(7, 3)</code> 和 <code>(7, 4)</code> 以及读取范围，直接发送给相应存储服务。</p>
+<p>注意图里第二次读取已经换到另一 chunk，仍无需再问 meta service。省掉的是“每个新 chunk 都查一张位置表”的往返，客户端保留了文件布局这份必要元数据。布局或链配置发生变化时，缓存与路由也必须更新，因此这种设计同样要处理版本和失效。</p>
+<h3 id="数据本地性">数据本地性</h3>
+<p>早期 GFS 与 MapReduce 的计算节点常同时保存数据副本，网络相对昂贵。调度器尽量把处理 C2 的任务放到拥有 C2 的机器，能够减少跨网络搬运。</p>
+<p>3FS 的案例将 GPU 计算节点与存储节点分离，依靠高带宽 RDMA 网络提供访问。课件称为 locality-oblivious：应用任务调度不要求贴近某个数据副本，任意计算节点都通过网络访问存储。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161622078.png" alt="GFS 的数据本地调度与 3FS 的计算存储分离"></p>
+<p>图左侧把 map task 放在本地已有 C2 的 CPU 节点；右侧 GPU 节点经共享网络访问独立存储池。右边的 full bisection 表示网络设计希望在不同节点组之间提供足够的总带宽，使远端访问不轻易被网络核心限制。</p>
+<p>计算与存储分离后，扩 GPU 不必同时按同一比例扩磁盘，扩存储也不必增加计算节点，资源配置更灵活。locality-oblivious 仍以网络容量和系统负载为前提，不能解释成数据位置、拥塞和网络故障在物理上完全没有影响。</p>
+<h3 id="两种客户端">两种客户端</h3>
+<p>3FS 为普通应用提供 FUSE 客户端，为性能敏感应用提供 native client。FUSE（Filesystem in Userspace）借助内核模块把文件操作转交给用户态守护进程，再由该进程与存储服务通信。应用继续使用 <code>open/read/write</code> 等接口，文件系统逻辑主要在用户态实现，开发和调试通常更方便。</p>
+<p>普通 FUSE 数据路径会经过应用、VFS、内核中的 FUSE 请求队列和用户态守护进程。跨边界的数据复制消耗内存带宽，共享队列的锁也可能让多线程请求相互等待。当 SSD 和 RDMA 已经很快时，瓶颈可能转移到这段软件路径。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215008557.png" alt="普通 FUSE 读取经过内核请求队列，再交给用户态守护进程"></p>
+<p>沿图中的 <code>read()</code> 箭头看，应用先进入内核 VFS，FUSE 模块把请求放进共享队列，用户态 daemon 再取出请求并通过 RDMA 访问存储服务。返回数据还要通过相应的缓冲区与用户态、内核态边界到达应用。即使网络传输很快，每个小读请求仍要经过队列和软件处理。</p>
+<p>图右下方的锁说明另一个限制：更多应用线程会竞争同一类受保护队列，线程数增加不一定等比例提高请求处理率。课件随后引入的 native 路径，正是针对这些逐请求开销；它与下面的共享内存图应当对照阅读。</p>
+<p>课件引用 3FS 设计说明中的测试：FUSE 在其测试环境下约处理每秒 40 万次 4 KiB 读取。该数字反映特定实现与测试条件，不能当作所有 FUSE 版本的固定上限。它的意义是，小请求处理速率可能不足以用满后端 SSD 与网络。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161622079.png" alt="3FS native I/O 通过共享内存传递数据和请求"></p>
+<p>图中 native 路径增加了两个共享内存结构：</p>
+<table>
+<thead>
+<tr>
+<th>结构</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Iov</td>
+<td>应用与 native client 共享的数据缓冲区，供读写数据使用</td>
+</tr>
+<tr>
+<td>Ior</td>
+<td>请求环形队列，用于提交和完成异步 I/O</td>
+</tr>
+</tbody>
+</table>
+<p>应用仍通过 FUSE 完成打开等元数据操作，取得 fd 并注册到原生接口。后续读写把请求放入 Ior，数据放入或读入 Iov，由 native client 批量处理并通过 RDMA 与存储服务交换数据。图中的绿色路径绕过逐次进入内核 FUSE 数据队列的方式，从而减少这部分复制与锁竞争。</p>
+<p>接口思路受到 <code>io_uring</code> 启发，但这里描述的是应用与 3FS 客户端之间的共享内存机制，不能直接等同于内核的 <code>io_uring</code> 实现。普通应用可以继续使用 FUSE，dataloader 等高频随机 I/O 程序则可接入原生接口；元数据操作与数据操作采用不同路径，兼顾了接入成本和性能。</p>
+<h2 id="系统比较">系统比较</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>NFS 经典模型</th>
+<th>GFS</th>
+<th>3FS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主要负载</td>
+<td>工作站、局域网文件共享</td>
+<td>巨型文件、流式读取、追加</td>
+<td>大量文件、随机样本读取、突发写入</td>
+</tr>
+<tr>
+<td>应用接口</td>
+<td>挂载后使用文件系统 API</td>
+<td>专用用户态库</td>
+<td>FUSE 与 native API</td>
+</tr>
+<tr>
+<td>元数据组织</td>
+<td>远端文件服务器</td>
+<td>单 master 集中管理</td>
+<td>多个无状态服务与事务 KV 存储</td>
+</tr>
+<tr>
+<td>数据定位</td>
+<td>请求携带文件句柄与偏移</td>
+<td>查询 master 后缓存 chunk 信息</td>
+<td>打开时取得布局，计算 chunk 与复制链</td>
+</tr>
+<tr>
+<td>主要性能方法</td>
+<td>缓存、预读、批量传输</td>
+<td>大 chunk、元数据与数据分离</td>
+<td>NVMe、RDMA、布局计算与共享内存 I/O</td>
+</tr>
+</tbody>
+</table>
+<p>三种设计都要处理文件身份、并发修改和部分故障，只是状态放置与性能瓶颈不同。NFS 把游标放在客户端，以自包含 RPC 简化恢复；GFS 通过集中元数据、分布数据和 primary 排序支持大规模文件处理；3FS 面对更快硬件与大量随机请求，进一步分散元数据服务并缩短客户端 I/O 路径。</p>
+<p>分析一个分布式文件系统时，可以沿一次访问追踪：应用先用什么名字找到文件，谁给出数据位置，实际数据经过哪些节点，哪些状态能被缓存，失败后重试是否仍满足原来的文件语义。把这些步骤连起来，才能判断某项优化节省了什么开销，又增加了哪些一致性与恢复责任。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/09/29/SE3331_04/">https://acannedfish.github.io/2026/09/29/SE3331_04/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a><a class="post-meta__tags" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">文件系统</a></div><div class="post-share"><div class="social-share" data-image="/img/background8.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width no-desc" href="/2026/09/28/SE3308_03/" title="算法设计-03：分治算法"><img class="cover" src="/img/background5.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info text-right"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">算法设计-03：分治算法</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/09/24/SE3331_01/" title="计算机系统工程-01：系统扩展"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-01：系统扩展</div></div></div></a><a class="pagination-related no-desc" href="/2026/09/24/SE3331_02/" title="计算机系统工程-02：文件系统"><img class="cover" src="/img/background7.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-02：文件系统</div></div></div></a><a class="pagination-related no-desc" href="/2026/09/24/SE3331_03/" title="计算机系统工程-03：远程调用"><img class="cover" src="/img/background4.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-03：远程调用</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">85</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E6%96%87%E4%BB%B6"><span class="toc-number">1.</span> <span class="toc-text">远程文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NFS"><span class="toc-number">2.</span> <span class="toc-text">NFS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E6%98%A0%E5%B0%84"><span class="toc-number">2.1.</span> <span class="toc-text">接口映射</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%82%E8%BD%BD"><span class="toc-number">2.2.</span> <span class="toc-text">挂载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E6%B5%81%E7%A8%8B"><span class="toc-number">2.3.</span> <span class="toc-text">读取流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A0%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1"><span class="toc-number">2.4.</span> <span class="toc-text">无状态服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%8F%A5%E6%9F%84"><span class="toc-number">2.5.</span> <span class="toc-text">文件句柄</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">2.6.</span> <span class="toc-text">缓存一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E6%BC%94%E8%BF%9B"><span class="toc-number">2.7.</span> <span class="toc-text">版本演进</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GFS"><span class="toc-number">3.</span> <span class="toc-text">GFS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E4%B8%8E%E6%9E%B6%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">接口与架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%A7%E5%9D%97%E5%AD%98%E5%82%A8"><span class="toc-number">3.2.</span> <span class="toc-text">大块存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%83%E6%95%B0%E6%8D%AE"><span class="toc-number">3.3.</span> <span class="toc-text">元数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E6%B5%81%E7%A8%8B-2"><span class="toc-number">3.4.</span> <span class="toc-text">读取流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E5%85%A5%E9%A1%BA%E5%BA%8F"><span class="toc-number">3.5.</span> <span class="toc-text">写入顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E5%86%99%E5%85%A5"><span class="toc-number">3.6.</span> <span class="toc-text">两阶段写入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HDFS"><span class="toc-number">4.</span> <span class="toc-text">HDFS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3FS"><span class="toc-number">5.</span> <span class="toc-text">3FS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AI-%E8%B4%9F%E8%BD%BD"><span class="toc-number">5.1.</span> <span class="toc-text">AI 负载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E7%B1%BB%E7%BB%84%E4%BB%B6"><span class="toc-number">5.2.</span> <span class="toc-text">四类组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E5%85%83%E6%95%B0%E6%8D%AE"><span class="toc-number">5.3.</span> <span class="toc-text">事务元数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E4%B8%8E%E5%88%A0%E9%99%A4"><span class="toc-number">5.4.</span> <span class="toc-text">打开与删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%97%E4%BD%8D%E7%BD%AE%E8%AE%A1%E7%AE%97"><span class="toc-number">5.5.</span> <span class="toc-text">块位置计算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%9C%AC%E5%9C%B0%E6%80%A7"><span class="toc-number">5.6.</span> <span class="toc-text">数据本地性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E7%A7%8D%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">5.7.</span> <span class="toc-text">两种客户端</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E6%AF%94%E8%BE%83"><span class="toc-number">6.</span> <span class="toc-text">系统比较</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/site-navigation.js" defer></script><script src="/js/site-motion.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#route-state","#page-header","#route-content","#aside-content","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+  const navigationSwitches = window.SiteNavigation ? window.SiteNavigation.switches : {}
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    switches: navigationSwitches,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: true,
+    // Route switches position new pages before their first painted frame.
+    scrollTo: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
