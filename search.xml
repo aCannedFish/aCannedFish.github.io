@@ -408,9 +408,9 @@
       
         <tags>
             
-            <tag> 计算机体系结构 </tag>
-            
             <tag> 并行计算 </tag>
+            
+            <tag> 计算机体系结构 </tag>
             
         </tags>
       
@@ -518,9 +518,9 @@
       
         <tags>
             
-            <tag> 数值计算 </tag>
-            
             <tag> 最优化 </tag>
+            
+            <tag> 数值计算 </tag>
             
         </tags>
       
@@ -547,9 +547,9 @@
       
         <tags>
             
-            <tag> 概率论 </tag>
-            
             <tag> 信息论 </tag>
+            
+            <tag> 概率论 </tag>
             
             <tag> 马尔可夫链 </tag>
             
@@ -1021,13 +1021,13 @@
       
         <tags>
             
+            <tag> 信息论 </tag>
+            
             <tag> 生成模型 </tag>
             
             <tag> 扩散模型 </tag>
             
             <tag> 潜变量模型 </tag>
-            
-            <tag> 信息论 </tag>
             
         </tags>
       
@@ -1209,9 +1209,9 @@
       
         <tags>
             
-            <tag> 多模态 </tag>
-            
             <tag> 机器人学习 </tag>
+            
+            <tag> 多模态 </tag>
             
         </tags>
       
@@ -1909,11 +1909,11 @@
       
         <tags>
             
-            <tag> 信息论 </tag>
-            
             <tag> 数据结构 </tag>
             
             <tag> 树结构 </tag>
+            
+            <tag> 信息论 </tag>
             
         </tags>
       
