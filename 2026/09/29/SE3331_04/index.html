@@ -1,16 +1,16 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-04：分布式文件系统 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="远程文件 单机文件系统通过块层、inode 索引与目录层，将易失的物理磁盘扇区映射为具有层级结构的文件抽象；而远程过程调用（RPC）则打破了单机内存边界，使程序能够透明调用跨网络远端服务器的过程。 将文件系统抽象与 RPC 通信深度结合，便诞生了分布式文件系统（Distributed File System, DFS）：客户端应用程序能够像访问本地硬盘一样，无缝读取和修改存放在远程服务器上的文件。">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-04：分布式文件系统 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="远程文件 单机文件系统通过块层、inode 索引与目录层，将易失的物理磁盘扇区映射为具有层级结构的文件抽象；而 RPC则打破了单机内存边界，使程序能够透明调用跨网络远端服务器的过程。 将文件系统抽象与 RPC 通信深度结合，便诞生了分布式文件系统（Distributed File System, DFS）：客户端应用程序能够像访问本地硬盘一样，无缝读取和修改存放在远程服务器上的文件。 在访问远程存">
 <meta property="og:type" content="article">
 <meta property="og:title" content="计算机系统工程-04：分布式文件系统">
 <meta property="og:url" content="https://acannedfish.github.io/2026/09/29/SE3331_04/index.html">
 <meta property="og:site_name" content="aCannedFish&#39;s Home">
-<meta property="og:description" content="远程文件 单机文件系统通过块层、inode 索引与目录层，将易失的物理磁盘扇区映射为具有层级结构的文件抽象；而远程过程调用（RPC）则打破了单机内存边界，使程序能够透明调用跨网络远端服务器的过程。 将文件系统抽象与 RPC 通信深度结合，便诞生了分布式文件系统（Distributed File System, DFS）：客户端应用程序能够像访问本地硬盘一样，无缝读取和修改存放在远程服务器上的文件。">
+<meta property="og:description" content="远程文件 单机文件系统通过块层、inode 索引与目录层，将易失的物理磁盘扇区映射为具有层级结构的文件抽象；而 RPC则打破了单机内存边界，使程序能够透明调用跨网络远端服务器的过程。 将文件系统抽象与 RPC 通信深度结合，便诞生了分布式文件系统（Distributed File System, DFS）：客户端应用程序能够像访问本地硬盘一样，无缝读取和修改存放在远程服务器上的文件。 在访问远程存">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://acannedfish.github.io/img/background8.png">
 <meta property="article:published_time" content="2026-09-29T08:00:00.000Z">
-<meta property="article:modified_time" content="2026-10-01T18:53:21.164Z">
+<meta property="article:modified_time" content="2026-10-01T19:11:16.480Z">
 <meta property="article:author" content="aCannedFish">
-<meta property="article:tag" content="文件系统">
 <meta property="article:tag" content="分布式系统">
+<meta property="article:tag" content="文件系统">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://acannedfish.github.io/img/background8.png"><script type="application/ld+json">{
   "@context": "https://schema.org",
@@ -19,7 +19,7 @@
   "url": "https://acannedfish.github.io/2026/09/29/SE3331_04/",
   "image": "https://acannedfish.github.io/img/background8.png",
   "datePublished": "2026-09-29T08:00:00.000Z",
-  "dateModified": "2026-10-01T18:53:21.164Z",
+  "dateModified": "2026-10-01T19:11:16.480Z",
   "author": [
     {
       "@type": "Person",
@@ -160,25 +160,25 @@
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
-}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">85</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-04：分布式文件系统&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-04：分布式文件系统</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-29T08:00:00.000Z" title="发表于 2026-09-29 16:00:00">2026-09-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-01T18:53:21.164Z" title="更新于 2026-10-02 02:53:21">2026-10-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="远程文件">远程文件</h2>
-<p>单机文件系统通过块层、inode 索引与目录层，将易失的物理磁盘扇区映射为具有层级结构的文件抽象；而远程过程调用（RPC）则打破了单机内存边界，使程序能够透明调用跨网络远端服务器的过程。</p>
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">85</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-04：分布式文件系统&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-04：分布式文件系统</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-29T08:00:00.000Z" title="发表于 2026-09-29 16:00:00">2026-09-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-01T19:11:16.480Z" title="更新于 2026-10-02 03:11:16">2026-10-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="远程文件">远程文件</h2>
+<p>单机文件系统通过块层、inode 索引与目录层，将易失的物理磁盘扇区映射为具有层级结构的文件抽象；而 RPC则打破了单机内存边界，使程序能够透明调用跨网络远端服务器的过程。</p>
 <p>将<strong>文件系统抽象</strong>与 <strong>RPC 通信</strong>深度结合，便诞生了<strong>分布式文件系统（Distributed File System, DFS）</strong>：客户端应用程序能够像访问本地硬盘一样，无缝读取和修改存放在远程服务器上的文件。</p>
 <p>在访问远程存储资源的历史演进中，主要存在两种模式：</p>
 <ol>
-<li><strong>显式远程访问（Explicit Remote Access）</strong>：以传统的 FTP、网盘客户端或对象存储 SDK 为代表。应用程序必须显式建立网络连接、调用专有 API 上传或下载整个文件至本地暂存区。此时，应用完全意识到数据位于远端，必须自行处理网络故障与本地同步；</li>
-<li><strong>透明命名空间访问（Transparent Virtual File Access）</strong>：将远程文件系统直接挂载至本地操作系统的目录树中。应用程序继续使用标准的 POSIX API（<code>open</code>、<code>read</code>、<code>write</code>、<code>close</code>），内核中的分布式文件系统客户端自动拦截系统调用，并将其转化为底层的网络 RPC。</li>
+<li><strong>显式远程访问</strong>：以传统的 FTP、网盘客户端或对象存储 SDK 为代表。应用程序必须显式建立网络连接、调用专有 API 上传或下载整个文件至本地暂存区。此时，应用完全意识到数据位于远端，必须自行处理网络故障与本地同步；</li>
+<li><strong>透明命名空间访问</strong>：将远程文件系统直接挂载至本地操作系统的目录树中。应用程序继续使用标准的 POSIX API（<code>open</code>、<code>read</code>、<code>write</code>、<code>close</code>），内核中的分布式文件系统客户端自动拦截系统调用，并将其转化为底层的网络 RPC。</li>
 </ol>
 <p>构建一个高性能、高可靠的分布式文件系统面临诸多复杂挑战：</p>
 <ul>
-<li><strong>状态放置（State Placement）</strong>：服务器是否需要记录每个客户端打开了哪些文件、当前读写游标停留在何处？</li>
-<li><strong>文件身份标识（Naming &amp; File Handles）</strong>：在文件被并发重命名或删除重建时，已打开的客户端如何稳定定位目标对象？</li>
-<li><strong>缓存一致性（Cache Coherence）</strong>：客户端本地缓存如何与服务端数据保持同步？</li>
-<li><strong>并发写排序（Write Ordering &amp; Replication）</strong>：多节点并发写入多份副本时，如何确立全局一致的生效顺序？</li>
+<li><strong>状态放置</strong>：服务器是否需要记录每个客户端打开了哪些文件、当前读写游标停留在何处？</li>
+<li><strong>文件句柄标识</strong>：在文件被并发重命名或删除重建时，已打开的客户端如何稳定定位目标对象？</li>
+<li><strong>缓存一致性</strong>：客户端本地缓存如何与服务端数据保持同步？</li>
+<li><strong>并发写排序</strong>：多节点并发写入多份副本时，如何确立全局一致的生效顺序？</li>
 </ul>
 <p>从 1980 年代面向局域网工作站的 <strong>NFS</strong>，到 2000 年代面向海量离线批处理的 <strong>GFS</strong>，再到现代面向万卡 AI 智算集群的 <strong>3FS</strong>，系统架构的演进深刻反映了<strong>底层硬件能力（从百兆以太网与机械硬盘到 400G RDMA 与 NVMe SSD）与上层工作负载特征的协同变迁</strong>。</p>
 <h2 id="NFS架构">NFS架构</h2>
-<p><strong>NFS（Network File System）</strong> 由 Sun Microsystems 于 1984 年推出，其初始目标是在局域网环境中为无盘工作站（Diskless Workstations）与个人计算机提供透明的共享文件访问。NFS 追求极高的异构兼容性，支持任意机器在网络中既担任客户端又担任服务端，并屏蔽底层硬件架构与操作系统的具体差异。</p>
-<p>经典 NFS（以广泛应用的 NFSv2 与 NFSv3 为代表）最引人注目的架构特征是其<strong>完全无状态（Stateless）的服务端设计</strong>。</p>
+<p><strong>NFS</strong> 由 Sun Microsystems 于 1984 年推出，其初始目标是在局域网环境中为无盘工作站与个人计算机提供透明的共享文件访问。NFS 追求极高的异构兼容性，支持任意机器在网络中既担任客户端又担任服务端，并屏蔽底层硬件架构与操作系统的具体差异。</p>
+<p>经典 NFS（以广泛应用的 NFSv2 与 NFSv3 为代表）最引人注目的架构特征是其<strong>完全无状态的服务端设计</strong>。</p>
 <h2 id="接口映射">接口映射</h2>
 <p>虽然上层应用继续调用熟悉的 POSIX 接口，但本地 API 与网络线缆上的 RPC 并非简单的一对一透传。客户端内核承担了大量会话状态维护，仅将必要的操作发送至远端：</p>
 <table>
@@ -238,13 +238,13 @@
 </tbody>
 </table>
 <h2 id="挂载协议">挂载协议</h2>
-<p>在客户端能够访问远端文件之前，必须先经过**挂载（Mounting）**过程：</p>
+<p>在客户端能够访问远端文件之前，必须先经过<strong>挂载</strong>过程：</p>
 <ol>
 <li>服务端通过配置文件（如 <code>/etc/exports</code>）声明允许导出的目录路径及其访问控制权限（如导出 <code>/users/paul</code> 允许局域网只读或读写）；</li>
 <li>客户端执行挂载命令：<code>mount 192.168.1.100:/users/paul /home/paul</code>；</li>
 <li>客户端操作系统向远端服务端的挂载守护进程发起 <code>MOUNT</code> RPC 请求；</li>
 <li>服务端校验客户端的 IP 地址与访问权限，若合法，则返回该导出目录的<strong>根文件句柄（Root File Handle, <code>dirfh</code>）</strong>；</li>
-<li>客户端内核在本地的挂载点 <code>/home/paul</code> 处安装虚拟文件系统（VFS）钩子。后续只要路径解析进入该挂载子树，内核便自动切换至 NFS 协议模块，并以该 <code>dirfh</code> 作为远端查询的起始锚点。</li>
+<li>客户端内核在本地的挂载点 <code>/home/paul</code> 处安装 VFS 钩子。后续只要路径解析进入该挂载子树，内核便自动切换至 NFS 协议模块，并以该 <code>dirfh</code> 作为远端查询的起始锚点。</li>
 </ol>
 <h2 id="读取时序">读取时序</h2>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161619372.png" alt="NFS 中 open、read、close 与底层 RPC 的端到端时序交互"></p>
@@ -270,7 +270,7 @@
 <li>每一个 <code>READ</code> 与 <code>WRITE</code> 请求都严格自包含：请求中显式携带了定位文件所需的完整 <code>fh</code>、绝对起始字节 <code>offset</code> 以及长度 <code>count</code>；</li>
 <li><strong>故障恢复变得极其平凡</strong>：若 NFS 服务端在中途崩溃重启，客户端只需在底层网络超时后发起简单的幂等重试。重启后的服务端根据请求中自包含的 <code>fh</code> 与 <code>offset</code> 能够立即准确服务，甚至无需感知到服务器刚刚经历过一次重启！</li>
 </ul>
-<p>这种无状态架构与现代大语言模型的无状态推理 API（如 OpenAI Chat Completions API）有着异曲同工之妙：模型服务实例本身不维护任何对话 Session，客户端在发起请求时必须自包含地将全部历史消息（Context / History）全量传入，从而使得任何一台后端 GPU 实例都能在无状态下接替服务，极大地简化了负载均衡与水平扩展。</p>
+<p>这种无状态架构与现代大语言模型的无状态推理 API（如 OpenAI Chat Completions API）有着异曲同工之妙：模型服务实例本身不维护任何对话 Session，客户端在发起请求时必须自包含地将全部历史上下文全量传入，从而使得任何一台后端 GPU 实例都能在无状态下接替服务，极大地简化了负载均衡与水平扩展。</p>
 <h2 id="文件句柄">文件句柄</h2>
 <p>既然服务端不维护客户端的 <code>fd</code> 映射表，那么替代它的 <strong>文件句柄（File Handle, <code>fh</code>）</strong> 究竟应当包含什么内容？</p>
 <p><strong>方案 1：只保存路径名（重命名失效）</strong></p>
@@ -295,7 +295,7 @@
 <li>此时，客户端 2 持有旧句柄再次发起读取。若句柄只有数字 7，服务端就会毫无察觉地将属于新文件的敏感数据读取并回传给客户端 2！</li>
 </ol>
 <p><strong>完整方案：三元组文件句柄与代数机制</strong></p>
-<p>为了同时解决重命名稳定性与编号复用安全，NFS 设计了包含**代数（Generation Number）**的不透明三元组句柄：</p>
+<p>为了同时解决重命名稳定性与编号复用安全，NFS 设计了包含<strong>代数</strong>的不透明三元组句柄：</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>File Handle (fh)</mtext><mo>=</mo><mo fence="false" stretchy="true" minsize="1.8em" maxsize="1.8em">(</mo><mtext>Filesystem ID</mtext><mo separator="true">,</mo><mspace width="1em"/><mtext>inode Number</mtext><mo separator="true">,</mo><mspace width="1em"/><mtext>Generation Number</mtext><mo fence="false" stretchy="true" minsize="1.8em" maxsize="1.8em">)</mo></mrow><annotation encoding="application/x-tex">\text{File Handle (fh)} = \Big( \text{Filesystem ID}, \quad \text{inode Number}, \quad \text{Generation Number} \Big)
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">File Handle (fh)</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.8em;vertical-align:-0.65em;"></span><span class="mord"><span class="delimsizing size2">(</span></span><span class="mord text"><span class="mord">Filesystem ID</span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord text"><span class="mord">inode Number</span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord text"><span class="mord">Generation Number</span></span><span class="mord"><span class="delimsizing size2">)</span></span></span></span></span></span></p>
 <ul>
@@ -311,16 +311,16 @@
 <h2 id="缓存一致性">缓存一致性</h2>
 <p>跨网络发起 RPC 的延迟通常在毫秒级，远慢于单机内存访问。为了获得可接受的吞吐性能，NFS 客户端普遍引入了三级本地缓存：</p>
 <ol>
-<li><strong>数据缓存（Data Cache）</strong>：缓存读取的文件数据块，并对写入进行写缓冲（Write Buffering）；</li>
-<li><strong>属性缓存（Attribute Cache）</strong>：缓存文件大小、权限和最后修改时间戳（<code>mtime</code>）；</li>
-<li><strong>名称与目录缓存（Directory / Lookup Cache）</strong>：缓存路径解析结果与目录项列表。</li>
+<li><strong>数据缓存</strong>：缓存读取的文件数据块，并对写入进行写缓冲；</li>
+<li><strong>属性缓存</strong>：缓存文件大小、权限和最后修改时间戳（<code>mtime</code>）；</li>
+<li><strong>名称与目录缓存</strong>：缓存路径解析结果与目录项列表。</li>
 </ol>
-<p>然而，缓存不可避免地带来了**缓存一致性（Cache Inconsistency）**挑战：</p>
+<p>然而，缓存不可避免地带来了<strong>缓存一致性</strong>挑战：</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161619375.png" alt="写回时机差异导致并发客户端观察到不同版本数据"></p>
 <p>考察数据不一致时序：</p>
 <ol>
 <li>服务端初始保存文件的第一个版本 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>v</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">v_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>；</li>
-<li>客户端 1 打开文件并写入了新内容 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>v</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">v_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>，但为了性能，更新仅停留在客户端 1 本地内存的脏页（Dirty Cache）中；</li>
+<li>客户端 1 打开文件并写入了新内容 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>v</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">v_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>，但为了性能，更新仅停留在客户端 1 本地内存的脏页中；</li>
 <li>此时客户端 2 并发发起读取，由于客户端 1 尚未写回，客户端 2 只能从服务端读取到陈旧的历史版本 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>v</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">v_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>。</li>
 </ol>
 <p><strong>Close-to-Open 一致性模型</strong></p>
@@ -335,9 +335,9 @@
 </li>
 </ul>
 <p>Close-to-Open 完美契合了典型的协作模式（例如“编译脚本生成目标文件并关闭，后续链接器再打开读取”）；但它并不保证两个长期保持打开状态的进程在并发交错读写时能够实现即时可见的强一致性。</p>
-<p>针对属性缓存，NFS 通常设置一个较短的生存有效期（TTL，如文件属性缓存 3 到 60 秒，目录缓存 30 秒）。超时后，客户端在下一次访问时必须重新通过 <code>GETATTR</code> 验证。此外，客户端通过大块批量传输（如 8 KiB 或更高）与**积极预读（Read-Ahead）**算法，大幅摊平网络往返延迟，优化顺序读吞吐。</p>
+<p>针对属性缓存，NFS 通常设置一个较短的生存有效期（TTL，如文件属性缓存 3 到 60 秒，目录缓存 30 秒）。超时后，客户端在下一次访问时必须重新通过 <code>GETATTR</code> 验证。此外，客户端通过大块批量传输（如 8 KiB 或更高）与<strong>积极预读</strong>算法，大幅摊平网络往返延迟，优化顺序读吞吐。</p>
 <h2 id="GFS架构">GFS架构</h2>
-<p>进入 21 世纪，随着互联网搜索引擎与海量网页爬取业务的爆炸，Google 面临的数据处理规模从兆字节（MB）跃升至拍字节（PB）。2003 年，Sanjay Ghemawat、Howard Gobioff 与 Shun-Tak Leung 发表了划时代的经典论文 <em>The Google File System (GFS)</em>。</p>
+<p>进入 21 世纪，随着互联网搜索引擎与海量网页爬取业务的爆炸，Google 面临的数据处理规模从 MB 级跃升至 PB 级。2003 年，Sanjay Ghemawat、Howard Gobioff 与 Shun-Tak Leung 发表了划时代的经典论文 <em>The Google File System (GFS)</em>。</p>
 <p>GFS 的设计彻底颠覆了以 NFS 为代表的通用 POSIX 传统，其根基建立在对<strong>硬件现实与实际工作负载特征</strong>的深刻洞察之上：</p>
 <table>
 <thead>
@@ -361,7 +361,7 @@
 <tr>
 <td><strong>工作负载特征</strong></td>
 <td>充斥着随机小读写、频繁修改现有文件内容</td>
-<td><strong>以大规模顺序读取与持续的流式追加写入（Append）为主</strong>，覆盖写（Random Overwrite）极其罕见</td>
+<td><strong>以大规模顺序读取与持续的流式追加写入为主</strong>，覆盖写极其罕见</td>
 </tr>
 <tr>
 <td><strong>应用程序接口</strong></td>
@@ -371,20 +371,20 @@
 </tbody>
 </table>
 <h2 id="集群架构">集群架构</h2>
-<p>GFS 采用极简的 <strong>单主控节点（Master）+ 多数据节点（Chunkserver）</strong> 的主从架构：</p>
+<p>GFS 采用极简的 <strong>单 Master + 多 Chunkserver</strong> 的主从架构：</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161619376.png" alt="GFS 将巨型文件切分为大块并三副本存储的集群架构"></p>
 <p>系统核心组件分工清晰：</p>
 <ul>
 <li><strong>GFS Client</strong>：以库的形式直接静态链接至应用程序（如 MapReduce 任务）内部，对上提供 GFS 文件 API；</li>
 <li><strong>Master（主控节点）</strong>：维护集群全部<strong>元数据</strong>，包括文件命名空间层级树、访问控制权限、文件到 Chunk 序列的映射、以及每个 Chunk 在各个 Chunkserver 上的物理分布位置；</li>
-<li><strong>Chunkserver（数据块服务器）</strong>：运行在普通 Linux 机器上，负责持久存储数据块。每个 Chunk 在物理上直接作为普通 Linux 物理文件保存在 Chunkserver 本地文件系统中；通常为每个 Chunk 维护 <strong>3 个副本（Replicas）</strong>。</li>
+<li><strong>Chunkserver（数据块服务器）</strong>：运行在普通 Linux 机器上，负责持久存储数据块。每个 Chunk 在物理上直接作为普通 Linux 物理文件保存在 Chunkserver 本地文件系统中；通常为每个 Chunk 维护 <strong>3 个副本</strong>。</li>
 </ul>
 <p>最为关键的系统设计原则是：<strong>控制流（元数据操作）与数据流（文件实际读写）彻底物理分离！</strong> 客户端绝不通过 Master 转发读写数据字节，而是直接与拥有目标副本的 Chunkserver 建立高带宽网络通道进行数据吞吐。</p>
 <h2 id="大Chunk">大Chunk</h2>
 <p>传统文件系统（如 ext4）的分配块通常为 4 KiB，早期分布式系统通常为几百 KB。而 GFS 激进地将 Chunk 大小确定为 <strong>64 MB</strong>（每个 Chunk 分配全局唯一的 64 位不可变 Handle）。</p>
 <p>这一设计带来了三大压倒性的工程收益：</p>
 <ol>
-<li><strong>元数据规模极致紧凑，Master 可将全部元数据常驻内存（RAM）</strong>：
+<li><strong>元数据规模极致紧凑，Master 可将全部元数据常驻内存</strong>：
 <ul>
 <li>对于一个包含 1 TiB 数据的大文件，若以 4 KiB 为粒度划分，将产生多达 2.6 亿个块元数据项，单机内存根本无法容纳；</li>
 <li>若以 64 MB 划分，1 TiB 文件仅仅需要产生 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>40</mn></msup><mi mathvariant="normal">/</mi><msup><mn>2</mn><mn>26</mn></msup><mo>=</mo><mn>16</mn><mo separator="true">,</mo><mn>384</mn></mrow><annotation encoding="application/x-tex">2^{40} / 2^{26} = 16,384</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">40</span></span></span></span></span></span></span></span></span><span class="mord">/</span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">26</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">16</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">384</span></span></span></span> 个 Chunk 元数据项！每个 Chunk 元数据在 Master 内存中仅占数十字节，数百万个 Chunk 对应的元数据总共仅需几十兆内存，使得 Master 能够以纳秒级的极速在内存中执行全部元数据检索；</li>
@@ -402,13 +402,13 @@
 <h2 id="主控元数据">主控元数据</h2>
 <p>Master 节点在内存中集中维护三类核心元数据：</p>
 <ol>
-<li><strong>文件与目录的命名空间层次树（Namespaces）</strong>；</li>
+<li><strong>文件与目录的命名空间层次树</strong>；</li>
 <li><strong>文件到其包含的 Chunk Handle 序列的映射表</strong>；</li>
 <li><strong>每个 Chunk Handle 当前被存放在哪些 Chunkserver 上的位置映射表</strong>。</li>
 </ol>
-<p>前两类元数据通过**操作日志（Operation Log / WAL）**持久化存储在 Master 本地磁盘上，并同步复制到远程备用 Master 节点。Master 定期对内存状态生成检查点镜像（Checkpoint Image），以压缩日志体积并在崩溃后加速恢复。</p>
+<p>前两类元数据通过<strong>操作日志</strong>持久化存储在 Master 本地磁盘上，并同步复制到远程备用 Master 节点。Master 定期对内存状态生成检查点镜像，以压缩日志体积并在崩溃后加速恢复。</p>
 <p>尤为精妙的是第三类元数据（<strong>Chunk 的物理副本位置</strong>）：<strong>Master 绝不在磁盘日志中持久化记录哪个 Chunk 存放在哪台机器上！</strong><br>
-因为在一个拥有数千节点的庞大集群中，节点宕机、硬盘拔插、网络断开或副本自动再均衡极为频繁。试图在磁盘中持久化动态变化的副本位置只会引发沉重的同步写负担。因此，Master 仅在冷启动时命令所有 Chunkserver 汇报各自持有的 Chunk 列表；在系统平稳运行期间，通过周期性的心跳检测（Heartbeat）动态在内存中实时刷新位置视图。</p>
+因为在一个拥有数千节点的庞大集群中，节点宕机、硬盘拔插、网络断开或副本自动再均衡极为频繁。试图在磁盘中持久化动态变化的副本位置只会引发沉重的同步写负担。因此，Master 仅在冷启动时命令所有 Chunkserver 汇报各自持有的 Chunk 列表；在系统平稳运行期间，通过周期性的心跳检测动态在内存中实时刷新位置视图。</p>
 <h2 id="GFS读取">GFS读取</h2>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161620574.png" alt="GFS 客户端先从 Master 获取元数据再直接与 Chunkserver 传输数据"></p>
 <p>客户端读取文件的完整时序分为两个阶段：</p>
@@ -425,7 +425,7 @@
 <ul>
 <li>客户端根据网络拓扑距离（同机架优先），从副本列表中挑选一个距离最近的 Chunkserver；</li>
 <li>客户端直接向该 Chunkserver 发起数据读取 RPC，传入 Chunk Handle、块内偏移 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi></mrow><annotation encoding="application/x-tex">r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span></span></span></span> 与所需读取字节长度；</li>
-<li>Chunkserver 校验每个 64 KB 数据块对应的 32 位校验和（Checksum），确认无物理位衰减（Bit Rot）后，直接将数据回传给客户端。</li>
+<li>Chunkserver 校验每个 64 KB 数据块对应的 32 位校验和，确认无静默数据损坏后，直接将数据回传给客户端。</li>
 </ul>
 </li>
 </ol>
@@ -438,19 +438,19 @@
 <li>Master 将一个 Chunk 的**租约（Lease，有效期通常为 60 秒，通过心跳自动续期）**授予其中一个副本节点，该节点成为 <strong>Primary（主副本）</strong>，其余节点为 <strong>Secondary（从副本）</strong>；</li>
 <li>写入被严格拆解为两个物理解耦的阶段：<strong>数据传输阶段</strong> 与 <strong>写入控制提交阶段</strong>。</li>
 </ul>
-<p><strong>阶段一：线性数据流管道传输 (Data Pipeline)</strong></p>
+<p><strong>阶段一：线性数据流管道传输</strong></p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161620576.png" alt="第一阶段客户端沿网络拓扑管道将数据推送到各副本内存缓冲区"></p>
 <ol>
 <li>客户端向 Master 询问目标 Chunk 的 Primary 与 Secondary 地址；</li>
-<li>客户端将待写入的巨大数据负载推送到一条由各个副本串联构成的**网络拓扑流水线（Data Pipeline）**上；</li>
+<li>客户端将待写入的巨大数据负载推送到一条由各个副本串联构成的<strong>数据传输流水线</strong>上；</li>
 <li>数据沿着网络链路线性单向转发（例如：客户端 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>→</mo></mrow><annotation encoding="application/x-tex">\rightarrow</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.3669em;"></span><span class="mrel">→</span></span></span></span> Secondary 1 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>→</mo></mrow><annotation encoding="application/x-tex">\rightarrow</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.3669em;"></span><span class="mrel">→</span></span></span></span> Primary <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>→</mo></mrow><annotation encoding="application/x-tex">\rightarrow</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.3669em;"></span><span class="mrel">→</span></span></span></span> Secondary 2）；各节点接收后仅将其保存在本地的内存 LRU 缓冲区中，并向上一跳确认接收。此时<strong>任何节点均未向磁盘文件执行实际写入</strong>。这种流式转发充分利用了每个服务器的全双工网络带宽，避免了客户端单点上行链路成为瓶颈。</li>
 </ol>
-<p><strong>阶段二：Primary 统一确定全局修改顺序 (Write Command)</strong></p>
+<p><strong>阶段二：Primary 统一确定全局修改顺序</strong></p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161620577.png" alt="第二阶段 Primary 分配严格递增的修改序号并通知 Secondary 统一落盘"></p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161621447.png" alt="Primary 统一仲裁并发请求的执行顺序使各副本达成一致结果"></p>
 <ol>
 <li>当所有副本均已完整缓冲数据后，客户端向 <strong>Primary</strong> 发送正式的写入控制命令；</li>
-<li>Primary 负责为该 Chunk 上的所有并发写入请求分配<strong>全局严格单调递增的执行序列号（Sequence Number）</strong>；</li>
+<li>Primary 负责为该 Chunk 上的所有并发写入请求分配<strong>全局严格单调递增的执行序列号</strong>；</li>
 <li>Primary 率先按照该序号将自己缓冲区中的数据按顺序就地写入磁盘文件；</li>
 <li>紧接着，Primary 向所有 Secondary 发送写同步指令，命令它们严格按照刚才确定的全局序列号将缓冲区数据应用到本地文件；</li>
 <li>所有 Secondary 完成落盘后向 Primary 回复 ACK；</li>
@@ -458,13 +458,13 @@
 </ol>
 <p>通过将数据传输与顺序仲裁彻底解耦，GFS 既最大化榨干了集群网络物理带宽，又通过 Primary 的强一致排序保证了全部副本拥有完全一致的数据序列。</p>
 <h2 id="记录追加">记录追加</h2>
-<p>针对 MapReduce 产生的大量并发多生产者写入，GFS 专门提供了核心原子原语：<strong>记录追加（Record Append）</strong>。<br>
-与传统 POSIX 写入由应用指定精确偏移量不同，在 Record Append 中，客户端仅提交数据内容，由 Primary 决定该记录落入文件末尾的具体物理偏移量，并保证该记录**原子性地至少一次（At-least-once）**被追加成功。</p>
+<p>针对 MapReduce 产生的大量并发多生产者写入，GFS 专门提供了核心原子原语：<strong>记录追加</strong>。<br>
+与传统 POSIX 写入由应用指定精确偏移量不同，在 Record Append 中，客户端仅提交数据内容，由 Primary 决定该记录落入文件末尾的具体物理偏移量，并保证该记录<strong>原子性地至少一次</strong>被追加成功。</p>
 <p>这一设计换取了极高的并发吞吐，但也带来了容错下的语义妥协：<br>
 若在 Primary 分配了偏移量并将数据写入自身后，某个 Secondary 在同步过程中遭遇网络瞬断导致追加失败，Primary 会向客户端返回错误；客户端重试时，Primary 会重新挑选一个新的更大偏移量再次尝试。<br>
-最终结果是：<strong>原先写入失败的区间在部分副本上可能残留有填充碎片（Padding）或重复记录（Duplicates）</strong>。GFS 并不在存储层强求完美的绝对干净，而是要求上层应用程序在写入时为每条记录附加自描述的校验和与唯一序列号，由读者在解析时自动过滤重复项，再次体现了算法与系统协同设计的工程智慧。</p>
+最终结果是：<strong>原先写入失败的区间在部分副本上可能残留有填充碎片或重复记录</strong>。GFS 并不在存储层强求完美的绝对干净，而是要求上层应用程序在写入时为每条记录附加自描述的校验和与唯一序列号，由读者在解析时自动过滤重复项，再次体现了算法与系统协同设计的工程智慧。</p>
 <h2 id="HDFS架构">HDFS架构</h2>
-<p>Apache Hadoop 生态中的 <strong>HDFS（Hadoop Distributed File System）</strong> 深度吸收了 GFS 的架构设计哲学，成为现代大数据计算事实上的开源底座。</p>
+<p>Apache Hadoop 生态中的 <strong>HDFS</strong> 深度吸收了 GFS 的架构设计哲学，成为现代大数据计算事实上的开源底座。</p>
 <p>HDFS 与 GFS 存在几乎完全对称的角色对映：</p>
 <table>
 <thead>
@@ -523,16 +523,16 @@
 <ol>
 <li><strong>数据准备与清洗阶段</strong>：包含数以亿计的小文件（代码、网页、文本），高频进行目录遍历与创建；</li>
 <li><strong>训练 DataLoader 数据加载</strong>：成百上千张 GPU 训练卡并发随机采样数据集样本（如每样本仅几 KB 到几十 KB），顺序预读机制彻底失效，系统面临极高的随机读取 IOPS 压力；</li>
-<li><strong>模型检查点（Checkpoints）高并发突发写入</strong>：千亿参数模型定期保存权重，全集群所有节点瞬间爆发出数百 GB/s 的极限写吞吐要求；</li>
+<li><strong>模型检查点高并发突发写入</strong>：千亿参数模型定期保存权重，全集群所有节点瞬间爆发出数百 GB/s 的极限写吞吐要求；</li>
 <li><strong>大模型在线推理（KV Cache 存储）</strong>：多轮长文本对话要求以超低延迟、极高带宽（单机高达 40 GB/s）并发吞吐 Key-Value 缓存。</li>
 </ol>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215008556.png" alt="GFS 时代与 3FS 现代智算时代的硬件性能与网络拓扑剧变"></p>
 <p>在硬件基础设施层面，变化更是翻天覆地：</p>
 <ul>
 <li><strong>GFS 时代（2003）</strong>：单节点配置两块 80 GB 机械硬盘（寻道时间高达 10 ms），网络为 100 Mbps 共享百兆以太网。<strong>存储与网络是绝对的头号性能瓶颈</strong>；</li>
-<li><strong>现代 AI 集群（3FS 时代）</strong>：单存储节点标配 16 块企业级 NVMe SSD（单机随机读写突破数百万 IOPS），全集群部署双端口 <strong>200 Gbps / 400 Gbps RDMA（InfiniBand / RoCE）</strong> 高速无损网络。</li>
+<li><strong>现代 AI 集群（3FS 时代）</strong>：单存储节点标配 16 块企业级 NVMe SSD（单机随机读写突破数百万 IOPS），全集群部署双端口 <strong>200 Gbps / 400 Gbps RDMA</strong> 高速无损网络。</li>
 </ul>
-<p>网络与存储硬件的性能激增了数万倍，物理数据传输的耗时被压缩至微秒级。此时，传统的单 Master 瓶颈、内核态与用户态之间的内存拷贝、以及系统调用的锁竞争，成为了制约整个集群的新瓶颈。为此，字节跳动设计并开源了 <strong>3FS（Fire-Flyer File System）</strong>。</p>
+<p>网络与存储硬件的性能激增了数万倍，物理数据传输的耗时被压缩至微秒级。此时，传统的单 Master 瓶颈、内核态与用户态之间的内存拷贝、以及系统调用的锁竞争，成为了制约整个集群的新瓶颈。为此，字节跳动设计并开源了 <strong>3FS</strong>。</p>
 <h2 id="3FS组件">3FS组件</h2>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161621449.png" alt="3FS 客户端、无状态元数据服务、存储服务与集群管理器的协同架构"></p>
 <p>3FS 将系统彻底解耦为四大自治组件：</p>
@@ -547,10 +547,10 @@
 <p>3FS 做出了重大架构革新：<strong>将元数据彻底解耦，委托给成熟的分布式强一致事务型键值数据库（如 Apple 开源的 FoundationDB）管理</strong>。</p>
 <p>所有的文件系统元数据被规范映射为键值对存储：</p>
 <ul>
-<li><strong>目录项键（Directory Entry Key）</strong>：<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Key: </mtext><mtext mathvariant="monospace">&quot;DENT&quot;</mtext><mo>∣</mo><mtext>parent_inode</mtext><mo>∣</mo><mtext>filename</mtext><mspace width="1em"/><mo>⟶</mo><mspace width="1em"/><mtext>Value: target_inode</mtext></mrow><annotation encoding="application/x-tex">\text{Key: } \texttt{&quot;DENT&quot;}\mid\text{parent\_inode}\mid\text{filename} \quad\longrightarrow\quad \text{Value: } \text{target\_inode}
+<li><strong>目录项键</strong>：<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Key: </mtext><mtext mathvariant="monospace">&quot;DENT&quot;</mtext><mo>∣</mo><mtext>parent_inode</mtext><mo>∣</mo><mtext>filename</mtext><mspace width="1em"/><mo>⟶</mo><mspace width="1em"/><mtext>Value: target_inode</mtext></mrow><annotation encoding="application/x-tex">\text{Key: } \texttt{&quot;DENT&quot;}\mid\text{parent\_inode}\mid\text{filename} \quad\longrightarrow\quad \text{Value: } \text{target\_inode}
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">Key: </span></span><span class="mord text"><span class="mord texttt">&quot;DENT&quot;</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">parent_inode</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7054em;vertical-align:-0.011em;"></span><span class="mord text"><span class="mord">filename</span></span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">⟶</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">Value: </span></span><span class="mord text"><span class="mord">target_inode</span></span></span></span></span></span></p>
 </li>
-<li><strong>inode 元数据键（inode Key）</strong>：<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Key: </mtext><mtext mathvariant="monospace">&quot;INOD&quot;</mtext><mo>∣</mo><mtext>inode_id</mtext><mspace width="1em"/><mo>⟶</mo><mspace width="1em"/><mtext>Value: 属性、大小、权限与文件布局</mtext></mrow><annotation encoding="application/x-tex">\text{Key: } \texttt{&quot;INOD&quot;}\mid\text{inode\_id} \quad\longrightarrow\quad \text{Value: } \text{属性、大小、权限与文件布局}
+<li><strong>inode 元数据键</strong>：<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Key: </mtext><mtext mathvariant="monospace">&quot;INOD&quot;</mtext><mo>∣</mo><mtext>inode_id</mtext><mspace width="1em"/><mo>⟶</mo><mspace width="1em"/><mtext>Value: 属性、大小、权限与文件布局</mtext></mrow><annotation encoding="application/x-tex">\text{Key: } \texttt{&quot;INOD&quot;}\mid\text{inode\_id} \quad\longrightarrow\quad \text{Value: } \text{属性、大小、权限与文件布局}
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">Key: </span></span><span class="mord text"><span class="mord texttt">&quot;INOD&quot;</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">inode_id</span></span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">⟶</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">Value: </span></span><span class="mord text"><span class="mord cjk_fallback">属性、大小、权限与文件布局</span></span></span></span></span></span></p>
 </li>
 </ul>
@@ -558,14 +558,14 @@
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161621450.png" alt="利用分布式强一致键值事务实现原子安全的跨目录重命名"></p>
 <p>考察将文件 <code>/x/a.txt</code>（位于目录 inode 2，目标为 inode 7）移动至 <code>/y/a.txt</code>（目标目录为 inode 5）的复杂跨目录重命名过程。在 3FS 中，该操作被封装为一个标准的 ACID 键值分布式事务：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> foundationdb.transaction() <span class="keyword">as</span> tr:</span><br><span class="line">    <span class="comment"># 步骤 1: 验证源目录项并删除</span></span><br><span class="line">    tr.clear(<span class="string">&quot;DENT|2|a.txt&quot;</span>)</span><br><span class="line">    <span class="comment"># 步骤 2: 在目标目录下原子新增绑定</span></span><br><span class="line">    tr.<span class="built_in">set</span>(<span class="string">&quot;DENT|5|a.txt&quot;</span>, inode_7)</span><br><span class="line">    <span class="comment"># 事务自动提交: 若有并发 unlink 发生冲突，事务底层自动回滚并安全重试</span></span><br></pre></td></tr></table></figure>
-<p>借助底层事务引擎的乐观并发控制（OCC），重命名操作表现出坚不可摧的原子性，彻底消除了由于断电或半途崩溃引发孤儿文件与元数据损坏的风险；同时，多个 Meta Service 实例可以无状态地并发处理来自不同目录的请求，元数据处理能力实现近线性的水平扩展。</p>
+<p>借助底层事务引擎的乐观并发控制，重命名操作表现出坚不可摧的原子性，彻底消除了由于断电或半途崩溃引发孤儿文件与元数据损坏的风险；同时，多个 Meta Service 实例可以无状态地并发处理来自不同目录的请求，元数据处理能力实现近线性的水平扩展。</p>
 <h2 id="轻量会话">轻量会话</h2>
 <p>在传统的分布式文件系统中，客户端打开文件都需要向服务端注册会话。但在大规模深度学习训练启动的瞬间，成千上万个 GPU Worker 会并发打开相同的训练样本文件。若每一次 <code>open</code> 都向元数据层写入会话记录，元数据后端将瞬间遭遇严重的“登录风暴”压垮。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161622076.png" alt="3FS 放弃追踪只读会话仅对写打开维护会话的轻量级优化"></p>
 <p>3FS 针对 AI 负载特征做出了精准的工程裁剪：</p>
 <ul>
-<li><strong>只读打开（Read-Only Open）零会话记录</strong>：对于海量样本的读取，客户端仅在本地解析元数据，<strong>完全不向元数据服务端注册任何读打开会话</strong>；</li>
-<li><strong>写打开（Write Open）严格跟踪</strong>：仅当应用以写入模式打开关键文件（如检查点权重文件）时，Meta Service 才记录该写会话；</li>
+<li><strong>只读打开零会话记录</strong>：对于海量样本的读取，客户端仅在本地解析元数据，<strong>完全不向元数据服务端注册任何读打开会话</strong>；</li>
+<li><strong>写打开严格跟踪</strong>：仅当应用以写入模式打开关键文件（如检查点权重文件）时，Meta Service 才记录该写会话；</li>
 <li><strong>删除语义权衡</strong>：当某样本文件被删除时，若该文件当前只有只读读者，系统允许立即回收元数据，不再保证已打开只读描述符能够长久读到旧内容；但若检测到文件存在活跃的写会话，系统强制推迟物理块的删除，直至写操作正常关闭或租约过期清理。</li>
 </ul>
 <p>这种不对称的轻量级设计，使整个智算集群在面临数十万并发读取启动时，元数据层几乎承受零额外写负担。</p>
@@ -574,7 +574,7 @@
 <p>3FS 借鉴了对象存储中的 CRUSH 算法思想，引入了<strong>计算寻址机制</strong>：</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161622077.png" alt="客户端在打开文件时获取布局后由公式自主计算目标数据链"></p>
 <ol>
-<li>客户端在首次 <code>open</code> 打开文件时，从 Meta Service 获取该文件的全局<strong>文件布局（File Layout）</strong>，包括 Chunk 大小 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span></span></span></span>、条带化宽度（Stripe Factor）以及一组预先分配的复制链（Replication Chains）；</li>
+<li>客户端在首次 <code>open</code> 打开文件时，从 Meta Service 获取该文件的全局<strong>文件布局</strong>，包括 Chunk 大小 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span></span></span></span>、条带化宽度以及一组预先分配的复制链；</li>
 <li>当应用请求读取文件内部任意偏移量 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>o</mi><mi>f</mi><mi>f</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">offset</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal">se</span><span class="mord mathnormal">t</span></span></span></span> 时，客户端在本地通过极速数学公式自主计算目标定位：</li>
 </ol>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>i</mi><mo>=</mo><mrow><mo fence="true">⌊</mo><mfrac><mrow><mi>o</mi><mi>f</mi><mi>f</mi><mi>s</mi><mi>e</mi><mi>t</mi></mrow><mi>C</mi></mfrac><mo fence="true">⌋</mo></mrow><mo separator="true">,</mo><mspace width="2em"/><mi>c</mi><mi>h</mi><mi>u</mi><mi>n</mi><mi>k</mi><mi mathvariant="normal">_</mi><mi>i</mi><mi>d</mi><mo>=</mo><mo stretchy="false">(</mo><mi>i</mi><mi>n</mi><mi>o</mi><mi>d</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>i</mi><mi>d</mi><mo separator="true">,</mo><mi>i</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">i = \left\lfloor \frac{offset}{C} \right\rfloor, \qquad chunk\_id = (inode\_id, i)
@@ -583,11 +583,11 @@
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">hain</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">hain</span><span class="mord mathnormal">s</span><span class="mopen">[</span><span class="mord mathnormal">i</span><span class="mspace" style="margin-right:0.0556em;"></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin"><span class="mord"><span class="mord mathrm">mod</span></span></span><span class="mspace" style="margin-right:0.0556em;"></span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">i</span><span class="mord mathnormal">p</span><span class="mord mathnormal">e</span><span class="mclose">]</span></span></span></span></span></p>
 <p>客户端通过计算直接得出当前 Chunk 应归属于哪一条复制链，并直接通过高速 RDMA 向对应的存储节点发起 I/O 请求。后续成千上万次跨越不同 Chunk 的随机读取，<strong>完全无需再向任何中心元数据节点发起单次查询</strong>，彻底消除了元数据单点瓶颈。</p>
 <h2 id="存算分离">存算分离</h2>
-<p>在早期 GFS 与 MapReduce 时代，数据中心内部网络极为狭窄，系统设计推崇“<strong>计算向数据靠拢（Data Locality）</strong>”：调度器千方百计将计算任务调度到存放有该数据副本的物理机器上执行，以尽可能利用本地硬盘总线，避免跨网络搬迁。</p>
-<p>而在现代大模型智算集群中，3FS 彻底转向了 <strong>计算与存储完全分离的去局部性（Locality-Oblivious）</strong> 架构：</p>
+<p>在早期 GFS 与 MapReduce 时代，数据中心内部网络极为狭窄，系统设计推崇“<strong>计算向数据靠拢</strong>”：调度器千方百计将计算任务调度到存放有该数据副本的物理机器上执行，以尽可能利用本地硬盘总线，避免跨网络搬迁。</p>
+<p>而在现代大模型智算集群中，3FS 彻底转向了 <strong>计算与存储完全分离的去局部性</strong> 架构：</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260929161622078.png" alt="GFS 的计算存储融合局部性调度与 3FS 的计算存储完全分离架构对比"></p>
 <ul>
-<li>现代数据中心采用了无阻塞的胖树（Fat-Tree）网络拓扑，在 Spine-Leaf 核心交换网络上提供了<strong>全双分带宽（Full Bisection Bandwidth）</strong>；</li>
+<li>现代数据中心采用了无阻塞的胖树网络拓扑，在 Spine-Leaf 核心交换网络上提供了<strong>全双分带宽</strong>；</li>
 <li>配合 200G/400G 的 RDMA 网络，从远程存储节点读取数据的吞吐量与微秒级延迟，已经与访问本地 NVMe SSD 几乎毫无二致！</li>
 <li>计算存储解耦带来了巨大的系统灵活性：GPU 计算节点可以专注于大显存与张量计算，按需弹性扩缩容；存储节点可以专注于高密闪存与数据安全，两者互不牵制，彻底打破了硬件资源配置的木桶效应。</li>
 </ul>
@@ -595,7 +595,7 @@
 <p>3FS 在客户端为开发者同时提供了两套使用接口：</p>
 <p><strong>路径一：标准 FUSE 兼容路径</strong></p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261001215008557.png" alt="标准 FUSE 路径中经过内核请求队列与多次上下文切换的瓶颈"></p>
-<p>对于现有的通用工具（如 <code>bash</code>、<code>cp</code>、Python 脚本），3FS 提供标准 <strong>FUSE（Filesystem in Userspace）</strong> 挂载支持。应用感知不到任何差异，继续使用标准系统调用。<br>
+<p>对于现有的通用工具（如 <code>bash</code>、<code>cp</code>、Python 脚本），3FS 提供标准 <strong>FUSE</strong> 挂载支持。应用感知不到任何差异，继续使用标准系统调用。<br>
 然而，观察 FUSE 的执行数据流：</p>
 <ul>
 <li>应用程序调用 <code>read()</code> 陷入内核态 VFS；</li>
@@ -610,13 +610,13 @@
 <p>在 Native 架构中，应用程序进程与 3FS Native 客户端守护进程之间开辟了两块高性能<strong>共享内存区域</strong>：</p>
 <ol>
 <li><strong>Iov（I/O Vector 数据共享区）</strong>：直接在用户态共享的大容量物理内存缓冲区，供数据字节存放；</li>
-<li><strong>Ior（I/O Ring 环形队列区）</strong>：无锁的环形提交队列（Submission Queue）与完成队列（Completion Queue）。</li>
+<li><strong>Ior（I/O Ring 环形队列区）</strong>：无锁的环形提交队列与完成队列。</li>
 </ol>
 <p>执行时序极其纯粹优雅：</p>
 <ul>
 <li>应用程序仅在初始阶段通过 FUSE 完成常规的 <code>open</code> 获取文件描述符；</li>
 <li>随后所有的读写数据流<strong>完全彻底绕过内核 VFS 与 FUSE 数据管道</strong>：应用直接向共享内存的 Ior 队列压入异步 I/O 请求，数据直接存入 Iov 共享缓冲区；</li>
-<li>Native 客户端通过用户态轮询（Polling）或事件驱动感知请求，直接通过 Kernel-Bypass 的 <strong>用户态 RDMA</strong> 引擎将数据从 Iov 内存通过网卡 DMA 极速推向远端存储节点！</li>
+<li>Native 客户端通过用户态轮询或事件驱动感知请求，直接通过 Kernel-Bypass 的 <strong>用户态 RDMA</strong> 引擎将数据从 Iov 内存通过网卡 DMA 极速推向远端存储节点！</li>
 <li>零系统调用陷入、零内核态上下文切换、零额外内存拷贝，3FS 成功将单节点的 I/O 处理吞吐推向了硬件链路的物理极限。</li>
 </ul>
 <h2 id="系统对比">系统对比</h2>
@@ -640,7 +640,7 @@
 <tr>
 <td><strong>典型数据访问模式</strong></td>
 <td>中小文件为主、随机小读写、常规打开关闭</td>
-<td>巨型文件流式大块读取、高并发原子尾部追加（Record Append）</td>
+<td>巨型文件流式大块读取、高并发原子尾部追加</td>
 <td>海量小文件元数据并发、高频随机样本读取、瞬发大带宽 Checkpoint</td>
 </tr>
 <tr>
@@ -671,13 +671,13 @@
 <td><strong>并发写顺序控制</strong></td>
 <td>缺乏跨机并发锁，依靠客户端 Close-to-Open 弱一致刷新</td>
 <td><strong>Master 授予 Primary 租约</strong>，两阶段管道传输 + Primary 严格序号落盘</td>
-<td>基于链式复制（CRAQ）与后端强一致存储协议协同提交</td>
+<td>基于链式复制 CRAQ与后端强一致存储协议协同提交</td>
 </tr>
 <tr>
 <td><strong>计算与存储拓扑</strong></td>
 <td>传统客户端-服务器集中式存储</td>
-<td><strong>计算存储紧密融合（Data Locality）</strong>，计算向数据靠拢</td>
-<td><strong>计算与存储彻底解耦（Locality-Oblivious）</strong>，全双分 RDMA 跑满带宽</td>
+<td><strong>计算存储紧密融合</strong>，计算向数据靠拢</td>
+<td><strong>计算与存储彻底解耦</strong>，全双分 RDMA 跑满带宽</td>
 </tr>
 </tbody>
 </table>
@@ -688,7 +688,7 @@
 <li><strong>GFS</strong> 启示我们：不必盲目迷信传统 POSIX 的繁文缛节，敢于根据工业界实际数据规模（巨型文件、顺序追加）重构系统粒度（64 MB 大 Chunk、控制流与数据流分离），能够以极其低廉的廉价硬件支撑起前所未有的海量数据奇迹；</li>
 <li><strong>3FS</strong> 则昭示着未来：面对万卡智算时代网络与闪存硬件性能的万倍爆发，唯有坚决卸下传统内核路径与单点架构的包袱，通过事务型元数据解耦、计算寻址、计算存储分离以及共享内存用户态 I/O，才能彻底释放物理硬件的澎湃算力，托举起通用人工智能时代的全新基石。</li>
 </ul>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/09/29/SE3331_04/">https://acannedfish.github.io/2026/09/29/SE3331_04/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">文件系统</a><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a></div><div class="post-share"><div class="social-share" data-image="/img/background8.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width no-desc" href="/2026/09/28/SE3308_03/" title="算法设计-03：分治算法"><img class="cover" src="/img/background5.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info text-right"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">算法设计-03：分治算法</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/09/24/SE3331_02/" title="计算机系统工程-02：文件系统"><img class="cover" src="/img/background7.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-02：文件系统</div></div></div></a><a class="pagination-related no-desc" href="/2026/09/24/SE3331_03/" title="计算机系统工程-03：远程调用"><img class="cover" src="/img/background4.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-03：远程调用</div></div></div></a><a class="pagination-related no-desc" href="/2026/09/24/SE3331_01/" title="计算机系统工程-01：系统扩展"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-01：系统扩展</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">85</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E6%96%87%E4%BB%B6"><span class="toc-number">1.</span> <span class="toc-text">远程文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NFS%E6%9E%B6%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">NFS架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E6%98%A0%E5%B0%84"><span class="toc-number">3.</span> <span class="toc-text">接口映射</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%82%E8%BD%BD%E5%8D%8F%E8%AE%AE"><span class="toc-number">4.</span> <span class="toc-text">挂载协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E6%97%B6%E5%BA%8F"><span class="toc-number">5.</span> <span class="toc-text">读取时序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E7%8A%B6%E6%80%81%E8%AE%BE%E8%AE%A1"><span class="toc-number">6.</span> <span class="toc-text">无状态设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%8F%A5%E6%9F%84"><span class="toc-number">7.</span> <span class="toc-text">文件句柄</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">8.</span> <span class="toc-text">缓存一致性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GFS%E6%9E%B6%E6%9E%84"><span class="toc-number">9.</span> <span class="toc-text">GFS架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84"><span class="toc-number">10.</span> <span class="toc-text">集群架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7Chunk"><span class="toc-number">11.</span> <span class="toc-text">大Chunk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BB%E6%8E%A7%E5%85%83%E6%95%B0%E6%8D%AE"><span class="toc-number">12.</span> <span class="toc-text">主控元数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GFS%E8%AF%BB%E5%8F%96"><span class="toc-number">13.</span> <span class="toc-text">GFS读取</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E5%86%99%E5%85%A5"><span class="toc-number">14.</span> <span class="toc-text">两阶段写入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B0%E5%BD%95%E8%BF%BD%E5%8A%A0"><span class="toc-number">15.</span> <span class="toc-text">记录追加</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HDFS%E6%9E%B6%E6%9E%84"><span class="toc-number">16.</span> <span class="toc-text">HDFS架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3FS%E8%83%8C%E6%99%AF"><span class="toc-number">17.</span> <span class="toc-text">3FS背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3FS%E7%BB%84%E4%BB%B6"><span class="toc-number">18.</span> <span class="toc-text">3FS组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E5%85%83%E6%95%B0%E6%8D%AE"><span class="toc-number">19.</span> <span class="toc-text">事务元数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E4%BC%9A%E8%AF%9D"><span class="toc-number">20.</span> <span class="toc-text">轻量会话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E5%AF%BB%E5%9D%80"><span class="toc-number">21.</span> <span class="toc-text">计算寻址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%98%E7%AE%97%E5%88%86%E7%A6%BB"><span class="toc-number">22.</span> <span class="toc-text">存算分离</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8C%E6%8E%A5%E5%85%A5%E8%B7%AF%E5%BE%84"><span class="toc-number">23.</span> <span class="toc-text">双接入路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E5%AF%B9%E6%AF%94"><span class="toc-number">24.</span> <span class="toc-text">系统对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">25.</span> <span class="toc-text">总结</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/09/29/SE3331_04/">https://acannedfish.github.io/2026/09/29/SE3331_04/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a><a class="post-meta__tags" href="/tags/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">文件系统</a></div><div class="post-share"><div class="social-share" data-image="/img/background8.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width no-desc" href="/2026/09/28/SE3308_03/" title="算法设计-03：分治算法"><img class="cover" src="/img/background5.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info text-right"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">算法设计-03：分治算法</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/09/24/SE3331_02/" title="计算机系统工程-02：文件系统"><img class="cover" src="/img/background7.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-02：文件系统</div></div></div></a><a class="pagination-related no-desc" href="/2026/09/24/SE3331_03/" title="计算机系统工程-03：远程调用"><img class="cover" src="/img/background4.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-03：远程调用</div></div></div></a><a class="pagination-related no-desc" href="/2026/09/24/SE3331_01/" title="计算机系统工程-01：系统扩展"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-01：系统扩展</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">85</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BF%9C%E7%A8%8B%E6%96%87%E4%BB%B6"><span class="toc-number">1.</span> <span class="toc-text">远程文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NFS%E6%9E%B6%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">NFS架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E6%98%A0%E5%B0%84"><span class="toc-number">3.</span> <span class="toc-text">接口映射</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%82%E8%BD%BD%E5%8D%8F%E8%AE%AE"><span class="toc-number">4.</span> <span class="toc-text">挂载协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E6%97%B6%E5%BA%8F"><span class="toc-number">5.</span> <span class="toc-text">读取时序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A0%E7%8A%B6%E6%80%81%E8%AE%BE%E8%AE%A1"><span class="toc-number">6.</span> <span class="toc-text">无状态设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%8F%A5%E6%9F%84"><span class="toc-number">7.</span> <span class="toc-text">文件句柄</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">8.</span> <span class="toc-text">缓存一致性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GFS%E6%9E%B6%E6%9E%84"><span class="toc-number">9.</span> <span class="toc-text">GFS架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84"><span class="toc-number">10.</span> <span class="toc-text">集群架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7Chunk"><span class="toc-number">11.</span> <span class="toc-text">大Chunk</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BB%E6%8E%A7%E5%85%83%E6%95%B0%E6%8D%AE"><span class="toc-number">12.</span> <span class="toc-text">主控元数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#GFS%E8%AF%BB%E5%8F%96"><span class="toc-number">13.</span> <span class="toc-text">GFS读取</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E5%86%99%E5%85%A5"><span class="toc-number">14.</span> <span class="toc-text">两阶段写入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B0%E5%BD%95%E8%BF%BD%E5%8A%A0"><span class="toc-number">15.</span> <span class="toc-text">记录追加</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HDFS%E6%9E%B6%E6%9E%84"><span class="toc-number">16.</span> <span class="toc-text">HDFS架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3FS%E8%83%8C%E6%99%AF"><span class="toc-number">17.</span> <span class="toc-text">3FS背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3FS%E7%BB%84%E4%BB%B6"><span class="toc-number">18.</span> <span class="toc-text">3FS组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E5%85%83%E6%95%B0%E6%8D%AE"><span class="toc-number">19.</span> <span class="toc-text">事务元数据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%BB%E9%87%8F%E4%BC%9A%E8%AF%9D"><span class="toc-number">20.</span> <span class="toc-text">轻量会话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E5%AF%BB%E5%9D%80"><span class="toc-number">21.</span> <span class="toc-text">计算寻址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%98%E7%AE%97%E5%88%86%E7%A6%BB"><span class="toc-number">22.</span> <span class="toc-text">存算分离</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8C%E6%8E%A5%E5%85%A5%E8%B7%AF%E5%BE%84"><span class="toc-number">23.</span> <span class="toc-text">双接入路径</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E5%AF%B9%E6%AF%94"><span class="toc-number">24.</span> <span class="toc-text">系统对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">25.</span> <span class="toc-text">总结</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
   const showKatex = () => {
     document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
   }
