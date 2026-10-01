@@ -1,0 +1,857 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>高级数据结构-12：最小生成树 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="预备知识条件变量 std::mutex 用于在多个线程访问同一共享变量时提供互斥保护。一个线程持有锁时，其他尝试获取该锁的线程会阻塞，直到锁被释放。互斥量可以隔离访问，但不能单独表达线程之间的执行依赖。 条件变量用于协调多个线程的执行顺序。例如，消费者线程需要等待生产者准备好数据后再处理。条件变量提供等待和通知两类操作，是线程同步的常用机制。 std::condition_variable 提供了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高级数据结构-12：最小生成树">
+<meta property="og:url" content="https://acannedfish.github.io/2026/06/07/SE2322_12/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="预备知识条件变量 std::mutex 用于在多个线程访问同一共享变量时提供互斥保护。一个线程持有锁时，其他尝试获取该锁的线程会阻塞，直到锁被释放。互斥量可以隔离访问，但不能单独表达线程之间的执行依赖。 条件变量用于协调多个线程的执行顺序。例如，消费者线程需要等待生产者准备好数据后再处理。条件变量提供等待和通知两类操作，是线程同步的常用机制。 std::condition_variable 提供了">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background13.png">
+<meta property="article:published_time" content="2026-06-07T09:19:00.000Z">
+<meta property="article:modified_time" content="2026-08-17T13:49:10.909Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="并行计算">
+<meta property="article:tag" content="图算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background13.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "高级数据结构-12：最小生成树",
+  "url": "https://acannedfish.github.io/2026/06/07/SE2322_12/",
+  "image": "https://acannedfish.github.io/img/background13.png",
+  "datePublished": "2026-06-07T09:19:00.000Z",
+  "dateModified": "2026-08-17T13:49:10.909Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/06/07/SE2322_12/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '高级数据结构-12：最小生成树',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">85</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;高级数据结构-12：最小生成树&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">高级数据结构-12：最小生成树</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-07T09:19:00.000Z" title="发表于 2026-06-07 17:19:00">2026-06-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-08-17T13:49:10.909Z" title="更新于 2026-08-17 21:49:10">2026-08-17</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">高级数据结构</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><details class="toggle" ><summary class="toggle-button" style="">预备知识</summary><div class="toggle-content"><h3 id="条件变量">条件变量</h3>
+<p><code>std::mutex</code> 用于在多个线程访问同一共享变量时提供互斥保护。一个线程持有锁时，其他尝试获取该锁的线程会阻塞，直到锁被释放。互斥量可以隔离访问，但不能单独表达线程之间的执行依赖。</p>
+<p>条件变量用于协调多个线程的执行顺序。例如，消费者线程需要等待生产者准备好数据后再处理。条件变量提供等待和通知两类操作，是线程同步的常用机制。</p>
+<p><code>std::condition_variable</code> 提供了实现线程间状态通知的基础。为了避免竞态条件，它必须与互斥量（通常结合 <code>std::unique_lock</code>）配合使用。<code>wait</code> 操作的底层执行逻辑包含三个关键动作：</p>
+<ol>
+<li><strong>释放并睡眠</strong>：当线程调用 <code>wait</code> 时，它会原子性地释放当前持有的互斥锁，并将当前线程置于阻塞队列中等待。这确保了其他工作线程能够获取互斥锁进而修改共享数据。</li>
+<li><strong>唤醒与重加锁</strong>：当条件变量接收到唤醒通知后，线程结束睡眠。但在 <code>wait</code> 函数真正返回之前，该线程会自动尝试重新获取与之关联的互斥锁。</li>
+<li><strong>防范虚假唤醒</strong>：操作系统在极少数情况下可能会在没有收到明确唤醒信号时将等待线程唤醒，这被称为“虚假唤醒”。因此，<code>wait</code> 调用必须嵌套在条件判断的循环（如 <code>while</code> 循环）中，线程被唤醒后需立刻复核共享变量的状态是否符合预期，若不符合则继续进入等待状态。</li>
+</ol>
+<p>当共享资源完成更新时，执行更新的线程需要通过条件变量发送通知：</p>
+<ul>
+<li><code>notify_one</code>：该接口仅唤醒阻塞队列中的一个线程。具体唤醒哪一个通常由底层的操作系统调度器决定。这种方式适用于资源的增加仅能满足单一线程处理需求的场景（如任务队列中新增了一个任务），能够有效节约系统开销。</li>
+<li><code>notify_all</code>：该接口会唤醒所有阻塞在该条件变量上的线程。它适用于全局状态发生改变，且该改变对所有子线程都有意义的场景（例如主控线程完成基础配置后，通知所有工作线程同步启动计算）。</li>
+</ul>
+<p>实际应用中应谨慎使用 <code>notify_all</code>。所有被唤醒线程都会重新竞争同一把互斥锁，除一个线程成功获锁外，其余线程可能再次阻塞。这种集中唤醒引发的锁竞争和上下文切换称为“惊群效应”。</p>
+<p>POSIX 线程库提供了底层原语来构建消息队列同步机制。以下代码展示了如何在 C 语言环境下利用 POSIX 线程库实现基于条件变量的消息队列管理。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* POSIX 线程库，提供互斥锁和条件变量。 */</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="comment">/* 消息节点。 */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">msg</span> &#123;</span></span><br><span class="line">    <span class="comment">/* 指向下一条消息，用于构成单向链表队列。 */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">msg</span> *<span class="title">m_next</span>;</span></span><br><span class="line">    <span class="comment">/* more stuff here */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 工作队列头指针，由生产者和消费者共享。 */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">msg</span> *<span class="title">workq</span>;</span></span><br><span class="line"><span class="comment">/* 条件变量：队列从空变为非空时通知消费者。 */</span></span><br><span class="line"><span class="type">pthread_cond_t</span> qready = PTHREAD_COND_INITIALIZER;</span><br><span class="line"><span class="comment">/* 互斥锁：保护 workq 的读写。 */</span></span><br><span class="line"><span class="type">pthread_mutex_t</span> qlock = PTHREAD_MUTEX_INITIALIZER;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 消费者循环处理消息。 */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">process_msg</span><span class="params">(<span class="type">void</span>)</span> &#123;</span><br><span class="line">    <span class="comment">/* mp 保存本轮取出的消息。 */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">msg</span> *<span class="title">mp</span>;</span></span><br><span class="line">    <span class="comment">/* 消费者通常长期运行，持续等待并处理队列任务。 */</span></span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="comment">/* 加锁后才能检查共享队列。 */</span></span><br><span class="line">        pthread_mutex_lock(&amp;qlock);</span><br><span class="line">        <span class="comment">/* 使用 while 防止虚假唤醒，或醒来后队列已被其他消费者取空。 */</span></span><br><span class="line">        <span class="keyword">while</span> (workq == <span class="literal">NULL</span>)</span><br><span class="line">            <span class="comment">/* wait 会原子释放 qlock 并睡眠；返回时重新持有 qlock。 */</span></span><br><span class="line">            pthread_cond_wait(&amp;qready, &amp;qlock);</span><br><span class="line">        <span class="comment">/* 取出队首消息。 */</span></span><br><span class="line">        mp = workq;</span><br><span class="line">        <span class="comment">/* 更新共享队列头。 */</span></span><br><span class="line">        workq = mp-&gt;m_next;</span><br><span class="line">        <span class="comment">/* 共享队列修改完成，释放锁。 */</span></span><br><span class="line">        pthread_mutex_unlock(&amp;qlock);</span><br><span class="line">        <span class="comment">/* now process the message mp */</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 生产者把消息插入工作队列。 */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">enqueue_msg</span><span class="params">(<span class="keyword">struct</span> msg *mp)</span> &#123;</span><br><span class="line">    <span class="comment">/* 生产者也必须在同一把锁下修改 workq。 */</span></span><br><span class="line">    pthread_mutex_lock(&amp;qlock);</span><br><span class="line">    <span class="comment">/* 新消息头插到当前队列前端。 */</span></span><br><span class="line">    mp-&gt;m_next = workq;</span><br><span class="line">    <span class="comment">/* 发布新的队列头。 */</span></span><br><span class="line">    workq = mp;</span><br><span class="line">    <span class="comment">/* 释放锁后再通知可减少被唤醒线程立即抢锁失败的概率。 */</span></span><br><span class="line">    pthread_mutex_unlock(&amp;qlock);</span><br><span class="line">    <span class="comment">/* 通知至少一个等待的消费者队列状态可能已改变。 */</span></span><br><span class="line">    pthread_cond_signal(&amp;qready);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在上述实现中，消费者线程获取互斥锁后必须循环检查工作队列是否为空。原因包括虚假唤醒，以及线程被唤醒后重新获取锁前，消息已被其他消费者取走。循环检查配合条件变量等待，可以避免无效轮询。</p>
+<p>条件变量的标准读法是“锁保护状态，条件变量负责睡眠和唤醒”。<code>wait</code> 本身不代表条件一定满足，它只是让线程在条件可能改变时醒来。因此工程代码通常写成 <code>wait(lock, predicate)</code> 或 <code>while (!predicate) wait(...)</code>，把真正的业务条件放在谓词中反复检查。</p>
+<h3 id="并查集">并查集</h3>
+<p>并查集用于管理一组互不相交的等价类，适合快速判断元素归属和合并集合。在最小生成树构造中，判断一条新边是否会成环，本质上就是判断该边两个端点是否属于同一连通分量。</p>
+<p>并查集的核心操作是查找和合并。查找返回元素所属等价类的代表元素；合并将两个不同等价类合并。初始状态下，每个元素各自构成一个单元素集合。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607174426906.png" alt=""></p>
+<p>最直接的实现称为<strong>快速查找/慢速合并</strong>。系统维护一个数组，索引代表元素，数组值代表所属集合标识。查找可通过索引直接完成，时间复杂度为常数；但合并需要遍历整个数组，将一个集合的所有标识更新为另一个集合标识，因此合并为线性时间。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 快速查找版本并查集：find 为 O(1)，union 为 O(n)。</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">UnionFind</span>:</span><br><span class="line">    <span class="comment"># n 是元素数量，元素编号默认为 0 到 n - 1。</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, n</span>):</span><br><span class="line">        <span class="comment"># 保存元素总数，union 时需要全表扫描。</span></span><br><span class="line">        <span class="variable language_">self</span>.n = n</span><br><span class="line">        <span class="comment"># group[k] 表示元素 k 当前所属集合编号。</span></span><br><span class="line">        <span class="variable language_">self</span>.group = [k <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(n)]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 返回元素 k 所属集合编号。</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">find</span>(<span class="params">self, k</span>):</span><br><span class="line">        <span class="keyword">return</span> <span class="variable language_">self</span>.group[k]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 合并元素 i 和 j 所在集合。</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">union</span>(<span class="params">self, i, j</span>):</span><br><span class="line">        <span class="comment"># 读取两个元素当前所属集合编号。</span></span><br><span class="line">        iGroup, jGroup = <span class="variable language_">self</span>.group[i], <span class="variable language_">self</span>.group[j]</span><br><span class="line">        <span class="comment"># 已在同一集合时无需修改。</span></span><br><span class="line">        <span class="keyword">if</span> iGroup == jGroup: <span class="keyword">return</span></span><br><span class="line">        <span class="comment"># 扫描所有元素，把 jGroup 改写为 iGroup。</span></span><br><span class="line">        <span class="keyword">for</span> k <span class="keyword">in</span> <span class="built_in">range</span>(<span class="variable language_">self</span>.n):</span><br><span class="line">            <span class="keyword">if</span> (<span class="variable language_">self</span>.group[k] == jGroup): <span class="variable language_">self</span>.group[k] = iGroup</span><br></pre></td></tr></table></figure>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607175138228.png" alt=""></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607175701880.png" alt=""></p>
+<p>为提升合并效率，可以将结构从扁平数组改为森林模型。系统不再记录集合标识，而是维护父节点索引数组。初始时，每个元素是一棵单节点树，父节点指向自身。集合代表元素变为树根。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607181026172.png" alt=""></p>
+<p>基于树形结构的策略称为<strong>快速合并</strong>。合并两个集合时，算法先沿父节点数组找到两棵树的根，再将其中一个根的父指针改为另一个根。这样用少量指针修改替代全数组遍历。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607181206256.png" alt=""></p>
+<p>单纯快速合并可能在特定合并顺序下退化为链表，使查找路径过长。加权优化额外维护树规模或秩。合并时，<strong>将规模较小的树挂到规模较大的树根上</strong>，从而限制树高增长。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607181256118.png" alt=""></p>
+<p>路径压缩优化查找操作。查找某个元素根节点时，算法沿父指针向上遍历，并<strong>将路径上的中间节点直接连接到最终根节点</strong>。一次查找后，该路径被扁平化，后续查找成本降低。若配合按秩或按规模合并，并查集操作的均摊复杂度可达到近似常数的 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>α</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(\alpha(n))</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">))</span></span></span></span>，其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo stretchy="false">(</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\alpha(n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span><span class="mopen">(</span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span> 是增长极慢的反 Ackermann 函数。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607181338357.png" alt=""></p>
+<p>并查集的不同版本可以按“哪个操作快”来记忆。快速查找用数组直接存集合编号，<code>find</code> 很快但 <code>union</code> 要全表改编号；快速合并用父指针森林表示集合，<code>union</code> 只改根指针但 <code>find</code> 可能走长链；按秩合并和路径压缩则分别控制树高、扁平化访问路径，是工业实现中最常搭配使用的两项优化。</p>
+</div></details>
+<h2 id="串行最小生成树">串行最小生成树</h2>
+<p>并行化设计前，先回顾串行最小生成树算法。最经典的贪心策略是 Prim 算法和 Kruskal 算法，二者都通过局部最优选择逐步构造全局最优解。</p>
+<h3 id="Prim-算法">Prim 算法</h3>
+<p>Prim 算法基于顶点扩张。算法可从任意起点开始，逐步将相邻顶点纳入生成树。<strong>执行过程中维护两个顶点集合：已纳入生成树的顶点和尚未纳入的顶点</strong>。每一步在跨越两个集合的边中选择最小权重边，将其连接的未纳入顶点加入生成树，并把该边加入结果集，直到所有顶点被纳入。</p>
+<p>以下是基于邻接矩阵实现的 Prim 算法逻辑。利用邻接矩阵存储图时，二维数组中的元素直接记录了顶点间的边权重。若两个顶点间不存在直接连接，则将其权重初始化为无穷大。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 任选一个起始顶点。</span></span><br><span class="line"><span class="type">int</span> start = <span class="number">1</span>;</span><br><span class="line"><span class="comment">// 初始化每个顶点到当前生成树的最小接入边。</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= vertex_num; i++)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// dis[i][0] 保存当前生成树到顶点 i 的最短边权。</span></span><br><span class="line">    dis[i][<span class="number">0</span>] = edge_map[start][i];</span><br><span class="line">    <span class="comment">// dis[i][1] 保存提供该最短边的树内顶点。</span></span><br><span class="line">    dis[i][<span class="number">1</span>] = start;</span><br><span class="line">    <span class="comment">// mark[i] 为 0 表示顶点 i 尚未加入生成树。</span></span><br><span class="line">    mark[i] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 起点先加入生成树。</span></span><br><span class="line">mark[start] = <span class="number">1</span>;</span><br><span class="line"><span class="comment">// 已加入生成树的顶点数量。</span></span><br><span class="line">vertex_count++;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 每轮向生成树加入一个新顶点，直到覆盖全部顶点。</span></span><br><span class="line"><span class="keyword">while</span> (vertex_count &lt; vertex_num)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// min 保存当前跨割最小边权。</span></span><br><span class="line">    <span class="type">int</span> min = INF;</span><br><span class="line">    <span class="comment">// k 保存本轮将加入生成树的顶点。</span></span><br><span class="line">    <span class="type">int</span> k = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 在线性扫描中寻找未加入顶点的最小接入边。</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= vertex_num; i++)</span><br><span class="line">        <span class="keyword">if</span> (mark[i] == <span class="number">0</span> &amp;&amp; min &gt; dis[i][<span class="number">0</span>])</span><br><span class="line">        &#123;</span><br><span class="line">            min = dis[i][<span class="number">0</span>];</span><br><span class="line">            k = i;</span><br><span class="line">        &#125;</span><br><span class="line">    <span class="comment">// k 仍为 0 表示剩余顶点不可达，图不连通。</span></span><br><span class="line">    <span class="keyword">if</span> (k == <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="comment">// 将顶点 k 加入生成树。</span></span><br><span class="line">    mark[k] = <span class="number">1</span>;</span><br><span class="line">    <span class="comment">// 记录连接 k 的生成树边起点。</span></span><br><span class="line">    path[vertex_count][<span class="number">0</span>] = dis[k][<span class="number">1</span>];</span><br><span class="line">    <span class="comment">// 记录连接 k 的生成树边终点。</span></span><br><span class="line">    path[vertex_count][<span class="number">1</span>] = k;</span><br><span class="line">    <span class="comment">// 已加入顶点数增加。</span></span><br><span class="line">    vertex_count++;</span><br><span class="line">    <span class="comment">// 用新加入顶点 k 刷新其余未加入顶点的最短接入边。</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">1</span>; i &lt;= vertex_num; i++)</span><br><span class="line">        <span class="keyword">if</span> (mark[i] == <span class="number">0</span> &amp;&amp; dis[i][<span class="number">0</span>] &gt; edge_map[k][i])</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// k 到 i 的边更便宜，更新最小接入边权。</span></span><br><span class="line">            dis[i][<span class="number">0</span>] = edge_map[k][i];</span><br><span class="line">            <span class="comment">// 记录提供该边的新树内顶点。</span></span><br><span class="line">            dis[i][<span class="number">1</span>] = k;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述实现中，距离数组维护<strong>未纳入顶点到已纳入顶点集合的最短单边距离</strong>。第一列存权重，第二列存提供该权重的树内顶点索引。标志数组记录顶点是否已纳入生成树。主循环扫描距离数组找到全局最小值对应顶点；新顶点加入后，再遍历未纳入顶点并更新其最短接入边。由于每轮都要线性扫描，时间复杂度为顶点数平方，适合稠密图，在大规模稀疏图上效率较低。</p>
+<p>Prim 算法维护的是一个不断长大的连通块。<code>dis[i][0]</code> 不是源点到 <code>i</code> 的路径距离，而是“从当前生成树边界接到 <code>i</code> 的最便宜单条边”。这一点容易和 Dijkstra 混淆：Prim 优化的是整棵树的总接入成本，不关心从起点到某个顶点的路径是否最短。</p>
+<h3 id="Kruskal-算法">Kruskal 算法</h3>
+<p>Kruskal 算法从边的视角构造最小生成树。初始状态是一片森林，每个顶点自成一棵树。算法不断选择合法边合并不同树，直到形成唯一生成树。</p>
+<p>算法首先将图中所有的边按权重以非降序排列，然后构建一个仅包含顶点不包含任何边的森林。接下来重复从排序表中取出权值最小的边，<strong>如果这条边加入森林后不会在其中形成环路，那么将此边加入结果集，否则直接丢弃这条边</strong>。向结果集中加完顶点数减一条边后算法结束，此时的结果集即为图的最小生成树。</p>
+<p>在代码实现层面，边结构的定义通常通过重载小于运算符来实现基于权重的排序。为解决环路判定与集合合并的性能瓶颈，标准实现均依赖于前文所述的并查集数据结构。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Kruskal 使用的边记录。</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Edge</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// 边的一个端点。</span></span><br><span class="line">    <span class="type">int</span> u;</span><br><span class="line">    <span class="comment">// 边的另一个端点。</span></span><br><span class="line">    <span class="type">int</span> v;</span><br><span class="line">    <span class="comment">// 边权。</span></span><br><span class="line">    <span class="type">int</span> w;</span><br><span class="line">    <span class="comment">// 小于运算符用于按边权排序。</span></span><br><span class="line">    <span class="keyword">friend</span> <span class="type">bool</span> <span class="keyword">operator</span>&lt;(<span class="type">const</span> Edge &amp; E1, <span class="type">const</span> Edge&amp; E2)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 权重较小的边排在前面。</span></span><br><span class="line">        <span class="keyword">return</span> E<span class="number">1.</span>w &lt; E<span class="number">2.</span>w;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 串行 Kruskal 算法；edges 假定已按权重排序。</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">Kruskal</span> <span class="params">(<span class="type">const</span> vector&lt;Edge&gt;&amp; edges, <span class="type">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// uset 是并查集父数组或集合标识数组。</span></span><br><span class="line">    vector&lt;<span class="type">int</span>&gt; uset;</span><br><span class="line">    <span class="comment">// SpanTree 保存最终选入 MST 的边。</span></span><br><span class="line">    vector&lt;Edge&gt; SpanTree;</span><br><span class="line">    <span class="comment">// Cost 累计 MST 总权重；e1/e2 保存两个端点所属集合。</span></span><br><span class="line">    <span class="type">int</span> Cost = <span class="number">0</span>, e1, e2;</span><br><span class="line">    <span class="comment">// 初始化并查集，每个顶点单独成分量。</span></span><br><span class="line">    <span class="built_in">MakeSet</span>(uset, n);</span><br><span class="line">    <span class="comment">// 假设edges已经按照权重从小到大排序。</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">size_t</span> i = <span class="number">0</span>; i &lt; edges.<span class="built_in">size</span>() &amp;&amp; SpanTree.<span class="built_in">size</span>() &lt; (<span class="type">size_t</span>)(n - <span class="number">1</span>); i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 查找端点 u 所属连通分量。</span></span><br><span class="line">        e1 = <span class="built_in">FindSet</span>(uset, edges[i].u);</span><br><span class="line">        <span class="comment">// 查找端点 v 所属连通分量。</span></span><br><span class="line">        e2 = <span class="built_in">FindSet</span>(uset, edges[i].v);</span><br><span class="line">        <span class="comment">// 两端点不在同一分量时，加入该边不会形成环。</span></span><br><span class="line">        <span class="keyword">if</span> (e1 != e2)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// 将该边加入 MST。</span></span><br><span class="line">            SpanTree.<span class="built_in">push_back</span>(edges[i]);</span><br><span class="line">            <span class="comment">// 累加 MST 权重。</span></span><br><span class="line">            Cost += edges[i].w;</span><br><span class="line">            <span class="comment">// 合并两个连通分量。</span></span><br><span class="line">            uset[e1] = e2;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Kruskal 首先对全体边排序，因此排序主导整体复杂度。若使用高效并查集管理连通分量，合并与查询均摊成本很低，整体复杂度主要由排序决定。该特性使 Kruskal 适合边数较少的稀疏图。</p>
+<p>Kruskal 的视角和 Prim 相反。Prim 始终保持“一棵树”向外扩张；Kruskal 一开始有很多棵小树，每加入一条合法边就合并两个连通分量。并查集在这里承担的就是“这条边的两个端点是否已经在同一棵树里”的快速环路判定。</p>
+<p>在现实生活中，社交关系网通常具有动态特征，例如两人建立或解除好友关系对应着边的增减，通信成本变化对应着边权重的改变。维护动态图的最小生成树结果一般需要使用如 B 树等高级索引结构对图中的边和点信息建立索引。现有的理论表明，基于索引的动态维护算法可以在立方根对数级别的时间内完成维护工作。</p>
+<h2 id="并行最小生成树">并行最小生成树</h2>
+<h3 id="图的划分">图的划分</h3>
+<p>网络规模增长后，串行 MST 算法可能成为瓶颈。并行算法通常先划分图，将原图拆成若干不相交分区，交由不同进程或线程处理。各分区完成局部计算后，将结果交给全局进程继续合并，得到完整最小生成树。</p>
+<p>为支持并行处理，图通常从邻接矩阵改为更节省内存的<strong>邻接表</strong>。数据结构中还需要记录多线程状态标识。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 并行图结构中的边节点。</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">edge</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// 默认构造空边，tid=-1 表示尚未分配给线程。</span></span><br><span class="line">    <span class="built_in">edge</span>() : <span class="built_in">v1</span>(<span class="number">0</span>), <span class="built_in">v2</span>(<span class="number">0</span>), <span class="built_in">w</span>(<span class="number">0</span>), <span class="built_in">tid</span>(<span class="number">-1</span>), <span class="built_in">next</span>(<span class="literal">NULL</span>) &#123;&#125;</span><br><span class="line">    <span class="comment">// 构造指定端点和权重的边。</span></span><br><span class="line">    <span class="built_in">edge</span>(<span class="type">int</span> a, <span class="type">int</span> b, <span class="type">int</span> c) : <span class="built_in">v1</span>(a), <span class="built_in">v2</span>(b), <span class="built_in">w</span>(c), <span class="built_in">tid</span>(<span class="number">-1</span>), <span class="built_in">next</span>(<span class="literal">NULL</span>) &#123;&#125;</span><br><span class="line">    <span class="comment">// 边的两个端点。</span></span><br><span class="line">    <span class="type">int</span> v1, v2;</span><br><span class="line">    <span class="comment">// w 是边权；tid 记录该边当前由哪个线程分区处理。</span></span><br><span class="line">    <span class="type">int</span> w, tid;</span><br><span class="line">    <span class="comment">// 邻接表中的下一条边。</span></span><br><span class="line">    edge* next;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 并行图结构中的顶点节点。</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">vertex</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">// vid 是顶点编号，next 指向该顶点的第一条邻接边。</span></span><br><span class="line">    <span class="built_in">vertex</span>(<span class="type">int</span> v = <span class="number">0</span>) : <span class="built_in">vid</span>(v), <span class="built_in">next</span>(<span class="literal">NULL</span>) &#123;&#125;</span><br><span class="line">    <span class="comment">// 顶点编号。</span></span><br><span class="line">    <span class="type">int</span> vid;</span><br><span class="line">    <span class="comment">// 指向第一条邻接边。</span></span><br><span class="line">    edge* next;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在这里，边的类定义中包含了一个记录处理该边的线程编号的变量，该变量在后续的并发归约过程中用于追踪数据来源。图的构建函数负责读取输入数据并建立顶点数组与链表结构的映射关系。</p>
+<p>分配任务前需要确定图划分规则。划分要求每个顶点只属于一个子图，保证无遗漏且无重叠。MST 并行算法通常希望各分区负载均衡，因此可用哈希或取模方式划分顶点，例如对顶点索引按线程数取模，将顶点分散到不同线程分区。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 按顶点编号把图划分给不同工作线程。</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">partition</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// temp[i] 保存分配给第 i 个线程的顶点子集。</span></span><br><span class="line">    vector&lt;vector&lt;vertex&gt;&gt; <span class="built_in">temp</span>(thread_num);</span><br><span class="line">    <span class="comment">// 取模划分顶点，保证每个顶点只进入一个分区。</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; (<span class="type">int</span>)graph.<span class="built_in">size</span>(); i++)</span><br><span class="line">        temp[i % thread_num].<span class="built_in">push_back</span>(graph[i]);</span><br><span class="line">    <span class="comment">// 为每个分区启动一个工作线程。</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; thread_num; i++)</span><br><span class="line">        subthreads.<span class="built_in">push_back</span>(<span class="built_in">thread</span>(subthread_func, temp[i], i));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="基于边并行">基于边并行</h3>
+<p>基于边的并行最小生成树算法也可称作并行 Kruskal 算法，其主体思想与非并行化的 Kruskal 算法大致相同。整个算法解耦为由各并行进程完成的部分算法与由一个全局进程完成的仲裁算法。</p>
+<p>在部分算法中，各并行子线程独立扫描分配给自身的子图分区。为快速提取具有最小权重的边，子线程内部借助基于红黑树实现的有序多重映射容器来组织辖区内的边数据。遍历所有分配到的顶点及其邻接链表，将边权重作为键值插入映射容器中，从而完成局部的非降序排列。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 工作线程函数：维护本分区的局部有序边流。</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">subthread_func</span><span class="params">(vector&lt;vertex&gt; v, <span class="type">int</span> tid)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// multimap 按边权自动排序，并允许相同权重的多条边。</span></span><br><span class="line">    multimap&lt;<span class="type">int</span>, edge&gt; e;</span><br><span class="line">    <span class="comment">// 扫描分配给本线程的所有顶点。</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; (<span class="type">int</span>)v.<span class="built_in">size</span>(); i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// temp 遍历当前顶点的邻接边链表。</span></span><br><span class="line">        edge* temp = v[i].next;</span><br><span class="line">        <span class="keyword">while</span> (temp!= <span class="literal">NULL</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// 标记该边来自当前分区线程。</span></span><br><span class="line">            temp-&gt;tid = tid;</span><br><span class="line">            <span class="comment">// 以边权作为 key 放入有序容器。</span></span><br><span class="line">            e.<span class="built_in">insert</span>(<span class="built_in">pair</span>&lt;<span class="type">int</span>, edge&gt;(temp-&gt;w, *temp));</span><br><span class="line">            <span class="comment">// 继续扫描邻接链表。</span></span><br><span class="line">            temp = temp-&gt;next;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 进入共享状态更新区。</span></span><br><span class="line">    <span class="function">unique_lock&lt;mutex&gt; <span class="title">lk</span><span class="params">(mut)</span></span>;</span><br><span class="line">    <span class="comment">// 发送本分区当前最小边；若没有边可发送，标记分区完成。</span></span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">send_edge</span>(e))</span><br><span class="line">        partition_finished[tid] = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">// 记录该线程已完成初始局部排序。</span></span><br><span class="line">    ready_threads++;</span><br><span class="line">    <span class="comment">// 通知仲裁线程：有线程准备就绪。</span></span><br><span class="line">    ready_cond.<span class="built_in">notify_one</span>();</span><br><span class="line">    <span class="comment">// 通知仲裁线程：全局边队列可能已有新边。</span></span><br><span class="line">    arbiter_cond.<span class="built_in">notify_one</span>();</span><br><span class="line">    <span class="comment">// 等待仲裁线程请求本分区继续补边。</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 教学简化；工程代码应使用谓词抵御虚假唤醒。</span></span><br><span class="line">        cond_v[tid].<span class="built_in">wait</span>(lk);</span><br><span class="line">        <span class="comment">// 全局算法完成时退出线程函数。</span></span><br><span class="line">        <span class="keyword">if</span> (isfinished)</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        <span class="comment">// 再发送本分区当前最小边；若耗尽则标记完成。</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">send_edge</span>(e))</span><br><span class="line">            partition_finished[tid] = <span class="literal">true</span>;</span><br><span class="line">        <span class="comment">// 通知仲裁线程有新边或分区完成状态可读。</span></span><br><span class="line">        arbiter_cond.<span class="built_in">notify_one</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当局部边集排序完成后，子线程与全局仲裁进程建立交互。子线程提取当前权重最小的一条边，并在互斥锁的保护下将其写入全局共享的消息队列中。若当前分区内的所有边已处理完毕，线程将更新全局状态数组宣告自身任务终结。随后，线程唤醒等待条件变量的仲裁进程，并使自身进入休眠状态，等待仲裁进程在处理完当前边后发送补充新边的请求指令。</p>
+<p>这套并行 Kruskal 不是让每个线程独立产出一棵 MST，而是让每个线程维护一个“局部有序边流”。仲裁线程每次只从各个边流的当前最小边里挑全局最小值，类似多路归并排序中的最小头元素选择。这样可以避免一次性把所有边都集中到全局队列中。</p>
+<h3 id="仲裁算法">仲裁算法</h3>
+<p>全局进程所执行的仲裁算法扮演着收集、判定与拼装的职责。全局进程首先向所有并行进程发送消息获取各分区最小权重边构成队列。接下来循环取出队列中权值最小的边，并向提供该边的进程发送消息请求补充新的最小权重边至队列中。这种消耗一条并补充一条的按需拉取机制有效控制了全局共享队列的内存占用，同时保障了全局进程总是能够在来自各个分区的局部最优边中筛选出全局最优解。</p>
+<p>如果取出的候选边加入到结果集中不会构成环路则保留此边，若会构成环路则将其丢弃。当结果集中的边的数量达到顶点总数减一或全局队列为空时算法结束，同时通知各进程结束算法。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 仲裁线程执行的并行 Kruskal 主循环。</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">kruskal</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// index[v] 记录顶点 v 当前所属连通分量编号，-1 表示尚未归属。</span></span><br><span class="line">    map&lt;<span class="type">int</span>, <span class="type">int</span>&gt; index;</span><br><span class="line">    <span class="comment">// rev_index[c] 记录连通分量 c 中包含的顶点列表。</span></span><br><span class="line">    map&lt;<span class="type">int</span>, vector&lt;<span class="type">int</span>&gt;&gt; rev_index;</span><br><span class="line">    <span class="comment">// 初始化所有顶点为未归属状态。</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; (<span class="type">int</span>)graph.<span class="built_in">size</span>(); i++)</span><br><span class="line">        index[i + <span class="number">1</span>] = <span class="number">-1</span>;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 等待所有工作线程完成局部排序并发送第一条候选边。</span></span><br><span class="line">        <span class="function">unique_lock&lt;mutex&gt; <span class="title">lk</span><span class="params">(mut)</span></span>;</span><br><span class="line">        ready_cond.<span class="built_in">wait</span>(lk, [&amp;] &#123; <span class="keyword">return</span> ready_threads == thread_num; &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// MST 需要 graph.size() - 1 条边。</span></span><br><span class="line">    <span class="keyword">while</span> (mst.<span class="built_in">size</span>() &lt; graph.<span class="built_in">size</span>() - <span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 访问全局候选边队列前持锁。</span></span><br><span class="line">        <span class="function">unique_lock&lt;mutex&gt; <span class="title">lk</span><span class="params">(mut)</span></span>;</span><br><span class="line">        <span class="comment">// 等待队列非空，或所有分区都已耗尽。</span></span><br><span class="line">        arbiter_cond.<span class="built_in">wait</span>(lk, [&amp;] &#123;</span><br><span class="line">            <span class="keyword">return</span> !edge_queue.<span class="built_in">empty</span>() || <span class="built_in">all_partitions_finished</span>();</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="comment">// 队列为空且无分区可继续供边，算法结束。</span></span><br><span class="line">        <span class="keyword">if</span> (edge_queue.<span class="built_in">empty</span>())</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="comment">// 取出当前全局最小候选边。</span></span><br><span class="line">        pair&lt;<span class="type">int</span>, edge&gt; temp = *(edge_queue.<span class="built_in">begin</span>());</span><br><span class="line">        <span class="comment">// 从全局候选队列移除该边。</span></span><br><span class="line">        edge_queue.<span class="built_in">erase</span>(edge_queue.<span class="built_in">begin</span>());</span><br><span class="line">        <span class="comment">// 释放锁后再通知，减少被唤醒线程的锁竞争。</span></span><br><span class="line">        lk.<span class="built_in">unlock</span>();</span><br><span class="line">        <span class="comment">// 请求提供该边的分区补充下一条局部最小边。</span></span><br><span class="line">        cond_v[temp.second.tid].<span class="built_in">notify_all</span>();</span><br><span class="line">        <span class="comment">// 重新加锁，等待该分区补边或宣告完成。</span></span><br><span class="line">        lk.<span class="built_in">lock</span>();</span><br><span class="line">        arbiter_cond.<span class="built_in">wait</span>(lk, [&amp;temp] &#123;</span><br><span class="line">            <span class="keyword">return</span> partition_finished[temp.second.tid] ||</span><br><span class="line">                   <span class="built_in">has_edge_from_thread</span>(temp.second.tid);</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="comment">// 边队列同步完成，释放共享锁后执行连通性判断。</span></span><br><span class="line">        lk.<span class="built_in">unlock</span>();</span><br><span class="line">        <span class="comment">// 若两个端点不在同一分量，或二者都未归属，则候选边不会成环。</span></span><br><span class="line">        <span class="keyword">if</span> (index[temp.second.v1]!= index[temp.second.v2] ||</span><br><span class="line">            index[temp.second.v1] == <span class="number">-1</span>)</span><br><span class="line">            <span class="comment">// 将边加入 MST，并更新连通分量映射。</span></span><br><span class="line">            <span class="built_in">add_edge</span>(temp.second, index, rev_index);</span><br><span class="line">    &#125;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 设置全局结束标记，通知工作线程退出等待循环。</span></span><br><span class="line">        <span class="function">unique_lock&lt;mutex&gt; <span class="title">lk</span><span class="params">(mut)</span></span>;</span><br><span class="line">        isfinished = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 唤醒并回收所有工作线程。</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; thread_num; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        cond_v[i].<span class="built_in">notify_all</span>();</span><br><span class="line">        subthreads[i].<span class="built_in">join</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在该并行实现中，边数据按需异步提取，仲裁进程用双向映射字典替代标准数组并查集进行环路判定。一个字典记录顶点到连通分量标识的映射，另一个记录每个连通分量包含的顶点列表。加入候选边时，若两个端点都无归属，则创建新连通分量；若只有一个端点有归属，则将另一个端点并入；若两个端点属于不同分量，则将较小分量并入较大分量，并同步更新顶点映射。该逻辑用于追踪局部生成树合并过程。</p>
+<p>仲裁线程的职责可以拆成三步：取当前全局最轻候选边、判断它是否连接两个不同连通分量、通知提供该边的分区补充下一条边。条件变量在这里不是为了保护数据本身，而是为了协调“子线程供边”和“仲裁线程消费边”的节奏。</p>
+<h3 id="性能评估">性能评估</h3>
+<p>并行改造的有效性可以通过控制变量法下的执行时间来量化验证。在相同硬件环境下，以不同的图拓扑规模及线程数量为参数对串行与并行方案进行了基准测试。</p>
+<p>以下表格展示了固定图规模并更改线程数量时的性能演变情况。数值代表毫秒级别的处理耗时。</p>
+<table>
+<thead>
+<tr>
+<th><strong>顶点数，边数</strong></th>
+<th><strong>串行算法</strong></th>
+<th><strong>双线程</strong></th>
+<th><strong>三线程</strong></th>
+<th><strong>四线程</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>2000，10000</strong></td>
+<td>239.020</td>
+<td>131.375</td>
+<td>103.655</td>
+<td>81.243</td>
+</tr>
+<tr>
+<td><strong>2000，50000</strong></td>
+<td>134.275</td>
+<td>311.214</td>
+<td>178.475</td>
+<td>105.061</td>
+</tr>
+<tr>
+<td><strong>2000，100000</strong></td>
+<td>175.896</td>
+<td>426.832</td>
+<td>215.936</td>
+<td>142.368</td>
+</tr>
+<tr>
+<td><strong>5000，10000</strong></td>
+<td>319.596</td>
+<td>516.655</td>
+<td>343.403</td>
+<td>313.784</td>
+</tr>
+<tr>
+<td><strong>5000，50000</strong></td>
+<td>261.326</td>
+<td>640.914</td>
+<td>379.314</td>
+<td>234.928</td>
+</tr>
+<tr>
+<td><strong>5000，100000</strong></td>
+<td>278.058</td>
+<td>750.968</td>
+<td>421.656</td>
+<td>236.461</td>
+</tr>
+<tr>
+<td><strong>10000，10000</strong></td>
+<td>477.118</td>
+<td>1108.250</td>
+<td>651.409</td>
+<td>378.871</td>
+</tr>
+<tr>
+<td><strong>10000，50000</strong></td>
+<td>544.600</td>
+<td>1143.080</td>
+<td>706.321</td>
+<td>397.773</td>
+</tr>
+<tr>
+<td><strong>10000，100000</strong></td>
+<td>537.772</td>
+<td>1451.580</td>
+<td>677.460</td>
+<td>386.310</td>
+</tr>
+</tbody>
+</table>
+<p>测试中，双线程配置受上下文切换、互斥锁竞争和条件变量调度开销影响，在部分用例中慢于串行。线程数增加到四线程后，多核处理收益超过同步开销，四线程配置在各数据规模下均优于串行。</p>
+<p>针对更大规模的数据集，测试分别记录了顶点数在八千至三万两千区间，边数在八万至八百万区间的耗时情况。单位为秒。</p>
+<table>
+<thead>
+<tr>
+<th><strong>顶点数 \ 边数</strong></th>
+<th><strong>80000 (串行)</strong></th>
+<th><strong>800000 (串行)</strong></th>
+<th><strong>8000000 (串行)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>8000</strong></td>
+<td>0.110000</td>
+<td>1.490000</td>
+<td>19.150000</td>
+</tr>
+<tr>
+<td><strong>16000</strong></td>
+<td>0.090000</td>
+<td>1.670000</td>
+<td>20.060000</td>
+</tr>
+<tr>
+<td><strong>32000</strong></td>
+<td>0.110000</td>
+<td>1.520000</td>
+<td>20.740000</td>
+</tr>
+</tbody>
+</table>
+<p>以下表格展示了相同网络规模下，配置为十六个并发线程的并行算法耗时表现。单位为秒。</p>
+<table>
+<thead>
+<tr>
+<th><strong>顶点数 \ 边数</strong></th>
+<th><strong>80000 (并行)</strong></th>
+<th><strong>800000 (并行)</strong></th>
+<th><strong>8000000 (并行)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>8000</strong></td>
+<td>0.120000</td>
+<td>0.400000</td>
+<td>2.190000</td>
+</tr>
+<tr>
+<td><strong>16000</strong></td>
+<td>0.210000</td>
+<td>0.560000</td>
+<td>2.870000</td>
+</tr>
+<tr>
+<td><strong>32000</strong></td>
+<td>0.430000</td>
+<td>0.770000</td>
+<td>3.420000</td>
+</tr>
+</tbody>
+</table>
+<p>对比上述数据可以看出，随着图边密度上升，串行算法中对千万级数组的全局排序操作成为制约性能的主要瓶颈，其执行时间呈现超线性增长。当处理三万两千个顶点、八百万条边的密集图时，并行方案利用多线程分散规约和有序拉取的优势，耗时不到三点五秒，相对于串行方案约二十秒的耗时取得了接近六倍的加速比。</p>
+<p>测试中还涉及了部分极高负载组合，例如一万个顶点与四万条边并行耗时超过一万五千毫秒，而四万个顶点与八万条边的组合耗时接近四万五千毫秒。这些边缘用例的数据反映出对于特定分布的拓扑结构，哈希划分策略可能导致部分线程分配到大量高权值的冗余边，进而在全局队列同步时引发剧烈的锁冲突。</p>
+<h3 id="基于顶点并行">基于顶点并行</h3>
+<p>基于边的并行 Kruskal 虽然可多线程完成局部排序，但仍依赖中心化全局队列进行仲裁。该模型在中等规模下有效，但在更大规模下会受到全局队列锁竞争限制。因此，可以采用基于顶点的并行算法：各并行进程执行分区 Prim，全局进程再执行 Boruvka 合并。</p>
+<p><strong>非并行的 Boruvka 算法</strong>在起始阶段构造一个仅包含全图所有顶点但不包含任何边的空结果集，此时每一个顶点都属于一个独立的连通分量。算法在每一次迭代中对于每个连通分量，找出具有最小权重的邻接边，即连接该分量内部顶点与外部顶点的权重最小的边。将所有连通分量找出的最小邻接权重边统一并入结果集中。重复此探测并合并的过程直到图中只存在一个连通分量为止。由于在同一轮迭代内，对不同连通分量的邻接边查找操作相互独立，Boruvka 算法具有天然的并行亲和性。</p>
+<p><strong>分区 Prim 算法</strong>中，系统为当前进程分配特定的顶点子集及其相关的边集。初始状态下，认为分区内的所有顶点均不属于任何连通分量，并构建空的局部结果集。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260607192005913.png" alt=""></p>
+<p>执行过程中，进程在分区内随机选取一个不属于任何连通分量的游离顶点，为其创建专属的连通分量，并以该组件为起点在全图上执行一步 Prim 算法逻辑。具体而言，算法寻找连接该组件内部顶点与外部顶点的具有最小权重的边。</p>
+<p>当找到满足条件的最小连接边后，依据该边指向的外部目标顶点的位置和状态决定后续操作。如果目标顶点存在于本分区的管理范围内且尚处于游离状态，则将此边并入局部结果集中，同时将目标顶点吸纳进当前连通分量，并继续在该扩大的连通分量上循环执行下一步的连接边探测。如果目标顶点在本分区内但已经被划入其他已存在的连通分量，则同样保留此边，将当前的连通分量与目标顶点所在的连通分量合并，并立刻终止当前连通分量的 Prim 探测逻辑。最关键的防冲突机制在于，如果最小连接边指向的外部顶点不在本分区的管辖范围内，为避免产生跨线程的分布式锁与通讯开销，进程将直接放弃向外扩张，停止针对该组件的探测。随后，进程再次在分区内寻找其他游离顶点作为新的探测起点，直到分区内所有顶点都被分配到某个连通分量内。此时生成的局部结果集即为该进程阶段性输出的边集。</p>
+<p>各分区先在局部范围内消除大量顶点和边，将原图压缩为由少量跨区连通分量组成的粗粒度网络。局部计算结束后，全局进程收集并合并局部结果，构建包含原始顶点和已确认边的新图。随后在该图上执行串行 Boruvka 算法，通过全局收缩与组件合并，最终得到完整最小生成树边集。</p>
+<p>基于顶点的并行方案把工作分成“局部先缩小问题”和“全局再合并组件”两段。局部 Prim 尽量在分区内部先确定容易处理的边，减少全局阶段需要处理的碎片；Boruvka 则适合全局阶段，因为每个连通分量寻找自己的最轻外连边这一动作天然可以并行。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/06/07/SE2322_12/">https://acannedfish.github.io/2026/06/07/SE2322_12/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97/">并行计算</a><a class="post-meta__tags" href="/tags/%E5%9B%BE%E7%AE%97%E6%B3%95/">图算法</a></div><div class="post-share"><div class="social-share" data-image="/img/background13.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/06/10/SE2322_13/" title="高级数据结构-13：KV Cache"><img class="cover" src="/img/background14.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">高级数据结构-13：KV Cache</div></div></div></a><a class="pagination-related  no-desc" href="/2026/06/07/SE2322_11/" title="高级数据结构-11：布谷鸟哈希"><img class="cover" src="/img/background12.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info text-right"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">高级数据结构-11：布谷鸟哈希</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/06/11/SE2322_14/" title="高级数据结构-14：PageRank 算法"><img class="cover" src="/img/background4.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-11</div><div class="info-item-2">高级数据结构-14：PageRank 算法</div></div></div></a><a class="pagination-related no-desc" href="/2026/06/23/SE2302_02/" title="计算机系统基础-02：GPU"><img class="cover" src="/img/background4.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-23</div><div class="info-item-2">计算机系统基础-02：GPU</div></div></div></a><a class="pagination-related no-desc" href="/2026/06/23/SE2302_08/" title="计算机系统基础-08：并发"><img class="cover" src="/img/background10.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-23</div><div class="info-item-2">计算机系统基础-08：并发</div></div></div></a><a class="pagination-related no-desc" href="/2026/02/09/CS231n_13/" title="计算机视觉-13：大规模分布式训练"><img class="cover" src="/img/background6.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-02-09</div><div class="info-item-2">计算机视觉-13：大规模分布式训练</div></div></div></a><a class="pagination-related no-desc" href="/2026/06/03/SE2322_08/" title="高级数据结构-08：Dijkstra 算法"><img class="cover" src="/img/background9.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-03</div><div class="info-item-2">高级数据结构-08：Dijkstra 算法</div></div></div></a><a class="pagination-related no-desc" href="/2026/06/03/SE2322_07/" title="高级数据结构-07：拓扑排序"><img class="cover" src="/img/background8.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-03</div><div class="info-item-2">高级数据结构-07：拓扑排序</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">85</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">49</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">11</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F"><span class="toc-number">1.</span> <span class="toc-text">条件变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E6%9F%A5%E9%9B%86"><span class="toc-number">2.</span> <span class="toc-text">并查集</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%B2%E8%A1%8C%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91"><span class="toc-number"></span> <span class="toc-text">串行最小生成树</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Prim-%E7%AE%97%E6%B3%95"><span class="toc-number">1.</span> <span class="toc-text">Prim 算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kruskal-%E7%AE%97%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">Kruskal 算法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B6%E8%A1%8C%E6%9C%80%E5%B0%8F%E7%94%9F%E6%88%90%E6%A0%91"><span class="toc-number"></span> <span class="toc-text">并行最小生成树</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BE%E7%9A%84%E5%88%92%E5%88%86"><span class="toc-number">1.</span> <span class="toc-text">图的划分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E8%BE%B9%E5%B9%B6%E8%A1%8C"><span class="toc-number">2.</span> <span class="toc-text">基于边并行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%B2%E8%A3%81%E7%AE%97%E6%B3%95"><span class="toc-number">3.</span> <span class="toc-text">仲裁算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E8%AF%84%E4%BC%B0"><span class="toc-number">4.</span> <span class="toc-text">性能评估</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E%E9%A1%B6%E7%82%B9%E5%B9%B6%E8%A1%8C"><span class="toc-number">5.</span> <span class="toc-text">基于顶点并行</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/site-navigation.js" defer></script><script src="/js/site-motion.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#route-state","#page-header","#route-content","#aside-content","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+  const navigationSwitches = window.SiteNavigation ? window.SiteNavigation.switches : {}
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    switches: navigationSwitches,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: true,
+    // Route switches position new pages before their first painted frame.
+    scrollTo: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
