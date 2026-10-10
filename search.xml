@@ -516,9 +516,9 @@
       
         <tags>
             
-            <tag> 并行计算 </tag>
-            
             <tag> 操作系统 </tag>
+            
+            <tag> 并行计算 </tag>
             
         </tags>
       
@@ -572,9 +572,9 @@
       
         <tags>
             
-            <tag> 内存与存储 </tag>
-            
             <tag> 操作系统 </tag>
+            
+            <tag> 内存与存储 </tag>
             
         </tags>
       
@@ -601,9 +601,9 @@
       
         <tags>
             
-            <tag> 内存与存储 </tag>
-            
             <tag> 操作系统 </tag>
+            
+            <tag> 内存与存储 </tag>
             
         </tags>
       
@@ -796,9 +796,9 @@
       
         <tags>
             
-            <tag> 最优化 </tag>
-            
             <tag> 数值计算 </tag>
+            
+            <tag> 最优化 </tag>
             
         </tags>
       
@@ -1365,9 +1365,9 @@
             
             <tag> 生成模型 </tag>
             
-            <tag> 流匹配 </tag>
-            
             <tag> 扩散模型 </tag>
+            
+            <tag> 流匹配 </tag>
             
         </tags>
       
@@ -1456,11 +1456,11 @@
             
             <tag> 生成模型 </tag>
             
-            <tag> 流匹配 </tag>
-            
             <tag> 扩散模型 </tag>
             
             <tag> 概率论 </tag>
+            
+            <tag> 流匹配 </tag>
             
         </tags>
       
@@ -1487,9 +1487,9 @@
       
         <tags>
             
-            <tag> 多模态 </tag>
-            
             <tag> 机器人学习 </tag>
+            
+            <tag> 多模态 </tag>
             
         </tags>
       
@@ -1578,9 +1578,9 @@
             
             <tag> 生成模型 </tag>
             
-            <tag> 流匹配 </tag>
-            
             <tag> 扩散模型 </tag>
+            
+            <tag> 流匹配 </tag>
             
         </tags>
       
