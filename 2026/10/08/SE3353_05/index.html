@@ -1,0 +1,921 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>应用系统体系架构-05：Skill 设计模式 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="原子工具解决一个明确操作，复杂任务则需要决定调用哪些能力、怎样传递状态、失败后如何恢复。Skill 设计模式 把这些协作方式组织成可复用结构，避免每个工具都重复实现路由、校验、重试和审批。 本章先区分任务规范与执行接口，再讨论路由、组合、降级、交互、缓存、校验和恢复，最后把它们放入可观测、可评估的控制器。 规范与能力 SKILL.md 描述某类任务的触发条件、工作方法和所需资源，Tool 实现实际">
+<meta property="og:type" content="article">
+<meta property="og:title" content="应用系统体系架构-05：Skill 设计模式">
+<meta property="og:url" content="https://acannedfish.github.io/2026/10/08/SE3353_05/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="原子工具解决一个明确操作，复杂任务则需要决定调用哪些能力、怎样传递状态、失败后如何恢复。Skill 设计模式 把这些协作方式组织成可复用结构，避免每个工具都重复实现路由、校验、重试和审批。 本章先区分任务规范与执行接口，再讨论路由、组合、降级、交互、缓存、校验和恢复，最后把它们放入可观测、可评估的控制器。 规范与能力 SKILL.md 描述某类任务的触发条件、工作方法和所需资源，Tool 实现实际">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background11.png">
+<meta property="article:published_time" content="2026-10-08T03:05:00.000Z">
+<meta property="article:modified_time" content="2026-10-09T13:09:57.901Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="SE3353">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background11.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "应用系统体系架构-05：Skill 设计模式",
+  "url": "https://acannedfish.github.io/2026/10/08/SE3353_05/",
+  "image": "https://acannedfish.github.io/img/background11.png",
+  "datePublished": "2026-10-08T03:05:00.000Z",
+  "dateModified": "2026-10-09T13:09:57.901Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/10/08/SE3353_05/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '应用系统体系架构-05：Skill 设计模式',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">95</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">55</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;应用系统体系架构-05：Skill 设计模式&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">应用系统体系架构-05：Skill 设计模式</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-08T03:05:00.000Z" title="发表于 2026-10-08 11:05:00">2026-10-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-09T13:09:57.901Z" title="更新于 2026-10-09 21:09:57">2026-10-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E5%BA%94%E7%94%A8%E7%B3%BB%E7%BB%9F%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84/">应用系统体系架构</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><p>原子工具解决一个明确操作，复杂任务则需要决定调用哪些能力、怎样传递状态、失败后如何恢复。<strong>Skill 设计模式</strong> 把这些协作方式组织成可复用结构，避免每个工具都重复实现路由、校验、重试和审批。</p>
+<p>本章先区分任务规范与执行接口，再讨论路由、组合、降级、交互、缓存、校验和恢复，最后把它们放入可观测、可评估的控制器。</p>
+<h2 id="规范与能力">规范与能力</h2>
+<p><strong><a target="_blank" rel="noopener" href="http://SKILL.md">SKILL.md</a></strong> 描述某类任务的触发条件、工作方法和所需资源，<strong>Tool</strong> 实现实际操作，编排器把多个操作连接成流程。三者可以协作，但承担不同职责。</p>
+<table>
+<thead>
+<tr>
+<th>对象</th>
+<th>描述什么</th>
+<th>如何生效</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Skill 文件</td>
+<td>什么时候使用、按什么方法工作</td>
+<td>宿主发现并读取任务规范</td>
+</tr>
+<tr>
+<td>Tool / Function</td>
+<td>能执行什么、参数与结果是什么</td>
+<td>程序登记并调用实现</td>
+</tr>
+<tr>
+<td>编排器</td>
+<td>多步依赖、分支、状态与恢复</td>
+<td>控制器或状态图执行</td>
+</tr>
+<tr>
+<td>MCP Server</td>
+<td>如何跨应用发现和访问能力</td>
+<td>协议 Client 建立连接</td>
+</tr>
+</tbody>
+</table>
+<p>文字要求“必须回滚”不会自动创建事务，文件写了“只读”也不能证明脚本无副作用。实际限制需要执行层、数据库或运行环境支持。</p>
+<p>一组普通函数可以被注册成工具并参与编排，但不等于宿主已经发现一个规范的 Skill 包。反过来，某些 Skill 只提供工作规则或模板，也可以有价值，不要求每个 Skill 都自带可执行代码。</p>
+<p>入口和元数据应遵循所用标准，正文的自然语言 Workflow 可以按任务组织。工具名单、是否需要审批等扩展字段需要宿主理解并落实，不能把一份写有这些字段的 Markdown 直接当成权限系统。</p>
+<h2 id="Skill-文件">Skill 文件</h2>
+<p>Skill 通常以一个目录组织，入口文件使用 YAML frontmatter 保存名称与描述，正文说明工作流程，辅助材料按需要读取。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">refactor-legacy-sql/</span><br><span class="line">├── SKILL.md</span><br><span class="line">├── references/</span><br><span class="line">│   ├── sql-rules.md</span><br><span class="line">│   └── validation.md</span><br><span class="line">├── scripts/</span><br><span class="line">│   └── scan_queries.py</span><br><span class="line">└── assets/</span><br><span class="line">    └── report-template.md</span><br></pre></td></tr></table></figure>
+<p>入口可以写成以下形式：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">name: refactor-legacy-sql</span><br><span class="line"><span class="section">description: 检查旧 SQL 的注入风险，并在保持行为兼容的条件下重构。</span></span><br><span class="line"><span class="section">---</span></span><br><span class="line"></span><br><span class="line"><span class="section">## 适用条件</span></span><br><span class="line"></span><br><span class="line">用于检查数据库访问层中的字符串拼接查询。</span><br><span class="line">需要提供相关源码、数据库类型、参数来源和已有测试。</span><br><span class="line"></span><br><span class="line"><span class="section">## 工作流程</span></span><br><span class="line"></span><br><span class="line">读取调用者与数据库接口，确认原有行为。</span><br><span class="line">识别未参数化的值，提出最小修改。</span><br><span class="line">检查表名和列名是否来自允许集合。</span><br><span class="line">运行相关测试，报告剩余风险和未验证部分。</span><br><span class="line"></span><br><span class="line"><span class="section">## 验证要求</span></span><br><span class="line"></span><br><span class="line">不改变公开接口，不删除原有测试。</span><br><span class="line">没有数据库或依赖信息时，说明无法验证的内容。</span><br></pre></td></tr></table></figure>
+<p>描述字段用于发现与选择，正文用于实际工作。宿主特有的权限或工具字段需要按其支持方式配置，不能解释成跨产品通用的强制权限机制。</p>
+<h2 id="模板与流程">模板与流程</h2>
+<p>可重复工作适合提炼为 Skill。例如生成课程 HTML 页面时，样式、页眉页脚、代码配色和公式呈现规则较稳定，当前页面主题与正文则每次变化。</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>复用方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>视觉与布局</td>
+<td>保存在公共规则或模板中</td>
+</tr>
+<tr>
+<td>页眉页脚</td>
+<td>固定结构，填入当前页面信息</td>
+</tr>
+<tr>
+<td>页面内容</td>
+<td>作为当前任务输入</td>
+</tr>
+<tr>
+<td>代码与公式规则</td>
+<td>在需要相应内容时加载并验证</td>
+</tr>
+</tbody>
+</table>
+<p>稳定模板减少反复手写带来的差异，也可能提高可复用前缀比例；但模板复用和模型 KV Cache 是不同层次。是否命中缓存仍取决于实际请求顺序与内容。</p>
+<p>一个较大的 Skill 可以先识别项目语言，再只加载该语言的说明和脚本。工作流可能顺序执行、按条件分支，也可能并行处理几个独立子任务；按需加载并不意味着所有任务都只走一条固定根到叶路径。</p>
+<h2 id="作用域加载">作用域加载</h2>
+<p>个人级 Skill 便于跨项目使用，项目级 Skill 表达仓库特有规则。某些宿主使用个人目录和 <code>.claude/skills/</code> 等项目目录，但具体路径、优先级和启用方式由宿主决定。</p>
+<p><strong>渐进披露（Progressive Disclosure）</strong> 先加载名称与描述，在任务需要时读取正文，再读取相关参考、脚本和资产。这能减少无关资料占用上下文。</p>
+<p>大型 Skill 应把通用流程保留在入口，把数据库、语言或模块规则拆到参考文件。引用路径、依赖与优先级要明确，避免循环引用和同一条件下出现相互矛盾的要求。</p>
+<p>脚本负责实现，参考文件负责解释，资产负责模板或数据。按任务读取必要部分，可以同时改善维护和模型理解。</p>
+<p>作用域也服务于配置差异。两个项目若使用不同数据库、规范或工具版本，可以分别提供项目级规则，而不把所有差异硬塞进个人级 Skill。目录树描述资源所在位置，Workflow 才描述执行关系；复用同一规则的多个步骤可能形成网络。</p>
+<p>例如数据库访问审计需要 <code>db-rules.md</code>，涉及认证与权限时需要 <code>security-rules.md</code>。同一修改可能两者都适用，不能默认把它们写成互斥的 if/else。执行到相应阶段再加载资料，也要保留完整验证要求。</p>
+<h2 id="环境参数">环境参数</h2>
+<p>Skill 应明确依赖和输入来源。数据库版本、项目路径、Base Commit 等属于任务或项目 Context；操作系统环境变量则是进程配置，二者不能因为都叫“环境”就混用。</p>
+<table>
+<thead>
+<tr>
+<th>信息</th>
+<th>取得与核对方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据库类型和版本</td>
+<td>用户说明、项目配置或实际连接信息，必要时交叉核对</td>
+</tr>
+<tr>
+<td>允许工具和目录</td>
+<td>来自宿主策略与已认证权限</td>
+</tr>
+<tr>
+<td>依赖及脚本版本</td>
+<td>包声明、锁文件和部署配置</td>
+</tr>
+<tr>
+<td>凭证</td>
+<td>在执行层安全取得，不把明文填入 Prompt</td>
+</tr>
+</tbody>
+</table>
+<p>用户声明“使用 MySQL 8”可以成为任务输入，但涉及实际执行时还需确认服务环境，不能凭声明改变授权或忽略版本差异。</p>
+<p>跨宿主复用也需要检查兼容性。<a target="_blank" rel="noopener" href="http://SKILL.md">SKILL.md</a> 文字可迁移，不保证原脚本的路径、Tool ID、Shell、模型服务和资源接口都存在。第三方 Skill 应按可执行依赖检查其引用与脚本，不能只看入口文字就认为全部内容安全。</p>
+<h2 id="托管实现">托管实现</h2>
+<p>Java 工程可以通过 Spring 的类型、依赖注入、事务和授权设施封装工具。Python 也能实现这些机制，选型主要取决于现有业务与团队环境。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">InventoryToolConfiguration</span> &#123;</span><br><span class="line">    <span class="comment">// Record 为工具输入建立明确的数据结构。</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">record</span> <span class="title class_">InventoryRequest</span><span class="params">(String isbn)</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@Description(&quot;查询库存，不修改库存&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Function&lt;InventoryRequest, InventoryResult&gt; <span class="title function_">inventoryQuery</span><span class="params">(</span></span><br><span class="line"><span class="params">            InventoryService inventoryService)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> request -&gt; inventoryService.findStock(request.isbn());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>示例中的业务类型由项目实现，具体工具回调接口与注册方式需要匹配 Spring AI 版本。<code>FunctionCallback</code>、<code>ToolCallback</code> 和函数回调适配属于相关但不应混用的 API 形态。</p>
+<p>托管工具调用 Service/DAO，可以复用业务规则与测试替身。<code>@Transactional</code> 和 <code>@PreAuthorize</code> 还需要相应配置及代理调用路径，不能仅添加注解就假设所有入口都受保护。</p>
+<p>Controller 的 HTTP 请求与 Tool Call 可以是不同入口，但最终复用同一业务 Service 和 Repository。Record/DTO 描述参数，不代替对象归属、范围和授权检查；事务应保护相应业务边界，而不是只包住一次模型输出。</p>
+<p>自研应用可以解析 Skill 形成内部 Spec，登记到 Registry，再按任务选择规则与 Tool。这里的 Spec、Registry 可以是应用自己定义的适配对象，不应假定任何框架都自带同名接口。</p>
+<p>Skill 文件与托管能力可以通过适配层结合：读取元数据和规则，选择注册能力，再由受控执行器完成操作。动态装载必须检查路径、字段和版本，加载到的文字不能自行扩大权限。</p>
+<p>Spring AI 的 Advisor 可以在模型请求前后加入资料、记忆、观测或结果处理。这与 AOP 的横切思想相似，但 Advisor 是模型调用链的一部分，不表示改写应用全部字节码。</p>
+<p>Spring AOP 常通过运行时代理拦截方法，AspectJ 还可以采用编译期或加载期编织，不能把所有切面实现都归为同一种机制。请求增强、工具登记、真实执行和业务事务仍需分别配置。</p>
+<h2 id="意图路由">意图路由</h2>
+<p><strong>Router Pattern</strong> 从能力池中选择与目标相关的候选，减少大量工具同时进入上下文造成的噪声。它可以采用规则、分类模型或语义检索。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">用户目标：审查 Java 服务的 SQL 注入。</span><br><span class="line">候选筛选：数据库安全、Java 审查、测试执行。</span><br><span class="line">权限过滤：去掉当前用户不能使用的写入工具。</span><br><span class="line">详细加载：读取保留能力的参数与工作规则。</span><br><span class="line">执行前：再次验证选择和授权。</span><br></pre></td></tr></table></figure>
+<p>路由需要明确未知意图和多领域任务的处理。分类置信不足时，可以保留多个候选、请求补充或使用安全的降级流程。</p>
+<p>路由正确率与候选召回要分别评估。门控过窄可能漏掉正确能力，过宽则不能有效控制成本。<strong>选择能力不等于授权执行能力</strong>，权限检查应独立存在。</p>
+<p>可以采用两级筛选：先用领域分类缩小候选池，再在池中按描述向量进行 Top-K 搜索，最后让模型读取详细规则。比如先识别历史类任务，再区分古代、现代或不同地区；代码任务则可能同时涉及数据库与权限领域。</p>
+<p>第一层分类出错可能把正确 Skill 全部排除，因此需要未知意图、多领域和扩大候选的出口。50、1000 个 Skill 或 Top-3 等都是规模与策略示例，不是必须触发某种算法的固定阈值。</p>
+<h2 id="复合能力">复合能力</h2>
+<p><strong>Composite Pattern</strong> 把多个原子操作封装成一个业务目标，例如 SQL 自动修复可以组合读取、扫描、生成补丁、应用修改和测试。</p>
+<p>每个节点应有明确输入输出、依赖和验收，复合能力对外提供统一结果。部分步骤成功、后续失败时，应保留状态并决定重试、回滚或补偿。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">输入：项目路径与审计规则。</span><br><span class="line">读取：取得相关源码和版本。</span><br><span class="line">分析：产生风险清单与证据。</span><br><span class="line">生成：形成受限补丁。</span><br><span class="line">执行：在隔离工作区应用补丁。</span><br><span class="line">验证：运行测试并重新审计。</span><br><span class="line">输出：差异、测试结果及剩余问题。</span><br></pre></td></tr></table></figure>
+<p>封装统一接口不会使跨数据库、文件和远端 API 自动成为原子事务。复合流程需要明确哪些改变可回滚，哪些只能补偿。</p>
+<p>组合可以通过两种方式表达：在新的 Skill 中描述步骤与引用，也可以在代码中调用已登记的能力。流程固定且条件可明确定义时，代码编排有利于测试和控制；需要自然语言选择或解释的部分，可以保留给模型和 Skill。</p>
+<p>跨包复用应通过明确依赖、注册名称和允许的资源引用，不随意用 <code>../</code> 绕过目录边界。文件内的引用路径、跨 Skill 的依赖和执行器 API 是不同层次。</p>
+<h2 id="降级容错">降级容错</h2>
+<p><strong>Fallback Pattern</strong> 在主路径不可用时选择备用能力。例如代码搜索服务故障时，可以退回本地索引；较强模型不可用时，可以使用较弱模型并缩小任务范围。</p>
+<p>降级必须保持可接受的语义。备用结果应标明能力差异，不能把不完整结果伪装成正常完成。权限错误和非法输入也不能通过换一个服务绕过。</p>
+<p><strong>断路器（Circuit Breaker）</strong> 控制持续故障：</p>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Closed</td>
+<td>正常执行，统计可恢复失败</td>
+</tr>
+<tr>
+<td>Open</td>
+<td>暂时拒绝主路径，减少无效请求</td>
+</tr>
+<tr>
+<td>Half-open</td>
+<td>允许有限试探，成功后恢复或失败后再次打开</td>
+</tr>
+</tbody>
+</table>
+<p>重试需要次数、总时间和成本上限，并采用适当退避；并发客户端可以加入抖动，减少同时再次请求。降级、重试与断路器解决不同问题，需要协调而不能任意叠加。</p>
+<p>远端代码搜索不可用时，可以降级为本地 <code>git grep</code> 一类关键词检索。返回应标明 degraded 及较弱的能力：本地匹配不一定具有远端语义搜索或索引覆盖，不能把两者视为相同结果。</p>
+<p>断路器 Open 表示禁止继续请求主路径，Closed 表示正常导通。失败可以跨多次请求累计，不表示每次调用都必须内部重试三遍。当前请求的重试、跨请求的断路状态与备用结果选择需要分别管理。</p>
+<h2 id="人机交互">人机交互</h2>
+<p><strong>HITL Pattern</strong> 把任务转入等待外部决策的状态。需要保存待执行动作、参数、目标版本和审批条件，释放长期等待的执行资源，再由回调恢复。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">运行中 → 生成待审批动作 → 持久化 → 等待审批</span><br><span class="line"></span><br><span class="line">批准且条件仍有效 → 恢复执行</span><br><span class="line">拒绝 → 终止或改用允许方案</span><br><span class="line">过期或目标变化 → 重新核对</span><br></pre></td></tr></table></figure>
+<p>审批应来自受信身份，并绑定具体任务，不能用模型自己生成的“已批准”作为依据。审批回调还需要防重放，避免重复执行。</p>
+<p>长任务不能只停在一个 <code>input()</code> 或长期阻塞线程里。进程重启后仍需知道等谁审批、批准什么以及从哪里恢复。</p>
+<p>待审批不是已失败，也不是已执行成功。执行器可以返回 <code>waiting_approval</code>、任务 ID 与审批入口，持久保存动作后结束当前等待；后续明确的批准或拒绝再恢复对应任务。</p>
+<p>模型收到“暂挂”结果时，不应自动重新发起同一个删除或支付请求。通知审批者也不能替代决策本身，恢复必须检查原参数、版本和任务身份。</p>
+<h2 id="缓存与幂等">缓存与幂等</h2>
+<p><strong>缓存</strong> 减少重复计算，<strong>幂等</strong> 避免重复请求产生额外副作用，两者含义不同。相同内容的扫描可以缓存；创建订单或发消息则需要稳定请求标识与原子去重。</p>
+<p>只读缓存键应包含内容哈希、规则版本、配置和权限范围。文档或规则变化后，旧结果需要失效。下面展示一个有限容量的进程内缓存。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> OrderedDict</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ScanCache</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;缓存已计算的只读扫描结果，并按 TTL 与容量淘汰。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, capacity: <span class="built_in">int</span> = <span class="number">128</span>, ttl: <span class="built_in">float</span> = <span class="number">60.0</span></span>):</span><br><span class="line">        <span class="keyword">if</span> capacity &lt;= <span class="number">0</span> <span class="keyword">or</span> ttl &lt;= <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;capacity and ttl must be positive&quot;</span>)</span><br><span class="line">        <span class="variable language_">self</span>.capacity = capacity</span><br><span class="line">        <span class="variable language_">self</span>.ttl = ttl</span><br><span class="line">        <span class="variable language_">self</span>.entries = OrderedDict()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">get</span>(<span class="params">self, key</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;命中过期项时删除，未命中返回 None。&quot;&quot;&quot;</span></span><br><span class="line">        entry = <span class="variable language_">self</span>.entries.get(key)</span><br><span class="line">        <span class="keyword">if</span> entry <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">        expires_at, result = entry</span><br><span class="line">        <span class="keyword">if</span> time.monotonic() &gt;= expires_at:</span><br><span class="line">            <span class="keyword">del</span> <span class="variable language_">self</span>.entries[key]</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">        <span class="variable language_">self</span>.entries.move_to_end(key)</span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">put</span>(<span class="params">self, key, result</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;保存结果并限制缓存规模。&quot;&quot;&quot;</span></span><br><span class="line">        <span class="variable language_">self</span>.entries[key] = (time.monotonic() + <span class="variable language_">self</span>.ttl, result)</span><br><span class="line">        <span class="variable language_">self</span>.entries.move_to_end(key)</span><br><span class="line">        <span class="keyword">while</span> <span class="built_in">len</span>(<span class="variable language_">self</span>.entries) &gt; <span class="variable language_">self</span>.capacity:</span><br><span class="line">            <span class="variable language_">self</span>.entries.popitem(last=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
+<p>这是单进程、单线程示例，不提供跨进程共享或并发保护。副作用幂等通常要在数据库中把请求 ID、执行状态和业务写入原子关联，并区分未执行、已完成和状态未知。</p>
+<p>HTTP 方法的幂等性也依据预期效果。GET 的响应可能因数据更新而改变，仍属于读取；重复 DELETE 可以先成功再返回不存在，但目标仍保持删除状态。PUT 表达设置目标表示，重复同一赋值通常不增加额外效果；POST 默认不承诺幂等，业务仍可以用去重键实现。</p>
+<p>因此，幂等不等于“每次输出完全相同”，也不以无状态为必要条件。维护状态表恰恰可以帮助保证同一退款请求只执行一次。Tool Call ID 用于消息对应，业务幂等键还应绑定同一个意图、对象与调用者。</p>
+<p>Skill 解析缓存又是另一种缓存：它保存从文件得到的结构化 Spec 或注册信息，减少重复读取与解析。它与扫描结果缓存、RAG 答案缓存、模型 KV Cache 都不同。</p>
+<p>缓存键需要覆盖会影响行为的内容，例如入口、引用规则、脚本、Tool 定义、示例和解析器版本。不能为了少计算哈希，省略已经变化的脚本或参数契约；也不能随意排序具有执行顺序含义的 Workflow。按键排序序列化对象不等于重排流程数组。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">skill_spec_cache_key</span>(<span class="params">bundle: <span class="built_in">dict</span>, parser_version: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;对已规范化的完整包摘要和解析版本生成缓存键。&quot;&quot;&quot;</span></span><br><span class="line">    payload = &#123;<span class="string">&quot;bundle&quot;</span>: bundle, <span class="string">&quot;parser_version&quot;</span>: parser_version&#125;</span><br><span class="line">    canonical = json.dumps(</span><br><span class="line">        payload,</span><br><span class="line">        sort_keys=<span class="literal">True</span>,</span><br><span class="line">        ensure_ascii=<span class="literal">False</span>,</span><br><span class="line">        separators=(<span class="string">&quot;,&quot;</span>, <span class="string">&quot;:&quot;</span>),</span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">return</span> hashlib.sha256(canonical.encode(<span class="string">&quot;utf-8&quot;</span>)).hexdigest()</span><br></pre></td></tr></table></figure>
+<p><code>bundle</code> 应包含相关文件摘要与元数据。SHA-256 提供指纹，不是把内容加密；是否优化读取和哈希，应测量实际成本。权限仍在执行时检查，缓存过一次 Spec 不表示其中全部操作永久获批。</p>
+<h2 id="双向校验">双向校验</h2>
+<p><strong>Bidirectional Validation</strong> 在执行前检查输入，在执行后检查输出。输入包括格式、权限、范围和前置业务条件；输出包括结构、字段值、来源和业务不变量。</p>
+<p>例如重构补丁的输入要限制目标路径与版本，输出要检查实际差异、公开接口和测试结果。外部 API 返回 HTTP 200 也可能缺字段或表达失败，因此不能只验证网络成功。</p>
+<p>校验失败应说明发生阶段，便于控制器选择补参数、重新读取、补偿或结束。输入验证与输出验证由明确程序完成，比只要求模型“再检查一下”更容易测试。</p>
+<h2 id="预演恢复">预演恢复</h2>
+<p><strong>Dry-Run &amp; Rollback</strong> 用于预览变化并在失败时恢复本次操作。预演返回预计差异、影响范围和风险，实际执行前仍需检查资源版本。</p>
+<p>数据库事务保护其覆盖的数据库写入，Git 快照保护相应文件差异，外部服务操作可能需要补偿。<code>git stash</code> 还可能包含用户原有修改，并在恢复时发生冲突，不能直接作为所有任务的可靠事务。</p>
+<p>隔离工作区可以把任务修改与用户当前工程分开。回滚要限定范围，并核对并发变化；否则恢复旧快照可能覆盖新成果。</p>
+<p>预演生成的差分适合展示预计影响，快照用于记录基线，两者都需要绑定真实资源版本。网络超时后，先确认操作有没有完成，再决定重试或补偿；不能因为没有收到响应，就假定外部系统未发生变化。</p>
+<blockquote>
+<p>快照保存状态，幂等限制重复，回滚处理变化。它们解决不同问题，可靠恢复通常需要共同使用。</p>
+</blockquote>
+<h2 id="退款案例">退款案例</h2>
+<p>退款工作流可以把不同规则拆成独立检查。一个教学示例使用“超过 500 元需要拦截”与“注册城市和当前定位不一致需要核对”两项规则：</p>
+<table>
+<thead>
+<tr>
+<th>金额与位置</th>
+<th>对应判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100 元，位置一致</td>
+<td>两项示例检查通过</td>
+</tr>
+<tr>
+<td>540 元，位置一致</td>
+<td>金额检查仍未通过</td>
+</tr>
+<tr>
+<td>100 元，位置不一致</td>
+<td>位置检查仍需处理</td>
+</tr>
+<tr>
+<td>540 元，位置不一致</td>
+<td>不能只修正一项就认为全部通过</td>
+</tr>
+</tbody>
+</table>
+<p>500 元是演示策略，不是通用退款规定。身份、订单、金额、位置来源与规则版本应由受信系统提供或核对，不能让模型改写输入绕过 Guard。通过检查还不代表已经退款，实际写入需要审批策略、幂等与执行凭证。</p>
+<p>这个例子说明 Skill 可以根据观察进入不同分支，而不只是按顺序读完全部文本。修改了一项条件后，要重新检查整组约束，并使之前不再适用的批准失效。</p>
+<h2 id="上下文管理">上下文管理</h2>
+<p><strong>Context Pruning</strong> 保留当前目标、有效约束、可信状态和重要错误，减少重复日志及过时方案。上下文摘要应保留结构化事实与原始记录入口，避免修订后无法判断事实来自哪里。</p>
+<p>Observation 清洗管道还需要脱敏和来源标识。密钥、个人信息与内部诊断不应全部传给模型，删除几个关键词也无法完整消除 Prompt Injection。</p>
+<p>日志抽取可以保留失败测试、异常类型、关键堆栈和退出码。过度截断可能丢掉根因，保留完整日志的受控查询能力能减少这种影响。</p>
+<h2 id="循环与预算">循环与预算</h2>
+<p>控制器需要发现没有进展的重复动作。<strong>动作指纹</strong> 可由工具名称与规范化参数形成，结合观察是否变化进行判断。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ProgressGuard</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;限制同一动作在没有新观察时重复执行。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, repeat_limit: <span class="built_in">int</span> = <span class="number">3</span></span>):</span><br><span class="line">        <span class="variable language_">self</span>.repeat_limit = repeat_limit</span><br><span class="line">        <span class="variable language_">self</span>.records = &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">record</span>(<span class="params">self, tool_name: <span class="built_in">str</span>, arguments: <span class="built_in">dict</span>, observation: <span class="built_in">str</span></span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;观察变化时重置重复计数，超过上限则终止循环。&quot;&quot;&quot;</span></span><br><span class="line">        action = json.dumps(</span><br><span class="line">            [tool_name, arguments],</span><br><span class="line">            sort_keys=<span class="literal">True</span>,</span><br><span class="line">            separators=(<span class="string">&quot;,&quot;</span>, <span class="string">&quot;:&quot;</span>),</span><br><span class="line">        )</span><br><span class="line">        fingerprint = hashlib.sha256(action.encode()).hexdigest()</span><br><span class="line">        previous_observation, count = <span class="variable language_">self</span>.records.get(</span><br><span class="line">            fingerprint, (<span class="literal">None</span>, <span class="number">0</span>)</span><br><span class="line">        )</span><br><span class="line">        count = count + <span class="number">1</span> <span class="keyword">if</span> observation == previous_observation <span class="keyword">else</span> <span class="number">1</span></span><br><span class="line">        <span class="variable language_">self</span>.records[fingerprint] = (observation, count)</span><br><span class="line">        <span class="keyword">if</span> count &gt; <span class="variable language_">self</span>.repeat_limit:</span><br><span class="line">            <span class="keyword">raise</span> RuntimeError(<span class="string">&quot;Repeated action without progress&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>图中存在环不等于任务会无限循环，重复请求也可能是合法轮询。判断需要结合次数、持续时间和目标进展。</p>
+<p>一个简单检测方法是维护工具名与规范化参数的指纹历史，取最后 N 次：只有确实已有 N 次且 <code>len(set(recent)) == 1</code>，才能认为这 N 次连续使用同一动作。这是“连续重复”信号，不等于已经证明死循环。</p>
+<p>A→B→A→B 的往返不会被该条件捕获；反之，反复查询一个逐渐变化的任务状态可能正常。需要结合观察、资源版本和目标进展判断，避免只凭指纹阻断合法轮询。</p>
+<p><strong>Cost Guard</strong> 限制 Token、金额、请求数、并发和总时间。执行前可预估成本，执行后按真实用量更新。限流应按租户或任务隔离，并处理超时后执行状态未知的情况，避免预算统计与真实消耗脱节。</p>
+<p>重复检测、总预算和频率限制也不同：换用其他工具可以消除连续重复，却仍会消耗步骤与 Token；请求每次成功，也可能超过一分钟允许的次数。总预算通常预留估算额度，完成后依据实际用量结算，不应只在最后发现额度已经超支。</p>
+<h2 id="接口适配">接口适配</h2>
+<p><strong>Anti-Corruption Layer（ACL）</strong> 把外部 API 的字段、状态和版本变化限制在适配器内，内部流程使用稳定契约。</p>
+<p>例如 Jira 的外部状态可能变化，适配器可以统一映射为内部待处理、进行中和已完成等状态。遇到未知值应明确报告，不应静默归类为成功。</p>
+<p>适配层负责参数转换、认证、错误映射和版本兼容；业务编排不直接依赖外部响应的全部细节。契约测试可以检查接口升级是否破坏现有任务。</p>
+<p>例如流程按 API v3 的字段和错误语义设计，而外部服务升级到 v4，适配器需要识别版本与 Schema 的变化。若已有兼容映射，可以验证转换后继续执行；若字段意义、状态或鉴权方式尚未确认，应返回明确的契约错误。只在外层捕获异常，再把不兼容结果作为正常数据传下去，会把问题推迟到后续步骤。</p>
+<h2 id="状态与并发">状态与并发</h2>
+<p><strong>Checkpoint</strong> 保存任务 ID、当前节点、输入、结果、版本和待办动作。恢复时需要核对依赖及凭证是否有效，并知道哪些外部操作已经完成。</p>
+<p>保存一个字典不代表完整恢复。快照写入应原子进行，Schema 有版本，状态可迁移，读取有权限，过期记录有清理策略。</p>
+<p>并行任务修改同一资源时，需要锁、乐观版本检查或事务。多资源锁应使用一致顺序，控制持锁时间，并处理超时与释放；无关只读任务则可以并发提高吞吐。</p>
+<p>共享状态的合并还要明确规则。多个任务同时覆盖同一个字段，可能导致较晚结果抹掉较早结果，需按调用 ID 或 reducer 聚合。</p>
+<h2 id="灰度与诊断">灰度与诊断</h2>
+<p><strong>Shadow Testing</strong> 在旁路运行新版本并比较结果，不应产生真实外部副作用。<strong>Canary Run</strong> 让有限真实流量使用新版本，依据失败率、延迟、质量和成本决定扩大或回退。</p>
+<p>影子读操作也可能增加负载并接触敏感数据，因此仍需要与生产一致的权限、隔离和配额。</p>
+<p>结构化错误应包含阶段、工具、代码、可重试性和 Trace ID。协议错误、参数错误、业务拒绝和系统故障要分别表达，避免错误重试或吞掉问题。</p>
+<h2 id="评估开发">评估开发</h2>
+<p><strong>评估驱动开发（EDD）</strong> 在修改前保存基线，修改后比较任务成功、路由、参数、执行成本和延迟。只凭个别对话判断 Prompt 变好，容易忽略其他场景退化。</p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pass@1</td>
+<td>一次尝试完成任务的比例</td>
+</tr>
+<tr>
+<td>Precision / Recall / F1</td>
+<td>能力选择的准确与遗漏情况</td>
+</tr>
+<tr>
+<td>Execution Cost</td>
+<td>Token、模型调用与工具资源成本</td>
+</tr>
+<tr>
+<td>Latency</td>
+<td>总耗时、阶段耗时和 P95</td>
+</tr>
+<tr>
+<td>拒绝与恢复</td>
+<td>是否正确拒绝越权、能否恢复可处理失败</td>
+</tr>
+</tbody>
+</table>
+<p>评测数据应有固定对照集，也要吸收真实失败。LLM-as-a-Judge 可以辅助评文本质量，测试、Schema 和业务断言负责硬验证；裁判自身需要校准。</p>
+<p>CI/CD 保存 Skill、Prompt、模型与配置版本，变更后运行回归并检查关键类别。门槛应来自业务要求，不能用平均分提高掩盖安全或重要业务退化。</p>
+<h2 id="组合案例">组合案例</h2>
+<p>一个受控的代码审计与重构任务可以把这些模式按边界组合：先由 Router 选择能力，Composite 编排读取与扫描，双向校验约束输入和补丁，预演展示变化，HITL 处理需要批准的动作，再在隔离环境应用并测试。</p>
+<p>调用失败由断路器、有限重试或降级处理；执行进度进入 Checkpoint；上下文只保存必要观察；最终结果进入回归与审查。Spring 托管业务能力和文件型 Skill 规范可以通过稳定接口参与同一链路。</p>
+<p>常见问题包括单个 Skill 过大、描述含糊、裸调用大量工具、缺少失败语义、全量日志入上下文、无界重试、隐式副作用和没有评测。修复这些问题应改变接口、状态和控制器，而不是不断增加相似的提示文字。</p>
+<blockquote>
+<p>Skill 设计模式的价值在于把选择、执行、验证和恢复的边界写清楚。每个模式都应有明确状态、失败出口与可验证结果。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/08/SE3353_05/">https://acannedfish.github.io/2026/10/08/SE3353_05/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/SE3353/">SE3353</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/10/08/SE3353_06/" title="应用系统体系架构-06：Agent 架构"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">应用系统体系架构-06：Agent 架构</div></div></div></a><a class="pagination-related  no-desc" href="/2026/10/08/SE3353_04/" title="应用系统体系架构-04：Skill 与 Tool Calling"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info text-right"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">应用系统体系架构-04：Skill 与 Tool Calling</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/10/08/SE3353_04/" title="应用系统体系架构-04：Skill 与 Tool Calling"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-04：Skill 与 Tool Calling</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_06/" title="应用系统体系架构-06：Agent 架构"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-06：Agent 架构</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_03/" title="应用系统体系架构-03：RAG"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-03：RAG</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_02/" title="应用系统体系架构-02：MCP 协议"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-02：MCP 协议</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_01/" title="应用系统体系架构-01：Prompt 工程"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-01：Prompt 工程</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/09/SE3353_08/" title="应用系统体系架构-08：系统架构与 Capstone"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">应用系统体系架构-08：系统架构与 Capstone</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">95</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">55</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%84%E8%8C%83%E4%B8%8E%E8%83%BD%E5%8A%9B"><span class="toc-text">规范与能力</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Skill-%E6%96%87%E4%BB%B6"><span class="toc-text">Skill 文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E6%9D%BF%E4%B8%8E%E6%B5%81%E7%A8%8B"><span class="toc-text">模板与流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%9C%E7%94%A8%E5%9F%9F%E5%8A%A0%E8%BD%BD"><span class="toc-text">作用域加载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E5%8F%82%E6%95%B0"><span class="toc-text">环境参数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%98%E7%AE%A1%E5%AE%9E%E7%8E%B0"><span class="toc-text">托管实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%84%8F%E5%9B%BE%E8%B7%AF%E7%94%B1"><span class="toc-text">意图路由</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E5%90%88%E8%83%BD%E5%8A%9B"><span class="toc-text">复合能力</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%8D%E7%BA%A7%E5%AE%B9%E9%94%99"><span class="toc-text">降级容错</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%BA%E6%9C%BA%E4%BA%A4%E4%BA%92"><span class="toc-text">人机交互</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E4%B8%8E%E5%B9%82%E7%AD%89"><span class="toc-text">缓存与幂等</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%8C%E5%90%91%E6%A0%A1%E9%AA%8C"><span class="toc-text">双向校验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%84%E6%BC%94%E6%81%A2%E5%A4%8D"><span class="toc-text">预演恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%80%E6%AC%BE%E6%A1%88%E4%BE%8B"><span class="toc-text">退款案例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86"><span class="toc-text">上下文管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BE%AA%E7%8E%AF%E4%B8%8E%E9%A2%84%E7%AE%97"><span class="toc-text">循环与预算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E9%80%82%E9%85%8D"><span class="toc-text">接口适配</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E4%B8%8E%E5%B9%B6%E5%8F%91"><span class="toc-text">状态与并发</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%81%B0%E5%BA%A6%E4%B8%8E%E8%AF%8A%E6%96%AD"><span class="toc-text">灰度与诊断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%84%E4%BC%B0%E5%BC%80%E5%8F%91"><span class="toc-text">评估开发</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%84%E5%90%88%E6%A1%88%E4%BE%8B"><span class="toc-text">组合案例</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/site-navigation.js" defer></script><script src="/js/site-motion.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#route-state","#page-header","#route-content","#aside-content","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+  const navigationSwitches = window.SiteNavigation ? window.SiteNavigation.switches : {}
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    switches: navigationSwitches,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: true,
+    // Route switches position new pages before their first painted frame.
+    scrollTo: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

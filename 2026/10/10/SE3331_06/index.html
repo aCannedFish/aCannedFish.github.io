@@ -1,0 +1,1415 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-06：故障原子性 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="故障问题 转账需要完成两次修改：从付款账户扣钱，再给收款账户加钱。程序运行到一半时，机器可能突然断电。如果只保存了扣款，重启后就会少一笔钱。 本节讨论怎样把一组修改完整地保存，以及怎样在故障后恢复。先用单台服务器上的银行程序说明问题，再介绍临时副本、文件系统日志、重做日志、撤销日志和检查点。 这里采用停止故障（fail-stop）模型：故障发生时，参与操作的组件一起停止，内存中尚未持久保存的信息可">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机系统工程-06：故障原子性">
+<meta property="og:url" content="https://acannedfish.github.io/2026/10/10/SE3331_06/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="故障问题 转账需要完成两次修改：从付款账户扣钱，再给收款账户加钱。程序运行到一半时，机器可能突然断电。如果只保存了扣款，重启后就会少一笔钱。 本节讨论怎样把一组修改完整地保存，以及怎样在故障后恢复。先用单台服务器上的银行程序说明问题，再介绍临时副本、文件系统日志、重做日志、撤销日志和检查点。 这里采用停止故障（fail-stop）模型：故障发生时，参与操作的组件一起停止，内存中尚未持久保存的信息可">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background11.png">
+<meta property="article:published_time" content="2026-10-10T08:03:00.000Z">
+<meta property="article:modified_time" content="2026-10-10T08:37:44.079Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="原子性">
+<meta property="article:tag" content="日志恢复">
+<meta property="article:tag" content="检查点">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background11.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机系统工程-06：故障原子性",
+  "url": "https://acannedfish.github.io/2026/10/10/SE3331_06/",
+  "image": "https://acannedfish.github.io/img/background11.png",
+  "datePublished": "2026-10-10T08:03:00.000Z",
+  "dateModified": "2026-10-10T08:37:44.079Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/10/10/SE3331_06/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机系统工程-06：故障原子性',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">95</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">55</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-06：故障原子性&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-06：故障原子性</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-10T08:03:00.000Z" title="发表于 2026-10-10 16:03:00">2026-10-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-10T08:37:44.079Z" title="更新于 2026-10-10 16:37:44">2026-10-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="故障问题">故障问题</h2>
+<p>转账需要完成两次修改：从付款账户扣钱，再给收款账户加钱。程序运行到一半时，机器可能突然断电。如果只保存了扣款，重启后就会少一笔钱。</p>
+<p>本节讨论怎样把一组修改完整地保存，以及怎样在故障后恢复。先用单台服务器上的银行程序说明问题，再介绍临时副本、文件系统日志、重做日志、撤销日志和检查点。</p>
+<p>这里采用停止故障（fail-stop）模型：故障发生时，参与操作的组件一起停止，内存中尚未持久保存的信息可能丢失。磁盘上已经完成的写入保留；故障时正在进行的写入，需要根据设备和日志格式提供的保证判断是否完整。多个节点只停一部分、剩余节点继续执行的情况，需要进一步讨论分布式协议。</p>
+<p>为便于分析，前面的单次转账按串行执行理解。单台机器也可以同时处理多个线程的请求；这些请求仍需要锁或其他并发控制，才能协调共同访问的数据。</p>
+<h2 id="存储基础">存储基础</h2>
+<p>文件保存一串字节，1 字节等于 8 bit。磁盘和 SSD 保存长期数据，内存保存程序正在使用的数据。断电后仍能保留的信息称为持久数据；把修改送到稳定存储并确认完成，通常称为落盘。</p>
+<p>操作系统会把文件的一部分放在内存中的页缓存（page cache）里。页是内存管理的一种固定大小单位；缓存页被修改后，与磁盘内容不同，称为脏页。操作系统随后把脏页写回文件，这个过程称为回写。</p>
+<p><code>mmap</code> 把文件映射到进程的地址空间，程序可以通过访问内存来读取或修改文件。下面使用共享映射：修改会进入文件的页缓存，也可能被映射同一文件的其他进程看到，操作系统可以自动把它们回写到文件。</p>
+<p><code>fsync</code> 用于等待指定文件的修改按接口要求保存到存储设备。调用时传入已打开文件的描述符 fd，也就是操作系统交给进程的文件访问编号。它需要处理文件数据、相关管理信息和设备缓存的持久化，调用者还要检查返回结果。</p>
+<p>程序修改页缓存后，后台回写可能先于显式 <code>fsync</code> 发生。因此，分析故障时需要看哪些内容已经落盘。<code>fsync</code> 可以确认持久化进度，涉及多个页的修改仍可能在执行过程中只完成一部分。<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/mmap.2.html">mmap 手册</a>、<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/fsync.2.html">fsync 手册</a>给出了相应接口含义。</p>
+<p>图中的 <code>memory</code> 表示内存，<code>disk</code> 表示持久存储；<code>time</code> 箭头表示时间方向，闪电表示故障。实线方框通常表示已保存的内容，虚线或淡色方框表示尚未写入、已丢失或已删除的内容，具体状态结合图旁标注理解。</p>
+<h2 id="转账过程">转账过程</h2>
+<p>设账户 a、b 各有 10 元，从 a 向 b 转 10 元，完整结果应为 <code>a=0,b=20</code>。银行只做账户间转账时，所有账户余额之和应保持不变。这种每次正确操作都需要满足的条件称为不变量（invariant）。</p>
+<p>下面是直接修改银行文件的简化过程。代码用于说明操作顺序，其中 <code>map_shared</code> 建立共享映射，<code>sync_file</code> 打开文件并完成同步、检查错误，<code>notify_user</code> 返回成功结果。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">transfer</span>(<span class="params">bank_file, account_a, account_b, amount</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;直接修改共享映射，再等待文件写入完成。&quot;&quot;&quot;</span></span><br><span class="line">    records = map_shared(bank_file)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 两次赋值先修改页缓存中的账户记录。</span></span><br><span class="line">    records[account_a] -= amount</span><br><span class="line">    records[account_b] += amount</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 同步成功后，才向用户报告完成。</span></span><br><span class="line">    sync_file(bank_file)</span><br><span class="line">    notify_user()</span><br></pre></td></tr></table></figure>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162146372.png" alt="扣款页已经写入，收款页尚未写入时发生故障"></p>
+<p>从左到右看这张图：</p>
+<ol>
+<li>磁盘中的 a、b 都为 10，总额为 20。</li>
+<li>建立映射后，两个余额进入页缓存。</li>
+<li>程序在内存中完成扣款和收款，页缓存变为 <code>0,20</code>，磁盘仍为 <code>10,10</code>。</li>
+<li>操作系统先把 a 所在的页写回，磁盘变为 <code>0,10</code>。</li>
+<li>b 所在的页还没写回，机器就停止了。内存里的 <code>b=20</code> 丢失，重启后只能读到总额为 10 的磁盘状态。</li>
+</ol>
+<p>即使程序按顺序执行了两次赋值，设备也要分次写入不同位置。这里假定两个账户处于可以分别写回的页或存储单元中，从而展示部分落盘的情况。</p>
+<blockquote>
+<p>思考题：机器在转账过程中发生故障，余额可能是什么？在 fsync 之前和执行期间分别怎样分析？</p>
+<p>解答：</p>
+<p>原状态是 <code>10,10</code>，完整新状态是 <code>0,20</code>。如果两个修改都没落盘，重启后仍为 <code>10,10</code>；如果都落盘，则为 <code>0,20</code>。只落盘扣款会得到 <code>0,10</code>，只落盘收款会得到 <code>10,20</code>，两种结果都破坏了总额为 20 的不变量。</p>
+<p>在 fsync 之前，后台回写也可能保存部分修改；执行期间，同步也可能只完成部分页。判断依据是实际持久化的内容。fsync 成功返回后，才能根据接口约定确认相关修改已保存。</p>
+</blockquote>
+<h2 id="原子性">原子性</h2>
+<p><strong>全有或全无原子性</strong>（all-or-nothing atomicity）要求一组修改在恢复后具有完整结果：要么全部保留，要么全部撤销。</p>
+<p>对于这次转账，恢复后可以保留 <code>10,10</code>，也可以保留 <code>0,20</code>。程序需要把 <code>0,10</code> 这样的中间状态修复好，再对外提供服务。</p>
+<p>原子性描述一组修改怎样共同生效，持久性描述已经确认的结果怎样在故障后保留。向用户报告转账成功后，恢复过程必须能够保留这笔完整转账。尚未收到成功回复的操作，其结果还需要根据持久记录确认。</p>
+<p>实现时，磁盘仍然可能短暂保存中间状态。系统保存额外的副本或日志，重启后根据这些信息恢复完整结果。</p>
+<h2 id="副本替换">副本替换</h2>
+<p>临时副本（shadow copy）先保留原文件，把本次修改放到另一份文件里，体现写时复制（copy-on-write）的思路。这里先复制整份文件，再修改副本；新文件完整保存后，把正式文件名指向新版本。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">transfer_with_copy</span>(<span class="params">bank_file, account_a, account_b, amount</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;在临时文件中完成转账，然后发布新版本。&quot;&quot;&quot;</span></span><br><span class="line">    temp_file = make_temp_name(bank_file)</span><br><span class="line">    copy_file(bank_file, temp_file)</span><br><span class="line">    records = map_shared(temp_file)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 中间状态只出现在临时文件中。</span></span><br><span class="line">    records[account_a] -= amount</span><br><span class="line">    records[account_b] += amount</span><br><span class="line">    sync_file(temp_file)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 临时文件和正式文件位于同一文件系统。</span></span><br><span class="line">    rename_file(temp_file, bank_file)</span><br><span class="line">    sync_directory(parent_directory(bank_file))</span><br><span class="line">    notify_user()</span><br></pre></td></tr></table></figure>
+<p><code>copy_file</code> 对应复制文件的辅助过程，<code>rename_file</code> 对应改名接口。目录保存名称与文件的对应关系，<code>sync_directory</code> 用于持久保存改名后的目录项。上述代码暂按单个转账执行，实际实现还需要保证读取和替换期间没有冲突的并发修改。</p>
+<p>复制、扣款、收款或同步临时文件时发生故障，正式的 <code>bank</code> 都保留完整旧版本。重启后可以清理未发布的临时文件，再重新处理这次请求。</p>
+<p>同一文件系统中的 <code>rename</code> 可以原子替换已有目标名称，运行中的路径查找会取得替换前或替换后的文件。已经打开旧文件的描述符可以继续访问旧对象。要让改名结果在故障后持久保留，还要同步有关目录，并由文件系统提供相应的恢复保证。<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/rename.2.html">rename 手册</a>和 <a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/fsync.2.html">fsync 手册</a>说明了这些条件。</p>
+<blockquote>
+<p>思考题：复制或同步临时文件时发生故障，应该怎样恢复？为什么还要分析 rename？</p>
+<p>解答：</p>
+<p>正式文件仍是完整旧版本，可以删除未发布的临时文件，将这次转账按未完成处理。临时文件同步成功后，已经具备完整的新余额。</p>
+<p>rename 会修改目录项和文件管理记录，这些信息分布在多个存储位置。故障恢复还要保证这些记录相互一致，才能可靠地使用旧版本或新版本。</p>
+</blockquote>
+<h2 id="改名过程">改名过程</h2>
+<p>inode 是文件系统保存的一份文件管理记录，记录文件大小、权限和数据块位置等信息。目录项建立 <code>文件名 → inode 号</code> 的映射。一个 inode 可以有多个名称；硬链接计数记录有多少目录项指向它，图中用 <code>refcount</code> 或 <code>rc</code> 表示。</p>
+<p>删除一个名称时，系统减少相应链接计数。链接计数为 0，且没有需要继续保留文件的打开引用时，文件系统可以回收它的空间。下面暂忽略打开引用，只看目录项与链接计数的关系。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162146373.png" alt="改名涉及目录项以及两个 inode 的链接计数"></p>
+<p>初始状态中，<code>bank → inode 12</code>，<code>bank_temp → inode 13</code>，两个 inode 的链接计数均为 1。替换后应只保留 <code>bank → inode 13</code>，inode 13 的链接计数仍为 1；旧 inode 12 没有名称，链接计数为 0。</p>
+<p>把这次替换拆成四个逻辑步骤：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>目录项</th>
+<th>inode 12 的计数</th>
+<th>inode 13 的计数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始</td>
+<td>bank 指向 12，bank_temp 指向 13</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>① 修改目标名称</td>
+<td>bank 和 bank_temp 都指向 13</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>② 增加新文件计数</td>
+<td>两个名称都指向 13</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>③ 减少旧文件计数</td>
+<td>两个名称都指向 13</td>
+<td>0</td>
+<td>2</td>
+</tr>
+<tr>
+<td>④ 移除临时名称并减计数</td>
+<td>只保留 bank 指向 13</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>这张图用简单步骤展示需要共同完成的管理信息修改。真实文件系统的内部顺序、锁和日志格式由实现决定。</p>
+<h2 id="改名故障">改名故障</h2>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162146374.png" alt="两个名称指向 inode 13，但链接计数仍为 1"></p>
+<p>步骤①之后，目录中的两个名称都指向 inode 13，计数却仍为 1。如果恢复后直接删除其中一个名称，计数会变为 0，文件可能被回收。剩下的名称还指向已回收的 inode，后续访问就会出错。</p>
+<p>同时，inode 12 已失去目录项，计数还为 1。文件系统可能继续认为它被使用，从而无法回收这份空间。这称为空间泄漏；持续发生时，可用 inode 或磁盘空间会逐渐耗尽。</p>
+<blockquote>
+<p>思考题：在哪些步骤之后发生故障，会留下不一致的管理信息？</p>
+<p>解答：</p>
+<p>①之后，inode 13 有两个名称、计数为 1；inode 12 没有名称、计数为 1，两处都不一致。</p>
+<p>②之后，inode 13 的两个名称与计数 2 相符，inode 12 仍没有名称却保留计数 1，旧文件可能泄漏。</p>
+<p>③之后，按图中“移除名称并减计数”作为一个逻辑步骤的简化模型，两个名称与计数 2 相符，旧文件计数为 0，管理关系已一致，但改名还没完成。真实实现还需处理步骤内部及回收过程的故障。</p>
+<p>④完成并持久化后，只保留 bank 指向 inode 13，计数为 1，替换完成。</p>
+</blockquote>
+<p>应用知道自己创建过 <code>bank_temp</code>，可以清理没有发布的临时文件。目录项、inode 和空间分配之间的一致性则需要文件系统自行恢复。应用可能长期不启动，也可能反复制造临时文件；文件系统必须能够独立完成管理记录的修复，避免空间持续泄漏。</p>
+<p>应用负责转账总额等业务条件，文件系统负责名称、inode、数据块归属等管理条件。临时副本方案依赖改名具有相应原子性，其他涉及多处管理记录的文件接口也需要自己的故障恢复机制。</p>
+<h2 id="文件日志">文件日志</h2>
+<p>文件系统日志（journal）在专用区域记录一组待完成的修改，包括要修改哪个块，以及这个块最终应保存什么。数据块在文件中的正常存储位置称为原位置，图中用 <code>home</code> 表示。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162146375.png" alt="先写日志并提交，再修改原位置；故障时根据提交状态处理"></p>
+<p>一种便于理解的日志流程如下：</p>
+<ol>
+<li>把本次修改写入 journal，并确认记录已持久保存。</li>
+<li>写入并持久保存提交标记，表示这组记录完整且决定生效。</li>
+<li>按日志修改原位置。</li>
+<li>确认原位置的结果已持久保存后，回收对应日志空间。</li>
+</ol>
+<p>故障发生在有效提交标记建立之前，恢复时丢弃这组未提交日志；在这段时间，协议保持原位置的旧内容。故障发生在有效提交之后，即使只改了部分原位置，也能根据日志补齐全部修改。</p>
+<p>根据日志再次写入规定结果，称为重做（redo）。日志保存了恢复所需的新内容，因此原位置可以分多次写入。日志区域也要可靠保存，提交记录的完整性将在后面解释。</p>
+<h2 id="改名恢复">改名恢复</h2>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162146376.png" alt="改名日志保存四项最终修改和 COMMITTED 标记"></p>
+<p>图中的磁盘从左到右包括 inode 位图、数据块位图、inode 区、数据块区和 journal。位图用每个 bit 记录相应对象是否已分配；<code>dir</code> 是保存目录项的数据块。</p>
+<p>这次改名在 journal 中保存四项最终结果：</p>
+<ul>
+<li><code>bank → inode 13</code>；</li>
+<li>删除 <code>bank_temp</code> 目录项；</li>
+<li>将 inode 12 的链接计数设为 0；</li>
+<li>将 inode 13 的链接计数设为 1。</li>
+</ul>
+<p>日志描述每个管理位置完成后应保存的值。写入 <code>COMMITTED</code> 后，恢复过程就能够完成这四项修改。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162146377.png" alt="目录项只修改了一部分，但已提交的日志保存了完整结果"></p>
+<p>故障时，原位置出现两个名称指向 inode 13、链接计数仍为 1 的状态。右侧 journal 保留全部最终值及提交标记。恢复时依次完成名称映射、临时名称删除和两个计数修改，最后得到 <code>bank → 13,rc(12)=0,rc(13)=1</code>。</p>
+<blockquote>
+<p>思考题：只更新了目录项就发生故障，为什么有日志后仍能恢复？什么时候可以删除日志？</p>
+<p>解答：</p>
+<p>有效的 COMMITTED 标记确认这组修改需要完成；日志中的四项最终值提供了补齐修改所需的信息。恢复会把各项都设置为规定结果，即使其中一项已经写入，也可以再次设置为同一值。</p>
+<p>需要等这些最终结果已保存到原位置后再删除日志。如果原位置仍缺少部分修改，提前删掉日志就会失去恢复依据。</p>
+</blockquote>
+<h2 id="文件追加">文件追加</h2>
+<p>文件追加也会同时修改内容和管理信息。设 inode 13 已使用数据块 6、7、8，再追加一块新内容到块 9。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162147551.png" alt="追加块 9 同时修改位图、数据、块指针和文件大小"></p>
+<p>日志里需要记录四项修改：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>修改</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据块位图</td>
+<td><code>bit[9]:0→1</code></td>
+<td>把块 9 标为已分配，避免再分配给其他文件</td>
+</tr>
+<tr>
+<td>数据块 9</td>
+<td>保存追加内容</td>
+<td>保留实际新增的字节</td>
+</tr>
+<tr>
+<td>inode 块指针</td>
+<td><code>ptr[3]:null→9</code></td>
+<td>让文件的第 4 个数据块指向块 9</td>
+</tr>
+<tr>
+<td>inode 大小</td>
+<td><code>size:3→4</code></td>
+<td>让读取能够覆盖新增内容</td>
+</tr>
+</tbody>
+</table>
+<p><code>ptr[3]</code> 从 0 开始编号，因此是第 4 个指针。图中的 size 按块数表示，真实 inode 通常用字节数记录文件长度。数据块大小固定时，增加一个块对应增加相应数量的字节。</p>
+<p>只有位图更新，可能造成已分配空间缺少文件引用；只有指针更新，可能让文件指向仍被视为空闲的块；只有大小更新，读取可能遇到尚未建立的内容。因此这些管理记录要共同恢复为一致状态。</p>
+<h2 id="写入成本">写入成本</h2>
+<p>把所有修改都写入 journal 后，还要写一次原位置。同一份受保护内容通常写两次，会增加磁盘或 SSD 的写入量。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162147552.png" alt="231 GB 的游戏安装内容用于说明大量数据的写入成本"></p>
+<p>图中列出的《Call of Duty: Modern Warfare》安装内容为 231 GB。若一次写入这么多新数据，并让全部文件数据都经过完整日志，在忽略元数据等额外开销时，写入量约为：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mn>231</mn><mtext> GB</mtext><mo>+</mo><mn>231</mn><mtext> GB</mtext><mo>=</mo><mn>462</mn><mtext> GB</mtext></mrow><annotation encoding="application/x-tex">231\ \text{GB}+231\ \text{GB}=462\ \text{GB}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord">231</span><span class="mspace"> </span><span class="mord text"><span class="mord">GB</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">231</span><span class="mspace"> </span><span class="mord text"><span class="mord">GB</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">462</span><span class="mspace"> </span><span class="mord text"><span class="mord">GB</span></span></span></span></span></span></p>
+<p>这里按实际被修改的数据量计算。修改已有大文件中的一个块，只需要记录受影响的块；整个文件的容量用来说明大量内容写入时的成本。</p>
+<p>元数据包括目录项、分配位图、块指针和文件大小。元数据损坏会影响文件定位、空间归属和回收，错误可能波及其他文件。文件内容损坏则会影响对应数据，应用可以通过校验和等方式发现部分错误。</p>
+<p>元数据通常比文件内容小，文件系统只让元数据经过 journal，可以减少日志写入量。文件内容怎样保存、怎样与元数据排序，还要根据日志模式和应用要求安排。校验和用于检查内容是否符合预期，应用仍需要保存可用于恢复的副本或日志。</p>
+<h2 id="日志模式">日志模式</h2>
+<p>ext4 的 <code>data=writeback</code>、<code>data=ordered</code>、<code>data=journal</code> 规定文件数据怎样参与日志和写入排序。下面继续用追加块 9 的例子，图中蓝色方框表示三项元数据修改，绿色方框表示块 9 的内容，黄色方框表示提交标记。</p>
+<h3 id="回写模式">回写模式</h3>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162147553.png" alt="writeback 只记录元数据，块 9 的内容可以在其他时刻写入"></p>
+<p><code>data=writeback</code> 把位图、块指针和大小写入 journal，文件内容直接写到原位置，数据写入与元数据提交之间缺少这里所需的先后保证。</p>
+<p>假设元数据日志已提交，块 9 的新内容还没落盘就发生故障。恢复重做元数据后，文件有四个块、最后一个指针指向块 9，但块 9 仍可能保留分配前的旧内容。文件结构能够恢复，新增内容的持久化要由其他机制确认。</p>
+<h3 id="有序模式">有序模式</h3>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162147554.png" alt="ordered 在提交相关元数据之前先保存块 9 的新内容"></p>
+<p><code>data=ordered</code> 仍只记录元数据，但要求与这次元数据修改相关的数据先写入原位置，再提交相应元数据日志。</p>
+<p>图中绿色 <code>block 9 data</code> 位于黄色 <code>COMMIT</code> 之前。只要恢复确认本次元数据事务已提交，块 9 就已经保存新增内容。随后重做元数据，文件指针和大小把这块已写好的内容纳入文件。</p>
+<p>这项排序保护了本例中新块与元数据的关联。任意覆盖已有文件多个页的修改，还需要应用自己的事务边界与恢复方案。</p>
+<h3 id="完整日志">完整日志</h3>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162147555.png" alt="journal 把三项元数据和块 9 内容一起记录，之后写回原位置"></p>
+<p><code>data=journal</code> 把元数据和文件内容一起写入 journal。有效提交后，恢复可以同时重做位图、块指针、大小和块 9 的内容，让本次日志事务包含的追加完整恢复。</p>
+<p>新增内容先写 journal、再写原位置，写入量较大。文件系统划分日志事务的范围与应用划分转账的范围还需要协调；一次银行操作如果涉及多次独立文件调用，仍需设计应用层事务。</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>journal 保存的内容</th>
+<th>块 9 与元数据提交的顺序</th>
+<th>本例恢复后的新增块</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>writeback</td>
+<td>三项元数据</td>
+<td>不要求块 9 先写好</td>
+<td>可能包含旧内容</td>
+</tr>
+<tr>
+<td>ordered</td>
+<td>三项元数据</td>
+<td>块 9 先写好，随后提交元数据</td>
+<td>已包含新内容</td>
+</tr>
+<tr>
+<td>journal</td>
+<td>三项元数据和块 9 内容</td>
+<td>日志完整后提交，随后写原位置</td>
+<td>可根据日志补齐新内容</td>
+</tr>
+</tbody>
+</table>
+<p>三种模式的准确范围可查阅 <a target="_blank" rel="noopener" href="https://docs.kernel.org/admin-guide/ext4.html">ext4 文档</a>与 <a target="_blank" rel="noopener" href="https://docs.kernel.org/filesystems/ext4/journal.html">journal 文档</a>。</p>
+<blockquote>
+<p>思考题：只记录元数据时，重要的文件内容怎样保护？ordered 或 journal 能保证整笔银行转账吗？</p>
+<p>解答：</p>
+<p>应用可以先同步新内容，再发布指向它的名称或管理记录；也可以为相关内容建立应用日志，保存副本并校验完整性。恢复所需的信息要在正式发布前持久保存。</p>
+<p>ordered 保证相关数据与元数据的写入顺序，journal 可以恢复同一个日志事务中的数据和元数据。银行转账要求扣款、收款共同完成，应用还要让这两项修改处于受同一提交决定保护的事务中。</p>
+</blockquote>
+<h2 id="提交完整性">提交完整性</h2>
+<p>日志包含多条记录，它的提交标记也要写入设备。故障可能发生在提交标记写入时，因此恢复程序需要识别“完整且有效的提交”。</p>
+<p>一种简化假设是设备对某个写入单位提供全有或全无保证，例如一个扇区写入会完整保存或保持原状。扇区是设备读写的基本单位之一，容量与设备有关。部分硬件通过断电保护电容等装置保留能量，完成已经开始的写入，具体保证需要看设备与存储接口的约定。</p>
+<p>小的提交标记可以放进受保护的写入单位。日志内容可能跨多个扇区，常用长度、事务标识、校验和与提交标记共同识别记录边界和完整性。校验和由记录内容计算得到，恢复时重新计算并比较；CRC 是一种常见的错误检测方法。</p>
+<p>持久化顺序还要单独保证：先确认相关记录已保存，再建立有效的提交标记。校验和帮助发现缺失或损坏的记录，写入同步负责确认它们已可靠保存。</p>
+<blockquote>
+<p>思考题：写 COMMIT 时发生故障怎么办？一组记录超过一个扇区时，怎样判断是否完整？</p>
+<p>解答：</p>
+<p>如果设备对提交标记的写入单位提供原子性，恢复就按有效标记存在或不存在判断。记录跨多个扇区时，还要检查长度、校验和、事务标识及提交标记是否相互匹配。</p>
+<p>标记完整且所需记录全部有效，恢复才把事务视为已提交。提交标记缺失或完整性检查失败时，按未提交处理。协议还必须保证有效提交之前，相关日志已经持久保存。</p>
+</blockquote>
+<h2 id="并发副本">并发副本</h2>
+<p>现在加入两个客户端。初始 <code>a=b=c=d=100</code>，总额为 400。客户端 0 从 a 向 b 转 100，客户端 1 从 c 向 d 转 100。两笔转账涉及不同账户，但示例中的程序共同使用 <code>bank</code> 和 <code>bank_temp</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162147556.png" alt="客户端 1 把客户端 0 尚未完成的扣款一起发布到 bank"></p>
+<p>图中安排如下：</p>
+<table>
+<thead>
+<tr>
+<th>时刻</th>
+<th>客户端动作</th>
+<th>共享临时文件中的余额</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始</td>
+<td>临时文件保存原银行数据</td>
+<td><code>100,100,100,100</code></td>
+</tr>
+<tr>
+<td>①</td>
+<td>客户端 0 把 a 减为 0</td>
+<td><code>0,100,100,100</code></td>
+</tr>
+<tr>
+<td>②</td>
+<td>客户端 0 被暂停，尚未给 b 加钱</td>
+<td><code>0,100,100,100</code></td>
+</tr>
+<tr>
+<td>③</td>
+<td>客户端 1 把 c 减为 0、d 加为 200</td>
+<td><code>0,100,0,200</code></td>
+</tr>
+<tr>
+<td>④</td>
+<td>客户端 1 同步并替换 bank</td>
+<td>正式文件变为 <code>0,100,0,200</code></td>
+</tr>
+</tbody>
+</table>
+<p>客户端 1 同步的是共同使用的临时文件，它把客户端 0 的未完成扣款也保存并发布了。正式文件的总额成为 <code>0+100+0+200=300</code>，丢失了 100。</p>
+<p>一次共享文件同步会保存文件中符合回写条件的修改。它需要配合事务和并发控制，才能区分哪些修改已经完成。</p>
+<blockquote>
+<p>思考题：两笔转账的账户互不重叠，为什么仍会互相影响？给每个请求使用不同临时文件是否足够？</p>
+<p>解答：</p>
+<p>两个客户端共同修改一份临时文件及其页缓存，客户端 1 发布时包含了客户端 0 的中间值，因此总额从 400 变为 300。</p>
+<p>独立临时文件可以隔离这个中间状态。若两个请求都从同一旧版本复制，并先后替换整个 bank，后发布的文件仍可能覆盖前一笔已完成转账，造成更新丢失。可以对“读旧版本、复制、修改、发布”整个过程加锁，或提交时检查版本，发现旧版本已变化后重新读取并计算。</p>
+</blockquote>
+<h2 id="副本局限">副本局限</h2>
+<p>临时副本有三项主要成本：</p>
+<ol>
+<li>并发操作需要额外协调。直接替换整份文件时，即使修改不同账户，也可能共享临时状态或覆盖别人的更新。</li>
+<li>跨多个文件的修改需要共同发布。连续改名两个文件，中途发生故障会让它们处于不同版本。</li>
+<li>小修改可能需要复制整份文件。文件很大时，复制时间和写入量会明显增加。</li>
+</ol>
+<p>多个文件可以组织为一个版本目录，先把该版本内的内容保存完整，再通过一个共同的入口或清单切换版本。入口的替换和目录项持久化仍要满足相应条件。普通目录 rename 覆盖目标时通常要求目标目录不存在或为空；具体方案需要依据系统提供的接口设计。</p>
+<p>文件日志与临时副本都先在另一位置保存恢复信息。临时副本保存完整文件版本，日志可以只保存本次受影响的位置和结果。因此，日志方法可以进一步用于应用的数据修改。</p>
+<h2 id="事务边界">事务边界</h2>
+<p><strong>事务</strong>（transaction，简称 TX）把一组需要共同完成的操作组织起来。转账事务包含扣款与收款，常用 <code>begin</code> 标记开始、<code>commit</code> 请求提交。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162148440.png" alt="转账的两项修改处于同一事务，成功回复位于提交点之后"></p>
+<p>提交点（commit point）是持久记录已经足以确认事务生效的时刻。通过这一点后，即使数据原位置尚未全部更新，恢复程序也要补齐事务结果。</p>
+<p>图中初始余额为 <code>10,10</code>，新余额为 <code>0,20</code>。事务在内存中执行到哪一步，与故障后是否需要保留结果，还要结合提交记录判断。服务器应在确认提交后再发送成功回复。</p>
+<p>begin、commit 是事务接口的边界标记。实现还需要保存日志、安排写入顺序并执行故障恢复，才能提供对应保证。</p>
+<h2 id="重做日志">重做日志</h2>
+<p>重做日志（redo-only logging）保存各项修改的新值。提交之前，修改只保存在事务自己的临时内存中；完整日志持久保存后，才允许修改数据文件的共享页缓存。</p>
+<p>这一区分很重要：普通局部变量由当前计算使用，写入共享映射则会改变文件页缓存，随后可能自动落盘。下面的 <code>new_a</code>、<code>new_b</code> 只是局部变量。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">transfer_with_redo</span>(<span class="params">bank_file, account_a, account_b, amount, log</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;先持久保存整个事务的新值，再更新共享文件。&quot;&quot;&quot;</span></span><br><span class="line">    records = map_shared(bank_file)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 计算放在事务自己的临时内存中。</span></span><br><span class="line">    new_a = records[account_a] - amount</span><br><span class="line">    new_b = records[account_b] + amount</span><br><span class="line">    entry = make_entry(</span><br><span class="line">        updates=[(account_a, new_a), (account_b, new_b)]</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 条目包含边界和校验信息，同步成功确认事务提交。</span></span><br><span class="line">    log.append(entry)</span><br><span class="line">    log.sync()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 现在即使数据只写回一部分，也能根据日志补齐。</span></span><br><span class="line">    records[account_a] = new_a</span><br><span class="line">    records[account_b] = new_b</span><br><span class="line">    notify_user()</span><br></pre></td></tr></table></figure>
+<p><code>make_entry</code> 把本事务的全部新值编码成一条完整日志条目，并附加识别边界和校验所需的信息。这里 <code>log.sync()</code> 表示确认之前追加的条目已持久保存，调用者需要检查错误。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162148443.png" alt="重做日志保存新余额 3 和 17，可把旧状态恢复到完整新状态"></p>
+<p>从 <code>10,10</code> 转账 7 元时，新值为 <code>3,17</code>。日志保存 <code>a=3,b=17</code>，恢复程序把两项设置为这些值。数据文件即使只落盘了 a，也可以补齐 b。</p>
+<p>重做日志按下面的顺序执行：</p>
+<ol>
+<li>读取旧余额，在私有内存中计算全部新值。</li>
+<li>追加完整日志条目，确认条目持久保存。</li>
+<li>根据条目修改共享页缓存，让系统随后把数据写回原位置。</li>
+<li>在确认提交后报告成功。</li>
+</ol>
+<p>若尚未建立有效提交记录就失败，临时计算结果可以丢弃，数据文件保持原来的已提交状态。若日志已经有效提交，恢复过程会完成它记载的修改。</p>
+<blockquote>
+<p>思考题：写日志之前直接修改 mmap 中的余额，能否继续只使用重做日志？</p>
+<p>解答：</p>
+<p>共享映射中的余额进入文件页缓存后，操作系统可能把尚未提交的修改写回磁盘。故障后，这些修改需要恢复旧值，而重做日志只保存新值，缺少撤销依据。</p>
+<p>这里的重做方案要求未提交修改保留在事务私有内存中，直到完整日志持久保存，才写入共享页缓存。</p>
+</blockquote>
+<h2 id="日志完整性">日志完整性</h2>
+<p>追加和同步一条日志也可能分多次写入。假设条目应包含 <code>a=2,b=18</code>，实际只保存了 <code>a=2</code> 和部分后续字节就发生故障，恢复程序必须发现这个条目不完整。</p>
+<p>条目可以保存长度、事务标识、所有更新及校验和。扫描日志时，先确定边界，再读取所需字节、验证校验信息。发现未完成的尾部条目时，按未提交处理。</p>
+<p>一条完整事务被编码为一个可验证的条目时，这个条目本身可以承担提交凭据。后面介绍的撤销重做日志分多条记录保存修改，需要额外提交记录来确认整笔事务完成。</p>
+<blockquote>
+<p>思考题：sync 本身可能中途失败，怎样判断日志条目完整？校验成功意味着已经持久保存吗？</p>
+<p>解答：</p>
+<p>恢复时检查条目长度、边界和校验和，发现缺字节或校验不匹配就丢弃未完成的尾部条目。完整性检查有助于识别一次追加是否留下了有效记录。</p>
+<p>正常执行时，还要等待日志同步成功，才能向用户确认持久保存。内存里的完整条目也可以通过校验，但它仍需要经过持久化过程。</p>
+</blockquote>
+<h2 id="重做恢复">重做恢复</h2>
+<p>下面连续进行三笔已提交转账，再尝试第四笔：</p>
+<table>
+<thead>
+<tr>
+<th>事务</th>
+<th>日志中记录的新值</th>
+<th>故障时的条目状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1</td>
+<td><code>a=8,b=12</code></td>
+<td>完整且有效</td>
+</tr>
+<tr>
+<td>T2</td>
+<td><code>a=5,b=15</code></td>
+<td>完整且有效</td>
+</tr>
+<tr>
+<td>T3</td>
+<td><code>a=3,b=17</code></td>
+<td>完整且有效</td>
+</tr>
+<tr>
+<td>T4</td>
+<td><code>a=2,b=?</code></td>
+<td>写到一半</td>
+</tr>
+</tbody>
+</table>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162148441.png" alt="前三笔日志已保存，第四笔不完整，磁盘只回写了 a=3"></p>
+<p>图中 T1、T2、T3 先后提交，页缓存最后为 <code>3,17</code>。后台回写只把 <code>a=3</code> 保存到磁盘，b 仍为初始的 10，磁盘暂时是 <code>3,10</code>。写 T4 日志时发生故障，内存丢失，T4 尚未修改共享数据。</p>
+<p>重启后先恢复，再接收新的账户请求。按日志从前向后重做：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>处理</th>
+<th>数据结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>恢复开始</td>
+<td>读取故障后保存的数据</td>
+<td><code>3,10</code></td>
+</tr>
+<tr>
+<td>①</td>
+<td>重做 T1：设置 a、b</td>
+<td><code>8,12</code></td>
+</tr>
+<tr>
+<td>②</td>
+<td>重做 T2：设置 a、b</td>
+<td><code>5,15</code></td>
+</tr>
+<tr>
+<td>③</td>
+<td>重做 T3：设置 a、b</td>
+<td><code>3,17</code></td>
+</tr>
+<tr>
+<td>④</td>
+<td>丢弃 T4 的不完整尾部</td>
+<td>仍为 <code>3,17</code></td>
+</tr>
+</tbody>
+</table>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162148442.png" alt="顺序重做 T1、T2、T3，忽略 T4，恢复余额 3 和 17"></p>
+<p>后提交的事务可能覆盖早先的值，因此要按原来的日志顺序重做。最终余额总额为 20，三笔已提交转账都保留，T4 没有生效。</p>
+<blockquote>
+<p>思考题：提交时需要立即 fsync 银行数据文件吗？为什么可以从旧数据或部分回写的数据恢复？</p>
+<p>解答：</p>
+<p>在这个重做方案中，每笔事务提交时只需先确认完整日志持久保存，银行数据文件可以随后回写。日志保留了所有待恢复的新值，故障后能够补齐。</p>
+<p>已提交修改全部保存到数据文件之前，要保留相关日志。执行检查点并删除旧日志时，才需要确认被删除记录所代表的数据已经可靠保存。</p>
+</blockquote>
+<h2 id="提交时刻">提交时刻</h2>
+<p>正常执行中，<code>log.append(entry)</code> 之后的同步成功返回，程序就能够确认完整条目已持久保存。之后修改数据缓存、发送成功回复，都有日志作为恢复依据。</p>
+<p>发生故障时，需要进一步看磁盘上的实际记录。一次同步尚未返回，设备也可能已经完成全部写入；服务器在成功回复送达前宕机，客户端会面对尚未确认的结果。</p>
+<blockquote>
+<p>思考题：重做日志的提交点在哪里？同步返回之前发生故障，事务一定会被丢弃吗？</p>
+<p>解答：</p>
+<p>在这套模型中，完整且有效的事务条目持久保存时，事务的提交决定就已建立；日志同步成功返回，让程序能够确认已经通过提交点。</p>
+<p>同步执行期间发生故障，可能留下不完整条目，也可能已经保存完整有效条目。恢复程序按持久记录的实际状态处理。客户端没有收到成功回复时，需要查询这次事务的状态；重试可携带稳定的事务编号，避免把同一笔转账重复执行。</p>
+</blockquote>
+<p>提交后的数据仍可能暂时位于页缓存，这与“转账已经确认”可以同时成立。持久日志保存了恢复完整结果所需的信息，恢复过程负责把它落实到数据文件。</p>
+<h2 id="重复回放">重复回放</h2>
+<p>恢复过程中也可能再次故障。重新启动后，部分日志会再次执行，所以需要考虑重复执行的结果。</p>
+<p>值日志记录具体结果，例如 <code>a=3,b=17</code>。无论设置一次还是多次，两项都保持 <code>3,17</code>。这种重复执行与执行一次得到相同结果的性质，称为幂等性（idempotence）。</p>
+<p>操作日志记录动作，例如 <code>transfer(a,b,7)</code>。它需要读取当时余额、再次扣款和加款，重复执行会再次转钱。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162148444.png" alt="设置新值可以重复执行，重复执行转账会再次扣款"></p>
+<blockquote>
+<p>思考题：初始 a、b 各为 10，恢复时执行转账 7 元，随后故障并从头恢复。值日志与操作日志分别会得到什么？</p>
+<p>解答：</p>
+<p>值日志写入 <code>a=3,b=17</code>，第二次写入同样的值，结果仍为 <code>3,17</code>。</p>
+<p>操作日志第一次执行得到 <code>3,17</code>；第二次又从 a 扣 7、向 b 加 7，结果变为 <code>-4,24</code>。两次结果的总额都为 20，但同一笔转账已执行两次，违反了这笔请求只执行一次的要求。</p>
+<p>使用操作日志时，需要保存执行进度、事务身份等信息，确保动作按规定执行。使用值日志时，也要按事务顺序重放，并结合相应并发控制。</p>
+</blockquote>
+<p>类似地，<code>UPDATE t SET id = UUID()</code> 调用 UUID 函数生成值。若在另一台机器重新执行语句，可能生成不同的 UUID。按行记录执行产生的数据变化，可以把已经生成的值传给副本，复制系统同时维护自己的应用进度。<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.4/en/replication-rbr-safe-unsafe.html">MySQL 文档</a>列出了这类结果可能变化的语句。</p>
+<p>值日志也有空间成本。ext3 的元数据日志以整个受影响块为单位保存内容，即使只改了块中的一个 bit，也要记录该块。这种格式便于恢复块内容，但日志量会超过单个修改值的大小。</p>
+<h2 id="日志开销">日志开销</h2>
+<p>在这里的重做模型中，一笔事务把全部新值组织为一个条目，顺序追加并同步一次即可确认提交。顺序追加集中访问日志尾部，可以减少对多个分散数据位置逐个同步的等待。</p>
+<p>它也有两项限制：</p>
+<ul>
+<li>未提交修改全部放在私有内存中。事务修改范围很大时，缓存这些新值可能占用大量内存。</li>
+<li>日志一直追加会持续增长。旧修改即使已经进入数据文件，日志仍占空间，也延长重启后的扫描时间。</li>
+</ul>
+<blockquote>
+<p>思考题：事务的新值太多，私有内存放不下，可以把部分未提交修改写入数据文件吗？</p>
+<p>解答：</p>
+<p>可以设计允许未提交数据写入原位置的方案，用磁盘承载这些修改。但故障后必须能把未提交部分恢复成旧值，因此需要额外保存撤销信息。</p>
+<p>对应的数据回写还要遵守日志先落盘的顺序，保证修改一旦进入磁盘，恢复程序就有依据处理它。</p>
+</blockquote>
+<h2 id="撤销重做">撤销重做</h2>
+<p>撤销重做日志（undo-redo logging）同时保存旧值和新值。旧值用于撤销尚未提交的修改，新值用于补齐已经提交的修改。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162148445.png" alt="日志保存旧值 10 和新值 3、17，同时支持撤销与重做"></p>
+<p>图中初始余额为 <code>10,10</code>，转账 7 元后的余额为 <code>3,17</code>。两条修改记录分别保存：</p>
+<ul>
+<li>a：旧值 10，新值 3；</li>
+<li>b：旧值 10，新值 17。</li>
+</ul>
+<p>事务未提交时，撤销（undo）把它改过的位置设置回旧值。事务已经提交时，重做把相关位置设置为新值。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">transfer_with_undo_redo</span>(<span class="params"></span></span><br><span class="line"><span class="params">    bank_file, account_a, account_b, amount, log, transaction_id</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;在每项修改之前保存旧值和新值，最后确认提交。&quot;&quot;&quot;</span></span><br><span class="line">    records = map_shared(bank_file)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 先保存 a 的恢复记录，再允许共享页被修改。</span></span><br><span class="line">    old_a = records[account_a]</span><br><span class="line">    new_a = old_a - amount</span><br><span class="line">    log.append_change(transaction_id, account_a, old_a, new_a)</span><br><span class="line">    log.sync()</span><br><span class="line">    records[account_a] = new_a</span><br><span class="line"></span><br><span class="line">    <span class="comment"># b 的修改也使用同样的顺序。</span></span><br><span class="line">    old_b = records[account_b]</span><br><span class="line">    new_b = old_b + amount</span><br><span class="line">    log.append_change(transaction_id, account_b, old_b, new_b)</span><br><span class="line">    log.sync()</span><br><span class="line">    records[account_b] = new_b</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 提交记录以及之前的相关记录持久保存后再报告成功。</span></span><br><span class="line">    log.append_commit(transaction_id)</span><br><span class="line">    log.sync()</span><br><span class="line">    notify_user()</span><br></pre></td></tr></table></figure>
+<p>这段代码采用容易检查的保守顺序：每次修改共享映射之前，先同步对应恢复记录。此后，操作系统可以回写未提交脏页；如果事务最终失败，旧值日志用于撤销。</p>
+<p>实际系统可以缓冲、批量同步日志，并在页真正回写时检查持久化进度，减少每项修改都等待同步的成本。核心约束是对应日志先于数据修改进入持久存储。</p>
+<blockquote>
+<p>思考题：日志已经保存旧值，为什么还要保存新值？</p>
+<p>解答：</p>
+<p>旧值能够撤销失败事务。提交成功后，如果数据文件只保存了部分新内容，恢复还需要新值来补齐其他位置。</p>
+<p>若只保存旧值，就必须在提交前把本事务全部数据修改同步到原位置。这样提交需要等待分散的数据写入。保存新值后，可以先同步连续的日志和提交记录，再让数据文件随后回写。</p>
+</blockquote>
+<h2 id="日志记录">日志记录</h2>
+<p>重做方案的一条条目包含整个事务的修改；撤销重做方案的一条记录通常描述一次数据修改。两个事务执行时有重叠，它们的记录可以交错出现在日志中。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010163241293.png" alt="整笔事务条目与按单项修改追加的日志记录"></p>
+<p>上面的日志依次保存 T1、T2、T3、T4 的完整条目。下面的日志依次出现 <code>1,2,1,2,1</code>，这些数字表示事务编号：T1 有三条记录，T2 有两条记录。恢复需要能把属于同一事务的记录找出来。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162149179.png" alt="事务编号和前一条记录指针把同一事务的记录连接起来"></p>
+<p>一条修改记录通常包括：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TID</td>
+<td>事务编号，说明记录属于哪笔事务</td>
+</tr>
+<tr>
+<td>前记录位置</td>
+<td>同一事务上一条日志记录的位置</td>
+</tr>
+<tr>
+<td>修改目标</td>
+<td>文件或对象，以及要修改的偏移或字段</td>
+</tr>
+<tr>
+<td>old</td>
+<td>修改之前的旧值，用于撤销</td>
+</tr>
+<tr>
+<td>new</td>
+<td>修改之后的新值，用于重做</td>
+</tr>
+<tr>
+<td>完整性信息</td>
+<td>长度、类型、校验等，便于识别有效记录</td>
+</tr>
+</tbody>
+</table>
+<p>偏移表示从文件或记录开头数过去的位置，用来找到要修改的内容。前记录位置指向日志中的另一条记录，用来沿同一事务向前查找。</p>
+<p>图中 <code>TID=1,PTR=80,old=3000,new=2000</code> 表示：这条修改属于事务 1，它的前一条日志记录位于位置 80，本次把目标值从 3000 改为 2000。目标文件和字段由记录的其他信息确定。</p>
+<h2 id="写前日志">写前日志</h2>
+<p><strong>写前日志</strong>（write-ahead logging，WAL）规定：某项数据修改到达持久存储之前，对应恢复日志必须已经持久保存。</p>
+<p>若数据先落盘，日志还没保存就发生故障，恢复程序可能既不知道旧值，也不知道这项修改属于哪个事务。先保存日志，就能识别修改并根据事务状态进行撤销或重做。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162149180.png" alt="修改记录先保存到日志，事务完成时追加并保存提交记录"></p>
+<p>提交还需要第二条规则：本事务的相关修改记录和提交记录都持久保存后，才能确认成功。图中的黄色 <code>C</code> 表示提交记录，它需要标明所提交的事务。</p>
+<p>两个顺序可以写成：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>恢复日志持久化</mtext><mo>≺</mo><mtext>对应数据修改持久化</mtext></mrow><annotation encoding="application/x-tex">\text{恢复日志持久化}
+\prec
+\text{对应数据修改持久化}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7224em;vertical-align:-0.0391em;"></span><span class="mord text"><span class="mord cjk_fallback">恢复日志持久化</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≺</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord text"><span class="mord cjk_fallback">对应数据修改持久化</span></span></span></span></span></span></p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>本事务日志与提交记录持久化</mtext><mo>≺</mo><mtext>成功回复</mtext></mrow><annotation encoding="application/x-tex">\text{本事务日志与提交记录持久化}
+\prec
+\text{成功回复}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7224em;vertical-align:-0.0391em;"></span><span class="mord text"><span class="mord cjk_fallback">本事务日志与提交记录持久化</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≺</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord text"><span class="mord cjk_fallback">成功回复</span></span></span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>≺</mo></mrow><annotation encoding="application/x-tex">\prec</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mrel">≺</span></span></span></span> 表示左侧必须先完成。第一条保证磁盘上的修改有恢复依据，第二条保证已经确认的事务有完整提交凭据。</p>
+<h2 id="撤销恢复">撤销恢复</h2>
+<p>恢复首先识别哪些事务具有有效提交记录。已提交事务需要保留；故障时仍未提交的事务需要撤销。</p>
+<p>这里采用简化的恢复步骤：</p>
+<ol>
+<li>从日志尾部向前扫描，确定事务状态和需要撤销的记录。</li>
+<li>按反向顺序撤销未提交事务，恢复它们保存的旧值。</li>
+<li>按正向顺序重做已提交事务，设置它们保存的新值。</li>
+</ol>
+<p>这个说明针对能正确配合并发控制的事务执行；恢复期间暂停对外访问，直到数据恢复完整。事务之间访问同一数据时，还需要避免未提交值被其他事务错误使用或覆盖。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162149181.png" alt="T1 已提交，T2 尚未提交，磁盘只写入了 a=3"></p>
+<p>示例从 <code>a=10,b=10</code> 开始。T1 的两条修改为 <code>a:10→8</code>、<code>b:10→12</code>，之后写入有效提交记录。T2 接着把 <code>a:8→3</code>，尚未完成下一步、也没有提交。</p>
+<p>内存这时为 <code>3,12</code>。图中后台只回写 a，磁盘为 <code>3,10</code>；b 连 T1 的新值 12 都没落盘。因此恢复同时需要撤销 T2 和重做 T1。</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>操作</th>
+<th>磁盘余额</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>故障后</td>
+<td>保存了 T2 的 a，b 仍是初始值</td>
+<td><code>3,10</code></td>
+</tr>
+<tr>
+<td>撤销 T2</td>
+<td>根据旧值将 a 设置为 8</td>
+<td><code>8,10</code></td>
+</tr>
+<tr>
+<td>重做 T1</td>
+<td>将 a 设置为 8、b 设置为 12</td>
+<td><code>8,12</code></td>
+</tr>
+</tbody>
+</table>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162149182.png" alt="撤销未提交的 T2，再重做已提交的 T1，恢复余额 8 和 12"></p>
+<blockquote>
+<p>思考题：为什么撤销要从后往前，重做要从前往后？只执行其中一项会怎样？</p>
+<p>解答：</p>
+<p>同一事务先把值从 10 改为 8，再从 8 改为 3，撤销需要先恢复到 8、再恢复到 10。如果按正向执行旧值赋值，最后可能停在 8。重做则按修改发生顺序设置新值，让后来的结果覆盖早先结果。</p>
+<p>在图中的例子里，只撤销 T2 会得到 <code>8,10</code>，缺少 T1 对 b 的更新；只保留磁盘上的 a，则会留下 T2 的未提交扣款。完整恢复需要撤销 T2，再重做 T1，最终为 <code>8,12</code>，总额恢复为 20。</p>
+</blockquote>
+<p>恢复过程中再次失败时，可以依据仍被保留的有效日志重新执行这些值赋值。多次执行把数据设置为同一旧值或新值，配合正确顺序能够再次得到相应结果。完成必要持久化之前，恢复依据也需要继续保留。</p>
+<h2 id="检查点">检查点</h2>
+<p>日志持续追加会占用越来越多空间，重启后扫描历史也会越来越慢。许多旧记录代表的修改已经进入数据文件，可以在确认恢复条件后回收。</p>
+<p>检查点（checkpoint，常缩写为 CKPT）保存一个阶段的系统状态，以及从这个状态继续恢复所需的信息。恢复可以从这个阶段开始，减少重复处理旧历史。</p>
+<p>这个概念也用于其他场景：</p>
+<ul>
+<li>日志系统把一段历史整理进数据文件，再保留后续日志。</li>
+<li>模型训练保存已训练的参数和进度；完整恢复还要保存优化器等所需状态。</li>
+<li>进程检查点保存内存以及有关 CPU、GPU 执行状态，供之后恢复运行。</li>
+<li>使用日志整理消息顺序的副本系统保存已经整理的状态，减少后续重放范围。</li>
+</ul>
+<p>这些场景都在保存一份可用于继续运行的状态，具体需要保留的信息由任务决定。下面继续讨论银行数据与恢复日志。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162149183.png" alt="已提交余额 3 和 17 保存到银行文件后，相应旧日志可以回收"></p>
+<p>在只有重做日志、且提交状态已正确整理进页缓存的情况下，可以把检查点覆盖的余额同步到数据文件，确认持久保存，再删除相应旧日志。</p>
+<p>例如，T1、T2、T3 的最终结果是 <code>3,17</code>。一旦 bank 已可靠保存 <code>3,17</code>，这三笔事务的旧重做条目就可以回收。后续恢复从该银行状态和保留的后续日志继续。</p>
+<p>执行检查点也需要按顺序进行。数据同步途中失败，旧日志仍要可用；数据完整保存以后，才能发布有效的检查点并删除被覆盖的历史。检查点记录本身也需要能够识别完整性、确认持久保存。</p>
+<p>重新扫描全部日志、执行完整恢复后再删除历史，是一种直观办法，但会重复许多已经完成的工作。正常运行中的页缓存通常已经保存了计算结果，可以根据明确的日志边界和持久化规则建立检查点。</p>
+<h2 id="重做检查点">重做检查点</h2>
+<p>重做方案把未提交的新值保存在私有内存中，因此检查点同步共享页缓存时，可以只保存已经提交的余额。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162149979.png" alt="T4 的新值 1 和 19 仍在局部变量中，共享余额为 3 和 17"></p>
+<p>图中 T4 正在计算 <code>new_a=1,new_b=19</code>，共享页缓存仍为 <code>3,17</code>。T4 尚未建立完整日志条目，也没有把新值写入共享映射。</p>
+<p>检查点先把 <code>3,17</code> 保存到 bank，再删除已经被这一状态覆盖的 T1、T2、T3 条目。T4 的私有变量继续保留在运行中的内存里；若这时宕机，T4 尚未提交，可以丢弃。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162149980.png" alt="检查点完成后，T4 追加新日志并提交，共享余额随后变为 1 和 19"></p>
+<p>T4 之后提交时，向保留的日志尾部追加 <code>a=1,b=19</code> 的完整条目，确认持久保存，再更新共享页缓存。bank 可以暂时保持检查点保存的 <code>3,17</code>；故障后根据 T4 的日志恢复 <code>1,19</code>。</p>
+<blockquote>
+<p>思考题：重做日志的检查点与正在执行的 T4 会互相影响吗？检查点期间出现新的提交记录怎么办？</p>
+<p>解答：</p>
+<p>T4 提交前只修改私有变量，共享页缓存和旧日志的同步、回收不会保存这些未提交值。T4 之后提交，会写入新的有效日志，故障后仍能恢复。</p>
+<p>检查点要明确一个被覆盖的日志边界，并确认边界内的已提交修改都已经应用并持久保存。期间产生的新提交记录属于保留的后续历史，需要继续保存。实现可以协调短时提交过程、切换日志段或使用版本标记，防止删掉尚未进入检查点数据的新记录。</p>
+</blockquote>
+<h2 id="撤销检查点">撤销检查点</h2>
+<p>撤销重做方案允许未提交数据进入共享页缓存。直接同步全部页缓存、删除全部日志，会把未完成事务的修改留下，却丢失撤销依据。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162149981.png" alt="未提交的 a=1 被检查点保存，旧值日志被删除，总额留下 18"></p>
+<p>检查点前，已提交状态为 <code>a=3,b=17</code>，总额为 20。T4 准备从 a 向 b 转 2 元：</p>
+<ol>
+<li>保存 <code>a:3→1</code> 的日志。</li>
+<li>在共享页缓存中把 a 改为 1，尚未把 b 改为 19。</li>
+<li>检查点把页缓存 <code>1,17</code> 写入 bank。</li>
+<li>如果此时删除所有旧日志，<code>a</code> 的旧值 3 也被删掉。</li>
+<li>T4 提交前发生故障，磁盘只剩 <code>1,17</code>，恢复缺少撤销依据，总额为 18。</li>
+</ol>
+<blockquote>
+<p>思考题：为什么同样的“同步页缓存后删日志”，在撤销重做方案中会出问题？</p>
+<p>解答：</p>
+<p>页缓存可能包含未提交修改，数据同步会把这些中间值保存到磁盘。T4 没有提交，恢复需要把 a 从 1 改回 3，因此 <code>a:3→1</code> 的日志仍有用途。</p>
+<p>删除日志之前，需要为正在执行的事务保留足够的撤销与重做信息。只有事务已提交、相关结果又被检查点可靠保存时，其旧恢复记录才能按规则回收。</p>
+</blockquote>
+<h2 id="暂停事务">暂停事务</h2>
+<p>一种容易实现的办法是在检查点期间停止接收新事务，等待已有事务完成提交或撤销，再同步数据并回收历史。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162149982.png" alt="检查点等待已有事务结束，后来的事务需要等待同步完成"></p>
+<p>图中检查点请求到来时，T1 已结束，T2、T3 仍在执行。红色区域表示等待它们结束；蓝色区域表示同步数据和回收日志。T4、T5 在这段时间到来，被阻塞，直到检查点结束才开始。</p>
+<p>这样建立检查点时，数据中没有需要继续保留的未提交修改。实现还要处理事务失败：失败事务完成撤销后，才能把相应状态作为一致的检查点保存。</p>
+<blockquote>
+<p>思考题：停止接收新事务并等待旧事务完成，有什么成本？</p>
+<p>解答：</p>
+<p>一个事务可能执行很久，检查点就要等很久。后续请求同时等待已有事务结束和检查点数据同步，服务暂停时间随长事务增加。</p>
+<p>可以保留正在执行事务的恢复记录，让检查点只在单项修改的安全边界上协调。长事务能够跨越检查点继续执行，恢复时再根据它最终是否提交处理。</p>
+</blockquote>
+<h2 id="保留记录">保留记录</h2>
+<p>事务由多项操作组成，单次记录追加、单个字段修改通常比整个事务短。检查点可以协调这些短操作，在没有单项修改进行到一半的时刻，收集活跃事务需要的恢复信息。</p>
+<p>活跃事务是已开始、尚未完成提交或撤销的事务。CKPT 记录保存这些事务的必要旧值、新值、记录联系和状态，使旧日志回收后仍能进行恢复。</p>
+<p>在这个简化方案中，可以按下列顺序建立检查点：</p>
+<ol>
+<li>暂时协调单项修改，取得完整的日志与事务状态边界。</li>
+<li>把活跃事务的必要恢复信息放入 CKPT 记录，确认它已持久保存。</li>
+<li>将检查点覆盖的数据同步到原位置。</li>
+<li>确认数据与检查点信息都有效后，回收已被替代的旧日志前缀。</li>
+<li>保留 CKPT 及其后的日志，继续记录这些事务后续的操作和提交结果。</li>
+</ol>
+<p>这里删除的是满足恢复条件的历史前缀，日志尾部还可能包含新的修改。检查点需要有明确的边界，协调数据同步和并发追加，持续保留恢复所需的信息。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162149983.png" alt="CKPT 保留 T4 的 a:3→1，旧日志回收后仍能撤销到 3 和 17"></p>
+<p>图中 T4 已修改 a，尚未提交。CKPT 保存 <code>T4,a:3→1</code>，之后同步 bank，使其暂时为 <code>1,17</code>。旧日志可以回收，因为所需的撤销信息已在有效 CKPT 中保留。</p>
+<p>发生故障后，恢复发现 T4 缺少有效提交记录，读取 CKPT 中的旧值，将 a 改回 3，最终得到 <code>3,17</code>，总额为 20。</p>
+<blockquote>
+<p>思考题：CKPT 只保存“有事务 T4 正在运行”够吗？为什么要在单项操作边界上收集信息？</p>
+<p>解答：</p>
+<p>事务编号能帮助确认身份，撤销还需要修改位置与旧值，重做需要新值。若 CKPT 只保存指向已经删除日志的地址，也无法读取原来的恢复信息。可以直接保存所需记录，或保留这些指针所指向的有效日志范围。</p>
+<p>单项修改执行到一半时，CKPT 可能漏掉刚新增的记录，或把数据修改与日志状态对应错误。先让当前短操作结束并建立清楚的边界，可以完整收集相关信息。实际等待时间取决于操作是否能正常推进，以及数据同步所需时间。</p>
+</blockquote>
+<h2 id="恢复判断">恢复判断</h2>
+<p>结合检查点，恢复根据两个时间关系处理事务：事务是否在检查点前已经完成，以及故障前是否已提交。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261010162149984.png" alt="T1 至 T5 分别在检查点与故障前后的不同位置开始和提交"></p>
+<p>横轴时间向右推进。竖直虚线表示检查点，闪电所在竖线表示故障，带叉圆圈表示提交。虚线包围的记录表示已保存在 CKPT 中的检查点之前的活跃事务记录。</p>
+<p>图中 T1 至 T5 的处理如下：</p>
+<table>
+<thead>
+<tr>
+<th>TX</th>
+<th>检查点时的状态</th>
+<th>故障时的状态</th>
+<th>恢复动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1</td>
+<td>已提交，结果已纳入检查点</td>
+<td>已完成</td>
+<td>无需处理已被覆盖的旧日志</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>活跃，部分记录已进入 CKPT</td>
+<td>检查点后已提交</td>
+<td>重做 CKPT 中的必要记录及后续记录</td>
+</tr>
+<tr>
+<td>T3</td>
+<td>尚未开始</td>
+<td>检查点后开始并提交</td>
+<td>重做检查点后的记录</td>
+</tr>
+<tr>
+<td>T4</td>
+<td>活跃，部分记录已进入 CKPT</td>
+<td>仍未提交</td>
+<td>反向撤销后续记录及 CKPT 中的必要记录</td>
+</tr>
+<tr>
+<td>T5</td>
+<td>尚未开始</td>
+<td>检查点后开始，仍未提交</td>
+<td>反向撤销检查点后的记录</td>
+</tr>
+</tbody>
+</table>
+<p>T2 与 T4 都跨越检查点，早期记录已经放进 CKPT。T2 后来提交，需要保留完整新结果；T4 没有提交，需要恢复成它开始修改前的状态。</p>
+<p>T3 与 T5 都在检查点后开始，所需记录位于保留的日志尾部。T1 的结果已经持久保存在检查点数据中，因此可以省去旧日志处理。</p>
+<blockquote>
+<p>思考题：图中的 T1—T5 应该分别做什么？跨越检查点的事务为什么还需要早期记录？</p>
+<p>解答：</p>
+<p>T1 已被检查点完整覆盖，无需重做旧历史；T2、T3 已提交，需要重做；T4、T5 未提交，需要撤销。</p>
+<p>T2 在检查点前做过一部分修改，重做要结合 CKPT 和后续日志补齐整笔事务。T4 在检查点前的未提交修改可能已经落盘，撤销要从后续修改反向回到 CKPT 保存的旧值。只扫描检查点之后的新记录，会漏掉这两类事务的早期修改。</p>
+</blockquote>
+<h2 id="方案选择">方案选择</h2>
+<p>选择日志方案时，需要同时考虑执行成本、内存占用、数据回写规则和恢复工作。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>未提交修改</th>
+<th>提交前需要确认保存</th>
+<th>故障恢复</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>重做日志</td>
+<td>保留在私有内存</td>
+<td>完整事务条目</td>
+<td>按顺序重做已提交修改</td>
+</tr>
+<tr>
+<td>撤销重做</td>
+<td>可以进入数据原位置，但日志先保存</td>
+<td>相关恢复记录与提交记录</td>
+<td>撤销未提交事务，重做已提交事务</td>
+</tr>
+<tr>
+<td>仅撤销</td>
+<td>可以进入数据原位置，但撤销日志先保存</td>
+<td>全部事务数据，再保存提交记录</td>
+<td>撤销未提交事务</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>思考题：重做与撤销重做，哪一种执行和恢复更快？什么时候需要允许未提交数据落盘？</p>
+<p>解答：</p>
+<p>在这里的简化模型中，重做方案把整笔事务集中为一个条目，同步次数较少；恢复只需按顺序扫描有效条目，过程较简单。但提交前要在私有内存保存全部修改。</p>
+<p>撤销重做记录单项修改的旧值、新值和事务状态，恢复需要区分提交结果，执行撤销与重做。它允许未提交数据回写，适合修改量大、内存无法容纳全部新值等需求。</p>
+<p>实际系统还会考虑并发、页面缓存管理、日志批量同步和恢复时间等条件。这些优化会改变每笔事务实际等待的写入次数，需要按实现与负载评估。</p>
+</blockquote>
+<p>在本节模型中，能在私有内存容纳更新时，重做日志提供较直接的实现；需要提前回写未提交修改时，可以使用撤销重做。并发控制和事务访问规则要与恢复算法共同设计。</p>
+<h2 id="仅撤销">仅撤销</h2>
+<p>仅撤销日志（undo-only logging）只保存旧值。它可以回退未提交事务，但已提交事务必须确保全部新数据已经进入原位置。</p>
+<p>因此需要两项顺序：</p>
+<ol>
+<li>某项数据修改写入磁盘之前，其旧值日志已经持久保存。</li>
+<li>本事务的所有数据修改持久保存之后，才写入并持久保存提交记录、报告成功。</li>
+</ol>
+<p>例如转账把 <code>10,10</code> 改为 <code>3,17</code>，日志保存两个旧值 10。提交前先确认 bank 的两个新值 3、17 都已经落盘，再保存提交记录。提交成功的事务已在数据文件中完整保存，恢复主要撤销缺少提交记录的事务。</p>
+<p>若数据文件已保存新值，但提交记录仍未建立就发生故障，事务按未提交处理，根据旧值恢复 <code>10,10</code>。</p>
+<p>这类方案的提交需要等待分散的数据位置同步，可能比只等待连续日志写入花费更多时间。恢复只需撤销，但系统通常也重视正常执行中的成本。</p>
+<h2 id="本节小结">本节小结</h2>
+<p>故障会让磁盘保存一组修改的中间状态。全有或全无原子性要求恢复后保留完整旧结果或完整新结果，成功确认的事务还要能够持久保留。</p>
+<p>临时副本把修改放进新文件，保存完整后通过共同入口发布；文件日志把修改记在 journal，依据提交状态恢复管理信息。应用日志进一步记录业务修改，使用新值重做、使用旧值撤销，并按写前日志规则安排持久化顺序。</p>
+<p>检查点把已完成历史整理进数据状态，同时保留活跃事务需要的恢复信息，之后才回收相应日志。提交、回写和日志删除分别有自己的条件，需要按顺序执行。</p>
+<p>日志可以保存在文件，也可以由多台服务器上的复制内存提供。后一种方案还需要完整追加、可靠保存和提交决定等协议保证，使规定故障范围内至少有可用的恢复依据。单机停止故障之外的部分节点失效、网络延迟和并发提交，需要进一步结合分布式系统讨论。</p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>Pillai 等，2014，<a target="_blank" rel="noopener" href="https://www.usenix.org/conference/osdi14/technical-sessions/presentation/pillai">All File Systems Are Not Created Equal: On the Complexity of Crafting Crash-Consistent Applications</a>，OSDI。</li>
+<li>Stephen C. Tweedie，1998，<a target="_blank" rel="noopener" href="https://pdos.csail.mit.edu/6.828/2011/readings/journal-design.pdf">Journaling the Linux ext2fs Filesystem</a>，LinuxExpo。</li>
+<li>Saltzer 与 Kaashoek，2009，Principles of Computer System Design: An Introduction，第 9.1.5 节。</li>
+<li>Mohan 等，1992，<a target="_blank" rel="noopener" href="https://doi.org/10.1145/128765.128770">ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks Using Write-Ahead Logging</a>，ACM Transactions on Database Systems。</li>
+<li>Gray 与 Reuter，1993，Transaction Processing: Concepts and Techniques。</li>
+<li>Jim Gray，1978，<a target="_blank" rel="noopener" href="https://jimgray.azurewebsites.net/papers/dbos.pdf">Notes on Data Base Operating Systems</a>。</li>
+<li>Linux，<a target="_blank" rel="noopener" href="https://docs.kernel.org/admin-guide/ext4.html">ext4 文档</a>、<a target="_blank" rel="noopener" href="https://docs.kernel.org/filesystems/ext4/journal.html">journal 文档</a>、<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/mmap.2.html">mmap</a>、<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/fsync.2.html">fsync</a> 与 <a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/rename.2.html">rename</a> 手册。</li>
+<li>MySQL，<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.4/en/replication-rbr-safe-unsafe.html">Safe and Unsafe Statements in Binary Logging</a>。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/10/SE3331_06/">https://acannedfish.github.io/2026/10/10/SE3331_06/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%8E%9F%E5%AD%90%E6%80%A7/">原子性</a><a class="post-meta__tags" href="/tags/%E6%97%A5%E5%BF%97%E6%81%A2%E5%A4%8D/">日志恢复</a><a class="post-meta__tags" href="/tags/%E6%A3%80%E6%9F%A5%E7%82%B9/">检查点</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width no-desc" href="/2026/10/09/SE3353_08/" title="应用系统体系架构-08：系统架构与 Capstone"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info text-right"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">应用系统体系架构-08：系统架构与 Capstone</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">95</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">55</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E9%97%AE%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">故障问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E5%9F%BA%E7%A1%80"><span class="toc-number">2.</span> <span class="toc-text">存储基础</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%BD%AC%E8%B4%A6%E8%BF%87%E7%A8%8B"><span class="toc-number">3.</span> <span class="toc-text">转账过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E5%AD%90%E6%80%A7"><span class="toc-number">4.</span> <span class="toc-text">原子性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%AF%E6%9C%AC%E6%9B%BF%E6%8D%A2"><span class="toc-number">5.</span> <span class="toc-text">副本替换</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%B9%E5%90%8D%E8%BF%87%E7%A8%8B"><span class="toc-number">6.</span> <span class="toc-text">改名过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%B9%E5%90%8D%E6%95%85%E9%9A%9C"><span class="toc-number">7.</span> <span class="toc-text">改名故障</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E6%97%A5%E5%BF%97"><span class="toc-number">8.</span> <span class="toc-text">文件日志</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%94%B9%E5%90%8D%E6%81%A2%E5%A4%8D"><span class="toc-number">9.</span> <span class="toc-text">改名恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E8%BF%BD%E5%8A%A0"><span class="toc-number">10.</span> <span class="toc-text">文件追加</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%85%A5%E6%88%90%E6%9C%AC"><span class="toc-number">11.</span> <span class="toc-text">写入成本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%A8%A1%E5%BC%8F"><span class="toc-number">12.</span> <span class="toc-text">日志模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9E%E5%86%99%E6%A8%A1%E5%BC%8F"><span class="toc-number">12.1.</span> <span class="toc-text">回写模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%89%E5%BA%8F%E6%A8%A1%E5%BC%8F"><span class="toc-number">12.2.</span> <span class="toc-text">有序模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%97%A5%E5%BF%97"><span class="toc-number">12.3.</span> <span class="toc-text">完整日志</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E5%AE%8C%E6%95%B4%E6%80%A7"><span class="toc-number">13.</span> <span class="toc-text">提交完整性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E5%89%AF%E6%9C%AC"><span class="toc-number">14.</span> <span class="toc-text">并发副本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%AF%E6%9C%AC%E5%B1%80%E9%99%90"><span class="toc-number">15.</span> <span class="toc-text">副本局限</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E8%BE%B9%E7%95%8C"><span class="toc-number">16.</span> <span class="toc-text">事务边界</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%81%9A%E6%97%A5%E5%BF%97"><span class="toc-number">17.</span> <span class="toc-text">重做日志</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%AE%8C%E6%95%B4%E6%80%A7"><span class="toc-number">18.</span> <span class="toc-text">日志完整性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%81%9A%E6%81%A2%E5%A4%8D"><span class="toc-number">19.</span> <span class="toc-text">重做恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E6%97%B6%E5%88%BB"><span class="toc-number">20.</span> <span class="toc-text">提交时刻</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%A4%8D%E5%9B%9E%E6%94%BE"><span class="toc-number">21.</span> <span class="toc-text">重复回放</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%BC%80%E9%94%80"><span class="toc-number">22.</span> <span class="toc-text">日志开销</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E9%87%8D%E5%81%9A"><span class="toc-number">23.</span> <span class="toc-text">撤销重做</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95"><span class="toc-number">24.</span> <span class="toc-text">日志记录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%89%8D%E6%97%A5%E5%BF%97"><span class="toc-number">25.</span> <span class="toc-text">写前日志</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E6%81%A2%E5%A4%8D"><span class="toc-number">26.</span> <span class="toc-text">撤销恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E7%82%B9"><span class="toc-number">27.</span> <span class="toc-text">检查点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E5%81%9A%E6%A3%80%E6%9F%A5%E7%82%B9"><span class="toc-number">28.</span> <span class="toc-text">重做检查点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E6%A3%80%E6%9F%A5%E7%82%B9"><span class="toc-number">29.</span> <span class="toc-text">撤销检查点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9A%82%E5%81%9C%E4%BA%8B%E5%8A%A1"><span class="toc-number">30.</span> <span class="toc-text">暂停事务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%9D%E7%95%99%E8%AE%B0%E5%BD%95"><span class="toc-number">31.</span> <span class="toc-text">保留记录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%81%A2%E5%A4%8D%E5%88%A4%E6%96%AD"><span class="toc-number">32.</span> <span class="toc-text">恢复判断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E6%A1%88%E9%80%89%E6%8B%A9"><span class="toc-number">33.</span> <span class="toc-text">方案选择</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%85%E6%92%A4%E9%94%80"><span class="toc-number">34.</span> <span class="toc-text">仅撤销</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E8%8A%82%E5%B0%8F%E7%BB%93"><span class="toc-number">35.</span> <span class="toc-text">本节小结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">36.</span> <span class="toc-text">参考资料</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/site-navigation.js" defer></script><script src="/js/site-motion.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#route-state","#page-header","#route-content","#aside-content","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+  const navigationSwitches = window.SiteNavigation ? window.SiteNavigation.switches : {}
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    switches: navigationSwitches,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: true,
+    // Route switches position new pages before their first painted frame.
+    scrollTo: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

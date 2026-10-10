@@ -1,0 +1,892 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>应用系统体系架构-08：系统架构与 Capstone | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="完整的 AI Coding 平台需要把客户端、上下文、模型、工具、状态图、Sandbox 和评估连接成一个系统。用户提交 Issue 或编辑请求后，平台定位相关代码，形成受限 Patch，执行测试与审查，再按实际权限交付修改。 系统架构的重点是明确数据与控制边界：代码版本从哪里来，谁拥有任务状态，哪些操作可以执行，失败怎样恢复，以及提交是否对应已经验证的产物。单个模型回答正确，不能代替整条链路的验">
+<meta property="og:type" content="article">
+<meta property="og:title" content="应用系统体系架构-08：系统架构与 Capstone">
+<meta property="og:url" content="https://acannedfish.github.io/2026/10/09/SE3353_08/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="完整的 AI Coding 平台需要把客户端、上下文、模型、工具、状态图、Sandbox 和评估连接成一个系统。用户提交 Issue 或编辑请求后，平台定位相关代码，形成受限 Patch，执行测试与审查，再按实际权限交付修改。 系统架构的重点是明确数据与控制边界：代码版本从哪里来，谁拥有任务状态，哪些操作可以执行，失败怎样恢复，以及提交是否对应已经验证的产物。单个模型回答正确，不能代替整条链路的验">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background11.png">
+<meta property="article:published_time" content="2026-10-09T02:01:00.000Z">
+<meta property="article:modified_time" content="2026-10-09T02:24:07.203Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="SE3353">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background11.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "应用系统体系架构-08：系统架构与 Capstone",
+  "url": "https://acannedfish.github.io/2026/10/09/SE3353_08/",
+  "image": "https://acannedfish.github.io/img/background11.png",
+  "datePublished": "2026-10-09T02:01:00.000Z",
+  "dateModified": "2026-10-09T02:24:07.203Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/10/09/SE3353_08/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '应用系统体系架构-08：系统架构与 Capstone',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">95</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">55</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;应用系统体系架构-08：系统架构与 Capstone&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">应用系统体系架构-08：系统架构与 Capstone</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-09T02:01:00.000Z" title="发表于 2026-10-09 10:01:00">2026-10-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-09T02:24:07.203Z" title="更新于 2026-10-09 10:24:07">2026-10-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E5%BA%94%E7%94%A8%E7%B3%BB%E7%BB%9F%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84/">应用系统体系架构</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><p>完整的 <strong>AI Coding 平台</strong>需要把客户端、上下文、模型、工具、状态图、Sandbox 和评估连接成一个系统。用户提交 Issue 或编辑请求后，平台定位相关代码，形成受限 Patch，执行测试与审查，再按实际权限交付修改。</p>
+<p>系统架构的重点是明确数据与控制边界：代码版本从哪里来，谁拥有任务状态，哪些操作可以执行，失败怎样恢复，以及提交是否对应已经验证的产物。单个模型回答正确，不能代替整条链路的验证。</p>
+<h2 id="分层架构">分层架构</h2>
+<p>平台可以划分为 <strong>Client、Gateway、Engine、Sandbox</strong> 四层。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261009101923359.png" alt="AI Coding 平台分层"></p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>主要职责</th>
+<th>关键数据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Client</td>
+<td>IDE、CLI、任务输入、差异预览与交互</td>
+<td>文件版本、光标、选择范围</td>
+</tr>
+<tr>
+<td>Gateway</td>
+<td>认证、租户、限流、任务接收和事件流</td>
+<td>task_id、身份、状态入口</td>
+</tr>
+<tr>
+<td>Engine</td>
+<td>RAG、MCP、Skill、Agent 图和 Checkpoint</td>
+<td>目标、证据、Patch、运行状态</td>
+</tr>
+<tr>
+<td>Sandbox</td>
+<td>隔离应用候选代码并执行测试</td>
+<td>环境版本、退出码、日志与报告</td>
+</tr>
+</tbody>
+</table>
+<p>客户端可以偏重实时编辑辅助，也可以仅提交远端长任务。Cursor、Windsurf、Claude Code、Devin 等产品展示了不同交互形态，但不能仅凭产品名称推断其全部私有架构。自研系统应根据代码位置、部署需求和交付方式取舍。</p>
+<p>这些交付形态可以组合不同能力：</p>
+<table>
+<thead>
+<tr>
+<th>形态</th>
+<th>主要能力</th>
+<th>与用户的关系</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IDE 辅助</td>
+<td>光标补全、局部编辑、实时索引、Diff 预览</td>
+<td>围绕当前编辑持续提供建议</td>
+</tr>
+<tr>
+<td>CLI Agent</td>
+<td>文件搜索、AST 导航、按需 Skill、受控终端</td>
+<td>以任务和命令结果组织交互</td>
+</tr>
+<tr>
+<td>云端任务</td>
+<td>独立运行环境、长任务、编译测试与浏览器验证</td>
+<td>用户提交目标并查看进展与产物</td>
+</tr>
+<tr>
+<td>协同编辑</td>
+<td>多文件 Patch、变更预览、审批和撤销</td>
+<td>同步用户编辑与 Agent 候选变化</td>
+</tr>
+</tbody>
+</table>
+<p>浏览器验证可以检查前端页面、交互与控制台错误，但也需要明确目标环境和权限。人类编辑与 Agent 修改同时发生时，应核对文档版本，防止候选覆盖刚保存的变化。</p>
+<p>持久化状态、事件记录与产物存储属于跨层基础设施。网关多副本不应各自维护互相矛盾的任务状态，Worker 重启也不应使任务从状态库消失。</p>
+<h2 id="代码感知">代码感知</h2>
+<p>IDE 插件可以复用 <strong>LSP</strong> 提供的符号、定义、引用和诊断能力。TypeScript、Pyright、gopls 等语言服务帮助客户端理解不同语言，而不必为每种语言重写语法器。</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> vscode <span class="keyword">from</span> <span class="string">&quot;vscode&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/** 在文件保存时采集符号与诊断，交给应用的同步接口。 */</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">registerContextSync</span>(<span class="params"></span></span><br><span class="line"><span class="params">    <span class="attr">context</span>: vscode.<span class="title class_">ExtensionContext</span>,</span></span><br><span class="line"><span class="params">    <span class="attr">sendUpdate</span>: (update: <span class="built_in">object</span>) =&gt; <span class="title class_">Promise</span>&lt;<span class="built_in">void</span>&gt;,</span></span><br><span class="line"><span class="params"></span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> disposable = vscode.<span class="property">workspace</span>.<span class="title function_">onDidSaveTextDocument</span>(</span><br><span class="line">        <span class="title function_">async</span> (<span class="variable language_">document</span>) =&gt; &#123;</span><br><span class="line">            <span class="keyword">const</span> symbols = <span class="keyword">await</span> vscode.<span class="property">commands</span>.<span class="property">executeCommand</span>&lt;</span><br><span class="line">                vscode.<span class="property">DocumentSymbol</span>[]</span><br><span class="line">            &gt;(<span class="string">&quot;vscode.executeDocumentSymbolProvider&quot;</span>, <span class="variable language_">document</span>.<span class="property">uri</span>);</span><br><span class="line">            <span class="keyword">const</span> diagnostics = vscode.<span class="property">languages</span>.<span class="title function_">getDiagnostics</span>(<span class="variable language_">document</span>.<span class="property">uri</span>);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">await</span> <span class="title function_">sendUpdate</span>(&#123;</span><br><span class="line">                <span class="attr">uri</span>: <span class="variable language_">document</span>.<span class="property">uri</span>.<span class="title function_">toString</span>(),</span><br><span class="line">                <span class="attr">version</span>: <span class="variable language_">document</span>.<span class="property">version</span>,</span><br><span class="line">                <span class="attr">symbols</span>: symbols ?? [],</span><br><span class="line">                <span class="attr">diagnostics</span>: diagnostics.<span class="title function_">map</span>(<span class="function">(<span class="params">item</span>) =&gt;</span> (&#123;</span><br><span class="line">                    <span class="attr">message</span>: item.<span class="property">message</span>,</span><br><span class="line">                    <span class="attr">severity</span>: item.<span class="property">severity</span>,</span><br><span class="line">                    <span class="attr">start</span>: item.<span class="property">range</span>.<span class="property">start</span>,</span><br><span class="line">                    <span class="attr">end</span>: item.<span class="property">range</span>.<span class="property">end</span>,</span><br><span class="line">                &#125;)),</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;,</span><br><span class="line">    );</span><br><span class="line">    context.<span class="property">subscriptions</span>.<span class="title function_">push</span>(disposable);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>sendUpdate</code> 由插件实现，负责授权、序列化和上传。文件保存事件只能取得已保存时点，处理未保存内容时还要监听变更，并采用去抖、版本比较和取消旧任务。</p>
+<p>符号与诊断不是完整源码或完整调用图。插件应保留工作区、语言、文档版本和关联 Commit，避免远端使用已过期的行号生成 Patch。</p>
+<h2 id="增量索引">增量索引</h2>
+<p>本地或服务端索引需要感知新增、修改和删除。内容哈希或 Merkle Tree 可以定位变化，Tree-sitter 可按语法结构解析不同语言，向量索引则支持语义检索。</p>
+<p>一次增量更新应完成读取版本、解析、抽取符号、更新分块和使旧结果失效。删除文件时也要删除相关向量与依赖边，不能只持续追加新内容。</p>
+<p><strong>Skeleton</strong>保留类、函数签名和必要说明，适合提供辅助依赖；主修改文件、复杂实现和相关测试则可能需要全文。压缩签名不能替代真实实现，也不能保证所有动态调用都被理解。</p>
+<p>下面用 Python 标准 AST 演示符号与签名抽取。多语言工程可以用 Tree-sitter 的语言语法和 Query 执行相应操作。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> ast</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">SymbolExtractor</span>(ast.NodeVisitor):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;提取 Python 类与函数的限定名、签名和源码范围。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="variable language_">self</span>.scope = []</span><br><span class="line">        <span class="variable language_">self</span>.symbols = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">visit_ClassDef</span>(<span class="params">self, node: ast.ClassDef</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;保存类名并继续访问类内部的符号。&quot;&quot;&quot;</span></span><br><span class="line">        <span class="variable language_">self</span>.symbols.append(&#123;</span><br><span class="line">            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;.&quot;</span>.join([*<span class="variable language_">self</span>.scope, node.name]),</span><br><span class="line">            <span class="string">&quot;kind&quot;</span>: <span class="string">&quot;class&quot;</span>,</span><br><span class="line">            <span class="string">&quot;start_line&quot;</span>: node.lineno,</span><br><span class="line">            <span class="string">&quot;end_line&quot;</span>: node.end_lineno,</span><br><span class="line">        &#125;)</span><br><span class="line">        <span class="variable language_">self</span>.scope.append(node.name)</span><br><span class="line">        <span class="variable language_">self</span>.generic_visit(node)</span><br><span class="line">        <span class="variable language_">self</span>.scope.pop()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">visit_FunctionDef</span>(<span class="params">self, node: ast.FunctionDef</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;保留参数、返回标注和 Docstring，而不复制完整函数体。&quot;&quot;&quot;</span></span><br><span class="line">        returns = ast.unparse(node.returns) <span class="keyword">if</span> node.returns <span class="keyword">else</span> <span class="literal">None</span></span><br><span class="line">        <span class="variable language_">self</span>.symbols.append(&#123;</span><br><span class="line">            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;.&quot;</span>.join([*<span class="variable language_">self</span>.scope, node.name]),</span><br><span class="line">            <span class="string">&quot;kind&quot;</span>: <span class="string">&quot;async_function&quot;</span> <span class="keyword">if</span> <span class="built_in">isinstance</span>(node, ast.AsyncFunctionDef) <span class="keyword">else</span> <span class="string">&quot;function&quot;</span>,</span><br><span class="line">            <span class="string">&quot;parameters&quot;</span>: ast.unparse(node.args),</span><br><span class="line">            <span class="string">&quot;returns&quot;</span>: returns,</span><br><span class="line">            <span class="string">&quot;docstring&quot;</span>: ast.get_docstring(node),</span><br><span class="line">            <span class="string">&quot;start_line&quot;</span>: node.lineno,</span><br><span class="line">            <span class="string">&quot;end_line&quot;</span>: node.end_lineno,</span><br><span class="line">        &#125;)</span><br><span class="line">        <span class="variable language_">self</span>.scope.append(node.name)</span><br><span class="line">        <span class="variable language_">self</span>.generic_visit(node)</span><br><span class="line">        <span class="variable language_">self</span>.scope.pop()</span><br><span class="line"></span><br><span class="line">    visit_AsyncFunctionDef = visit_FunctionDef</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">extract_symbols</span>(<span class="params">source: <span class="built_in">str</span></span>) -&gt; <span class="built_in">list</span>[<span class="built_in">dict</span>]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;解析语法树后返回结构化符号信息。&quot;&quot;&quot;</span></span><br><span class="line">    visitor = SymbolExtractor()</span><br><span class="line">    visitor.visit(ast.parse(source))</span><br><span class="line">    <span class="keyword">return</span> visitor.symbols</span><br></pre></td></tr></table></figure>
+<p>结果还需绑定文件路径、内容哈希与版本。Tree-sitter 的字节位置与文本编辑器的字符位置不总是相同，Unicode 内容尤其需要准确转换。反射、配置和运行时依赖应结合搜索与测试补充。</p>
+<h2 id="任务网关">任务网关</h2>
+<p>耗时的 Agent 任务可以通过“接收任务—入队—返回 task_id—Worker 执行”的方式解耦。网关负责身份、输入大小、租户限流和预算，Worker 负责实际图运行。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;task_id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;repair-42&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;status&quot;</span><span class="punctuation">:</span> <span class="string">&quot;accepted&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;status_url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/tasks/repair-42&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;events_url&quot;</span><span class="punctuation">:</span> <span class="string">&quot;/tasks/repair-42/events&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>任务状态可以包括 queued、running、waiting_approval、succeeded、failed、cancelled。客户端连接断开后，任务是否继续或取消应由策略决定。</p>
+<p>FastAPI BackgroundTasks 适合轻量的进程内后台工作，不能直接提供跨进程持久任务队列。长任务需要队列、确认、重投与幂等，例如由 Celery 或持久工作流协调。内存中的 <code>asyncio.create_task</code> 也不能保证服务重启后继续执行。</p>
+<p>分布式限流可以使用 Redis 统一计数或 Token Bucket，但检查与扣减需要原子处理。网关限制请求频次，运行时还要限制每个任务的步骤、Token、并发和工具费用。</p>
+<h2 id="流式通信">流式通信</h2>
+<p><strong>SSE</strong>适合服务端向客户端推送事件，<strong>WebSocket</strong>适合需要持续双向通信的场景。SSE 不是双向通道，用户补充、取消和审批可以通过独立 HTTP 请求发送。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">id: 17</span><br><span class="line">event: tool_result</span><br><span class="line">data: &#123;&quot;task_id&quot;:&quot;repair-42&quot;,&quot;tool&quot;:&quot;pytest&quot;,&quot;status&quot;:&quot;failed&quot;&#125;</span><br><span class="line"></span><br><span class="line">id: 18</span><br><span class="line">event: task_state</span><br><span class="line">data: &#123;&quot;task_id&quot;:&quot;repair-42&quot;,&quot;status&quot;:&quot;repairing&quot;,&quot;attempt&quot;:2&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>每个 SSE 事件以空行结束，可以带 ID 支持续传。重连后应从已保存事件继续，而不是重新启动同一任务。还需心跳、代理缓冲、连接超时、客户端鉴权和慢消费者的背压处理。</p>
+<p>事件可以表达阶段、工具请求、执行结果、产物和错误。对用户展示可核验的进展与简要解释，不必把模型全部内部推理、敏感参数或完整日志直接输出。</p>
+<h2 id="能力组合">能力组合</h2>
+<p>平台中的六类能力承担不同职责：</p>
+<table>
+<thead>
+<tr>
+<th>能力</th>
+<th>在平台中的作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prompt</td>
+<td>定义目标、范围和输出契约</td>
+</tr>
+<tr>
+<td>MCP</td>
+<td>发现与调用外部资源和工具</td>
+</tr>
+<tr>
+<td>Codebase RAG</td>
+<td>定位相关文件、符号和测试</td>
+</tr>
+<tr>
+<td>Skill</td>
+<td>组织复用流程、校验和执行规则</td>
+</tr>
+<tr>
+<td>Graph</td>
+<td>管理状态、分支、循环和恢复</td>
+</tr>
+<tr>
+<td>Sandbox / Harness</td>
+<td>隔离执行并验证任务行为</td>
+</tr>
+</tbody>
+</table>
+<p>MCP 工具与模型原生 Tool Calling 需要适配，但协议一致不等于业务语义一致。RAG 为 Skill 提供真实资料，Skill 的 dry_run 与 Guard 检查执行条件，Graph 根据结果路由，Sandbox 返回真实测试观察。</p>
+<p>从外部 Server 发现工具后，仍需名称空间、过滤、权限和参数验证。工具返回的恶意文本不能成为新的系统规则，凭证也应留在受控服务配置中。</p>
+<h2 id="Context-打包">Context 打包</h2>
+<p><strong>Context Packager</strong>把主文件、依赖 Skeleton、测试、诊断和历史失败组织成有限上下文。先按相关性选材料，再计算实际 Token；预算还应包括 System Prompt、工具 Schema、消息封装和预留输出。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">Callable</span></span><br><span class="line"><span class="keyword">from</span> xml.etree <span class="keyword">import</span> ElementTree <span class="keyword">as</span> ET</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dataclass(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ContextFile</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;保留文件身份、版本和正文，便于验证生成依据。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    path: <span class="built_in">str</span></span><br><span class="line">    language: <span class="built_in">str</span></span><br><span class="line">    revision: <span class="built_in">str</span></span><br><span class="line">    content: <span class="built_in">str</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">package_context</span>(<span class="params"></span></span><br><span class="line"><span class="params">    files: <span class="built_in">list</span>[ContextFile],</span></span><br><span class="line"><span class="params">    count_tokens: <span class="type">Callable</span>[[<span class="built_in">str</span>], <span class="built_in">int</span>],</span></span><br><span class="line"><span class="params">    max_tokens: <span class="built_in">int</span>,</span></span><br><span class="line"><span class="params"></span>) -&gt; <span class="built_in">tuple</span>[<span class="built_in">str</span>, <span class="built_in">list</span>[<span class="built_in">str</span>]]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;按优先级加入完整文件，预算不足时记录未纳入的路径。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> max_tokens &lt;= <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;max_tokens must be positive&quot;</span>)</span><br><span class="line">    root = ET.Element(<span class="string">&quot;context&quot;</span>)</span><br><span class="line">    skipped = []</span><br><span class="line">    <span class="keyword">for</span> item <span class="keyword">in</span> files:</span><br><span class="line">        element = ET.SubElement(root, <span class="string">&quot;file&quot;</span>, &#123;</span><br><span class="line">            <span class="string">&quot;path&quot;</span>: item.path,</span><br><span class="line">            <span class="string">&quot;language&quot;</span>: item.language,</span><br><span class="line">            <span class="string">&quot;revision&quot;</span>: item.revision,</span><br><span class="line">        &#125;)</span><br><span class="line">        element.text = item.content</span><br><span class="line">        candidate = ET.tostring(root, encoding=<span class="string">&quot;unicode&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> count_tokens(candidate) &gt; max_tokens:</span><br><span class="line">            root.remove(element)</span><br><span class="line">            skipped.append(item.path)</span><br><span class="line">    result = ET.tostring(root, encoding=<span class="string">&quot;unicode&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> count_tokens(result) &gt; max_tokens:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;Budget cannot hold the context envelope&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> result, skipped</span><br></pre></td></tr></table></figure>
+<p><code>count_tokens</code> 应由目标模型分词器实现，例如匹配的 tiktoken 编码；不能把字符数除以常数当作所有语言和模型的精确计数。未纳入文件需要显式记录，必要时触发后续检索。</p>
+<p>ElementTree 转义正文与属性，避免源码破坏 XML 结构。XML 是资料边界表达，不能独立防止 Prompt Injection。内容截断还应避免破坏必要函数、表格或标签结构。</p>
+<h2 id="MCP-桥接">MCP 桥接</h2>
+<p>桥接器完成初始化、能力发现、Schema 转换和执行结果映射。下面展示 stdio 连接的基本生命周期。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mcp <span class="keyword">import</span> ClientSession, StdioServerParameters</span><br><span class="line"><span class="keyword">from</span> mcp.client.stdio <span class="keyword">import</span> stdio_client</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">call_mcp_tool</span>(<span class="params"></span></span><br><span class="line"><span class="params">    parameters: StdioServerParameters,</span></span><br><span class="line"><span class="params">    tool_name: <span class="built_in">str</span>,</span></span><br><span class="line"><span class="params">    arguments: <span class="built_in">dict</span>,</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;在受控服务连接中发现并调用明确工具。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">with</span> stdio_client(parameters) <span class="keyword">as</span> (read_stream, write_stream):</span><br><span class="line">        <span class="keyword">async</span> <span class="keyword">with</span> ClientSession(read_stream, write_stream) <span class="keyword">as</span> session:</span><br><span class="line">            <span class="keyword">await</span> session.initialize()</span><br><span class="line">            available = <span class="keyword">await</span> session.list_tools()</span><br><span class="line">            names = &#123;tool.name <span class="keyword">for</span> tool <span class="keyword">in</span> available.tools&#125;</span><br><span class="line">            <span class="keyword">if</span> tool_name <span class="keyword">not</span> <span class="keyword">in</span> names:</span><br><span class="line">                <span class="keyword">raise</span> ValueError(<span class="string">&quot;Tool is not exposed by this server&quot;</span>)</span><br><span class="line">            result = <span class="keyword">await</span> session.call_tool(tool_name, arguments=arguments)</span><br><span class="line">            <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure>
+<p>这是每次创建连接的简单示例，长任务可以复用会话，但需要健康检查、超时和释放。远程服务的传输应按支持版本选择，历史 SSE 与 Streamable HTTP 不应混用配置。</p>
+<p>Server 名称与工具名称需要稳定映射，返回的 <code>isError</code>、内容类型和结构化结果应保留。未知工具不能自动回退到任意 Shell，模型提供的服务地址也不能自行成为可信连接。</p>
+<h2 id="System-Prompt">System Prompt</h2>
+<p>Coding Agent 的任务模板需要表达角色、允许范围、工具、测试和失败处理。要求应能对应宿主的实际检查，不能只依靠模型遵守。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">coding_task</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">goal</span>&gt;</span>修复给定 Issue，保持未涉及接口和行为兼容。<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">scope</span>&gt;</span>仅修改已授权文件，保留已有测试与安全规则。<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">workflow</span>&gt;</span></span><br><span class="line">    读取相关实现和测试，建立失败基线。</span><br><span class="line">    生成最小 Unified Diff，在隔离环境验证。</span><br><span class="line">    测试失败时依据真实诊断修正，预算耗尽则停止。</span><br><span class="line">  <span class="tag">&lt;/<span class="name">workflow</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">output</span>&gt;</span></span><br><span class="line">    返回候选补丁、关键假设、验证结果和未解决事项。</span><br><span class="line">  <span class="tag">&lt;/<span class="name">output</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">coding_task</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>工程可以参考代码助手的交互方式，但不应把示例模板当成产品真实的私有 System Prompt。内部推理文本不构成验证结果，测试字段必须来自实际执行。</p>
+<h2 id="Patch-验证">Patch 验证</h2>
+<p><strong>Unified Diff</strong>描述文件与局部 Hunk 的变化。<code>---</code> 与 <code>+++</code> 标识旧新文件，<code>@@</code> 表达行范围，空格、<code>-</code> 和 <code>+</code> 分别表示上下文、删除和新增。</p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--- a/calculate.py</span></span><br><span class="line"><span class="comment">+++ b/calculate.py</span></span><br><span class="line"><span class="meta">@@ -1,2 +1,4 @@</span></span><br><span class="line"> def average(values):</span><br><span class="line"><span class="addition">+    if not values:</span></span><br><span class="line"><span class="addition">+        return 0.0</span></span><br><span class="line">     return sum(values) / len(values)</span><br></pre></td></tr></table></figure>
+<p>应用前需要检查目标路径、Base Commit、文件哈希、Hunk 上下文和修改规模。生成语法合法不代表行为正确，语法预检应与测试和接口检查分开。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> ast</span><br><span class="line"><span class="keyword">import</span> difflib</span><br><span class="line"><span class="keyword">from</span> pathlib <span class="keyword">import</span> PurePosixPath</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">make_python_patch</span>(<span class="params">path: <span class="built_in">str</span>, before: <span class="built_in">str</span>, after: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;先检查候选语法，再按标准格式生成局部差异。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> path <span class="keyword">or</span> <span class="built_in">any</span>(char <span class="keyword">in</span> path <span class="keyword">for</span> char <span class="keyword">in</span> (<span class="string">&quot;\\&quot;</span>, <span class="string">&quot;\n&quot;</span>, <span class="string">&quot;\r&quot;</span>, <span class="string">&quot;\x00&quot;</span>)):</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;Patch path must use a single POSIX line&quot;</span>)</span><br><span class="line">    target = PurePosixPath(path)</span><br><span class="line">    <span class="keyword">if</span> target.is_absolute() <span class="keyword">or</span> <span class="string">&quot;..&quot;</span> <span class="keyword">in</span> target.parts:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;Patch path must stay within the project&quot;</span>)</span><br><span class="line">    ast.parse(after, filename=path)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;&quot;</span>.join(difflib.unified_diff(</span><br><span class="line">        before.splitlines(keepends=<span class="literal">True</span>),</span><br><span class="line">        after.splitlines(keepends=<span class="literal">True</span>),</span><br><span class="line">        fromfile=<span class="string">f&quot;a/<span class="subst">&#123;path&#125;</span>&quot;</span>,</span><br><span class="line">        tofile=<span class="string">f&quot;b/<span class="subst">&#123;path&#125;</span>&quot;</span>,</span><br><span class="line">        n=<span class="number">3</span>,</span><br><span class="line">    ))</span><br></pre></td></tr></table></figure>
+<p>这是 Python 单文件候选生成示例，不是完整的多语言 Patch 引擎。AST 不能替代类型检查、编译或运行测试，其他语言应使用相应解析器。应用 Diff 可以先使用 <code>git apply --check</code> 验证，再在任务工作区执行，避免直接正则覆盖文件全文。</p>
+<h2 id="Workspace-事务">Workspace 事务</h2>
+<p>多文件任务应固定不可变基线，使用独立工作区保存候选。测试、审查与提交都对应同一组变化，失败时只清理或恢复本任务范围。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">记录 Base Commit 和当前授权范围。</span><br><span class="line">为任务创建独立 worktree、clone 或沙箱文件系统。</span><br><span class="line">检查并应用 Patch，记录变更文件与内容摘要。</span><br><span class="line">执行语法、测试和安全验证。</span><br><span class="line">通过后形成候选 Commit；失败则保留诊断并回收工作区。</span><br></pre></td></tr></table></figure>
+<p><code>git stash create</code> 不应被简单理解为可恢复全部工作区的事务：它未必覆盖未跟踪和忽略文件，空变化也可能不产生快照。<code>reset --hard</code> 在共享工作区可能覆盖用户修改，不能把它作为未经限定的 Undo。</p>
+<p>一个 Git Commit 可以把已暂存文件作为一个版本提交，但不能同时原子修改数据库、发信和远端 PR。外部操作需要明确提交顺序、幂等标识和补偿策略。</p>
+<h2 id="测试反馈">测试反馈</h2>
+<p>Sandbox Tester 准备指定版本与依赖，应用候选 Patch，运行规定命令，并返回结构化报告。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;base_commit&quot;</span><span class="punctuation">:</span> <span class="string">&quot;base-version&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;patch_digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;patch-hash&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;environment&quot;</span><span class="punctuation">:</span> <span class="string">&quot;test-image-version&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;status&quot;</span><span class="punctuation">:</span> <span class="string">&quot;failed&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;exit_code&quot;</span><span class="punctuation">:</span> <span class="number">1</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;failed_tests&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;test_empty_input&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;stdout_ref&quot;</span><span class="punctuation">:</span> <span class="string">&quot;artifact:stdout&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;stderr_ref&quot;</span><span class="punctuation">:</span> <span class="string">&quot;artifact:stderr&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;duration_seconds&quot;</span><span class="punctuation">:</span> <span class="number">2.4</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>测试失败可能出现在 stdout，也可能出现在 stderr，不能只读取一条错误流。还需区分测试断言、环境准备失败、无测试收集、超时和进程崩溃。</p>
+<p>E2B 或其他 Sandbox 的 SDK 需要按版本配置创建、网络、文件和销毁；不能把 Docker 的 <code>network_mode=&quot;none&quot;</code> 当成所有服务通用参数。诊断可以变成 Observation，条件边在有限次数内返回 Coder。</p>
+<p><strong>通过现有测试不代表所有行为正确</strong>。候选修改应保持既有回归、补充相关边界，并检查测试有没有被删改来隐藏失败。</p>
+<h2 id="HITL-审批">HITL 审批</h2>
+<p>需要批准的修改在真实提交、外部写入或合并前挂起。审批内容至少包括目标版本、Patch 摘要、影响范围、验证报告和风险。</p>
+<p>人工修改 Patch 后，旧测试与审批失效，需要重新验证。<code>interrupt()</code> 保存待办，<code>update_state()</code> 形成新版本，恢复时核对审批身份、任务归属与当前产物。</p>
+<p>审批可以来自 CLI 或业务界面，但不能以模型自报“已批准”代替真实操作。长期等待使用持久状态，不依赖一个数日不关闭的终端进程。</p>
+<h2 id="Trace-与状态">Trace 与状态</h2>
+<p><strong>Tracing</strong>记录一次请求的阶段关系，<strong>Checkpoint</strong>保存任务状态，两者相关但不是同一个对象。<code>trace_id</code> 标识一条链路，<code>thread_id</code> 标识可跨多轮运行的状态历史，<code>task_id</code> 表达业务任务。</p>
+<p>重试、审批恢复和分支可以产生新 Trace，因此不宜强制它们永久使用同一个 ID。可以在 Span 和任务记录中保存关联字段，用来从日志定位检查点与产物。</p>
+<p>OpenTelemetry 可以贯穿 Java 网关、Python Worker、模型请求和 Sandbox，LangSmith 等工具可以记录 Agent 轨迹。记录应包含版本、阶段、耗时、结果和父子关系，敏感正文和凭证需要控制采集与访问。</p>
+<h2 id="指标归因">指标归因</h2>
+<p>Prometheus 与 Grafana 可以观察请求、Token、费用、错误和延迟。输入、输出、缓存 Token 及工具费用需要分别统计，TTFT 与任务总耗时也应区分。</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>C</mi><mo>=</mo><mfrac><msub><mi>T</mi><mrow><mi>i</mi><mi>n</mi></mrow></msub><msup><mn>10</mn><mn>6</mn></msup></mfrac><msub><mi>p</mi><mrow><mi>i</mi><mi>n</mi></mrow></msub><mo>+</mo><mfrac><msub><mi>T</mi><mrow><mi>o</mi><mi>u</mi><mi>t</mi></mrow></msub><msup><mn>10</mn><mn>6</mn></msup></mfrac><msub><mi>p</mi><mrow><mi>o</mi><mi>u</mi><mi>t</mi></mrow></msub><mo>+</mo><msub><mi>C</mi><mrow><mi>t</mi><mi>o</mi><mi>o</mi><mi>l</mi><mi>s</mi></mrow></msub><mo>+</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>a</mi><mi>n</mi><mi>d</mi><mi>b</mi><mi>o</mi><mi>x</mi></mrow></msub><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">C=\frac{T_{in}}{10^6}p_{in}
++\frac{T_{out}}{10^6}p_{out}
++C_{tools}+C_{sandbox}.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.0463em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">6</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">in</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">in</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:2.0463em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">6</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">u</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">u</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">oo</span><span class="mord mathnormal mtight" style="margin-right:0.01968em;">l</span><span class="mord mathnormal mtight">s</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">s</span><span class="mord mathnormal mtight">an</span><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">b</span><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">.</span></span></span></span></span></p>
+<p>公式中的单价是业务配置，具体模型还可能有缓存、批处理或其他计费方式。实际监控应以返回用量和账单规则为依据。</p>
+<p>Counter 表示累计用量，Histogram 表示耗时分布。标签宜使用稳定模型、服务或有限租户分组，不宜为每个 task_id 创建一条高基数时间序列；逐任务成本可以进入专门明细存储。告警只负责通知，预算拦截还需在运行控制器中实际实施。</p>
+<h2 id="质量评估">质量评估</h2>
+<p><strong>HumanEval</strong>主要评价函数级代码生成，<strong>SWE-bench</strong>围绕真实仓库 Issue 和测试环境评价修复。任务输入、环境、测试与报告不同，不能用相同标签掩盖判分差异。</p>
+<p>**Fail-to-Pass（F2P）**要求原失败测试通过，**Pass-to-Pass（P2P）**要求原已通过行为仍然成立。只检查新用例会漏掉回归，只检查旧用例又可能没有验证 Issue。</p>
+<p>Pass@1 是固定任务集的一次尝试成功率；单个 Patch 的 pytest 通过与否不能直接称为整个平台“Pass@1=100%”。Pass@k 还需要明确候选数量、判分和样本量。</p>
+<h2 id="Judge-评审">Judge 评审</h2>
+<p>LLM-as-a-Judge 可以用 Rubric 检查正确性、安全与架构规范，并返回结构化意见。它适合补充审查，不能替代测试、静态分析或真实授权。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;verdict&quot;</span><span class="punctuation">:</span> <span class="string">&quot;REJECTED&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;scores&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;correctness&quot;</span><span class="punctuation">:</span> <span class="number">3</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;security&quot;</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;maintainability&quot;</span><span class="punctuation">:</span> <span class="number">4</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;findings&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;severity&quot;</span><span class="punctuation">:</span> <span class="string">&quot;CRITICAL&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;file&quot;</span><span class="punctuation">:</span> <span class="string">&quot;repository.py&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;rule&quot;</span><span class="punctuation">:</span> <span class="string">&quot;SQL_PARAMETERIZATION&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;reason&quot;</span><span class="punctuation">:</span> <span class="string">&quot;外部输入直接拼入 SQL&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;evidence&quot;</span><span class="punctuation">:</span> <span class="string">&quot;第 28 行查询构造&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;uncertainties&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>评分量表需要明确分值意义、证据要求和无法判断的状态。固定 JSON 只保证可解析性，低 temperature 也不能证明裁判客观。应与人工标注和硬断言校准，监测裁判偏差及被 Patch 内容注入的风险。</p>
+<h2 id="Failure-Fixture">Failure Fixture</h2>
+<p>失败回放应固定初始 State、Base Commit、Patch、依赖锁文件、镜像、工具观察和模型响应。只保存异常文字无法重建完整环境。</p>
+<p>可以分别运行两类实验：<strong>Replay</strong>使用录制响应检查控制逻辑，<strong>Live Eval</strong>使用当前模型重新生成以评价能力变化。前者可重复且不调用模型，但后者不能被“零 Token 回放”替代。</p>
+<p>Fixture 应脱敏并版本管理，测试范围包括异常分支、缺失输出和错误工具请求。回放时未知调用需要失败，而不是偷偷访问真实支付、数据库或 GitHub 服务。</p>
+<h2 id="CI-Gate">CI Gate</h2>
+<p>CI 将测试、扫描和评估结果转换成必需检查。只有仓库分支保护或 Ruleset 要求相应 Check 成功，失败退出码才会真正阻止合并。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">name:</span> <span class="string">AI</span> <span class="string">quality</span> <span class="string">gate</span></span><br><span class="line"><span class="attr">on:</span></span><br><span class="line">  <span class="attr">pull_request:</span></span><br><span class="line">    <span class="attr">types:</span> [<span class="string">opened</span>, <span class="string">synchronize</span>, <span class="string">reopened</span>]</span><br><span class="line"><span class="attr">permissions:</span></span><br><span class="line">  <span class="attr">contents:</span> <span class="string">read</span></span><br><span class="line"><span class="attr">jobs:</span></span><br><span class="line">  <span class="attr">quality:</span></span><br><span class="line">    <span class="attr">runs-on:</span> <span class="string">ubuntu-latest</span></span><br><span class="line">    <span class="attr">timeout-minutes:</span> <span class="number">15</span></span><br><span class="line">    <span class="attr">steps:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">uses:</span> <span class="string">actions/checkout@v4</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Verify</span> <span class="string">candidate</span></span><br><span class="line">        <span class="attr">run:</span> <span class="string">python</span> <span class="string">scripts/ci_gate.py</span></span><br></pre></td></tr></table></figure>
+<p>这是工作流骨架，<code>ci_gate.py</code> 需要由工程实现，且将第三方 Action 固定到审核过的版本或提交。检查应针对当前 PR Commit，不使用旧版本的成功报告。运行不可信代码时不要提供写令牌或敏感环境变量。</p>
+<p>聚合成功率可以有项目阈值，但还需检查关键任务回归、成本、延迟和样本量。课程里的 95% 或固定影子次数应视为示例策略，不能直接成为所有系统的发布标准。</p>
+<h2 id="安全检查">安全检查</h2>
+<p>Semgrep 可按规则扫描源码，Gitleaks 可检查潜在 Secrets，其他依赖和运行检查补充不同风险。<strong>OWASP 是风险与实践体系，不是一个自动完成所有验证的扫描器</strong>。</p>
+<p>扫描结果应包含规则、文件、位置和证据，并映射到修复或停止分支。没有发现不代表不存在漏洞，误报需要受控审核，扫描失败也不能当成通过。</p>
+<p>检查除了当前差异，还应考虑依赖、配置和必要历史。Secrets 不应被复制进 Prompt、Fixture、日志或 PR 评论，工具凭证也不应暴露给生成代码。</p>
+<h2 id="Shadow-与-Canary">Shadow 与 Canary</h2>
+<p><strong>Shadow Run</strong>旁路运行新版本并比较结果，不影响真实交付且应阻断写副作用。<strong>Canary</strong>让有限真实流量进入新版本，需要发布范围和回退条件。</p>
+<p><code>asyncio.create_task</code> 会使用计算、网络和存储资源，并不意味着主流程完全没有影响。影子运行应限制容量、脱敏数据、控制费用，并禁止重复发信、提 PR 或修改真实对象。</p>
+<p>比较时固定问题类别和基线，检查质量、尾延迟、成本、拒绝和恢复；平均指标改善不能掩盖关键业务退化。达到预设要求后再逐渐增加流量，出现问题可回退到明确版本。</p>
+<h2 id="Webhook-入口">Webhook 入口</h2>
+<p>Issue 可以通过 GitHub Webhook 触发任务。先验证原始请求体的 HMAC SHA-256，再检查事件、action、仓库与任务权限，最后持久入队。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"><span class="keyword">import</span> hmac</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">verify_webhook</span>(<span class="params">body: <span class="built_in">bytes</span>, signature: <span class="built_in">str</span>, secret: <span class="built_in">bytes</span></span>) -&gt; <span class="built_in">bool</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;对原始字节验签，使用恒定时间比较避免普通字符串比较。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> secret <span class="keyword">or</span> re.fullmatch(<span class="string">r&quot;sha256=[0-9a-f]&#123;64&#125;&quot;</span>, signature) <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">    expected = <span class="string">&quot;sha256=&quot;</span> + hmac.new(secret, body, hashlib.sha256).hexdigest()</span><br><span class="line">    <span class="keyword">return</span> hmac.compare_digest(expected, signature)</span><br></pre></td></tr></table></figure>
+<p>验签前不能先重新序列化 JSON，否则字节可能变化。签名证明请求来源和完整性，不替代仓库授权，也不自动防重放。<code>X-GitHub-Delivery</code> 可参与幂等去重，重复投递不应创建第二个修复任务。</p>
+<p>Issue 正文可能来自不可信用户，不能把其中的“直接合并”“读取密钥”等要求提升成系统权限。Triage 负责识别类型、适用范围和是否需要补充信息。</p>
+<h2 id="影响定位">影响定位</h2>
+<p>Scope 节点组合 Codebase RAG、符号检索与 MCP 依赖查询：主编辑文件给出相关完整实现，辅助依赖提供 Skeleton，测试和配置补足运行关系。</p>
+<p>需要记录当前 Commit、文件哈希、检索命中与覆盖不足。Patch 生成期间仓库变化时，应重新核对范围；新版本不能沿用旧行号和测试结果。</p>
+<p>检索不到关键定义时，系统应继续读取或说明无法完成，不应通过猜测 API 填补缺失。上下文打包还需保留排除的内容，便于下一轮有目标地补充。</p>
+<h2 id="Capstone-流程">Capstone 流程</h2>
+<p>综合流程可以组织为 <strong>Ingestion → Triage → Scope → Context → Coder → Test → Review → Delivery</strong>。图中的合并是可能的交付动作，必须满足当前仓库的授权和规则。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261009101923551.png" alt="Issue 到 PR 控制流程"></p>
+<p>Coder Subgraph 根据目标、证据和前次错误生成 Unified Diff。语法预检失败回到 Coder；Sandbox 返回测试失败后，依据剩余次数和预算决定修复或停止。通过后执行安全扫描和 Reviewer，再形成可审查的 PR。</p>
+<p>整个运行要保存同一候选的 Base Commit、Patch 摘要、测试、扫描和审批。Reviewer 提出新修改后，应重新测试该版本，不能用前一个 Patch 的报告批准后一个。</p>
+<h2 id="交付权限">交付权限</h2>
+<p>创建分支、提交 Commit、创建 PR、批准 PR 和合并是不同操作。自动化身份需要分别满足权限与策略，不能因为模型输出 APPROVED 就获得合并权。</p>
+<p>Squash Merge 可以压缩已验证提交历史，但不会修复补丁本身，也不能替代必要审核。自审限制、Required Reviews、Required Checks 和版本更新都会影响实际可合并性。</p>
+<p>即使使用自动合并，也应等待当前 Commit 的必要检查与审批。未满足条件时保留候选和诊断，而不是扩大令牌权限或绕过分支保护。</p>
+<h2 id="架构验收">架构验收</h2>
+<p>课程的整体要求可以归纳到可检查的系统边界：</p>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>应具备的能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>契约与职责</td>
+<td>Prompt 输出契约，模型与执行分工，Skill 封装</td>
+</tr>
+<tr>
+<td>协议与证据</td>
+<td>MCP 接入，Codebase RAG，明确文件与版本</td>
+</tr>
+<tr>
+<td>业务控制</td>
+<td>受控事务、授权入口、Graph 条件路由与终止</td>
+</tr>
+<tr>
+<td>运行恢复</td>
+<td>Checkpoint、Time Travel、子状态隔离、循环与预算</td>
+</tr>
+<tr>
+<td>执行验证</td>
+<td>Sandbox、Fixture、真实测试与安全检查</td>
+</tr>
+<tr>
+<td>治理演进</td>
+<td>Trace、Metrics、Evals、CI 和受控发布</td>
+</tr>
+</tbody>
+</table>
+<p>这些要求对应课程中的结构化契约、职责解耦、协议、事实依据、能力封装、事务授权、有环图、显式终止、快照、历史分支、多 Agent 隔离、循环拦截、沙箱、Harness、观测与评估十六个要点。</p>
+<blockquote>
+<p>系统可靠性来自版本、状态、权限和验证证据之间的一致性。最终交付应是可审查、可复现并受授权约束的修改，而不只是模型生成的一段代码。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/09/SE3353_08/">https://acannedfish.github.io/2026/10/09/SE3353_08/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/SE3353/">SE3353</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/10/10/SE3331_06/" title="计算机系统工程-06：故障原子性"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统工程-06：故障原子性</div></div></div></a><a class="pagination-related  no-desc" href="/2026/10/09/SE3353_07/" title="应用系统体系架构-07：控制流与 Harness"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info text-right"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">应用系统体系架构-07：控制流与 Harness</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/10/08/SE3353_03/" title="应用系统体系架构-03：RAG"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-03：RAG</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_05/" title="应用系统体系架构-05：Skill 设计模式"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-05：Skill 设计模式</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_01/" title="应用系统体系架构-01：Prompt 工程"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-01：Prompt 工程</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_04/" title="应用系统体系架构-04：Skill 与 Tool Calling"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-04：Skill 与 Tool Calling</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_02/" title="应用系统体系架构-02：MCP 协议"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-02：MCP 协议</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/09/SE3353_07/" title="应用系统体系架构-07：控制流与 Harness"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">应用系统体系架构-07：控制流与 Harness</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">95</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">55</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-text">分层架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E6%84%9F%E7%9F%A5"><span class="toc-text">代码感知</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A2%9E%E9%87%8F%E7%B4%A2%E5%BC%95"><span class="toc-text">增量索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E7%BD%91%E5%85%B3"><span class="toc-text">任务网关</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%81%E5%BC%8F%E9%80%9A%E4%BF%A1"><span class="toc-text">流式通信</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%BD%E5%8A%9B%E7%BB%84%E5%90%88"><span class="toc-text">能力组合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Context-%E6%89%93%E5%8C%85"><span class="toc-text">Context 打包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MCP-%E6%A1%A5%E6%8E%A5"><span class="toc-text">MCP 桥接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#System-Prompt"><span class="toc-text">System Prompt</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Patch-%E9%AA%8C%E8%AF%81"><span class="toc-text">Patch 验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Workspace-%E4%BA%8B%E5%8A%A1"><span class="toc-text">Workspace 事务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%8F%8D%E9%A6%88"><span class="toc-text">测试反馈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HITL-%E5%AE%A1%E6%89%B9"><span class="toc-text">HITL 审批</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Trace-%E4%B8%8E%E7%8A%B6%E6%80%81"><span class="toc-text">Trace 与状态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%87%E6%A0%87%E5%BD%92%E5%9B%A0"><span class="toc-text">指标归因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B4%A8%E9%87%8F%E8%AF%84%E4%BC%B0"><span class="toc-text">质量评估</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Judge-%E8%AF%84%E5%AE%A1"><span class="toc-text">Judge 评审</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Failure-Fixture"><span class="toc-text">Failure Fixture</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CI-Gate"><span class="toc-text">CI Gate</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%A3%80%E6%9F%A5"><span class="toc-text">安全检查</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Shadow-%E4%B8%8E-Canary"><span class="toc-text">Shadow 与 Canary</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Webhook-%E5%85%A5%E5%8F%A3"><span class="toc-text">Webhook 入口</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BD%B1%E5%93%8D%E5%AE%9A%E4%BD%8D"><span class="toc-text">影响定位</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Capstone-%E6%B5%81%E7%A8%8B"><span class="toc-text">Capstone 流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A4%E4%BB%98%E6%9D%83%E9%99%90"><span class="toc-text">交付权限</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E9%AA%8C%E6%94%B6"><span class="toc-text">架构验收</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/site-navigation.js" defer></script><script src="/js/site-motion.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#route-state","#page-header","#route-content","#aside-content","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+  const navigationSwitches = window.SiteNavigation ? window.SiteNavigation.switches : {}
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    switches: navigationSwitches,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: true,
+    // Route switches position new pages before their first painted frame.
+    scrollTo: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

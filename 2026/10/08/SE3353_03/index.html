@@ -1,0 +1,932 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>应用系统体系架构-03：RAG | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="RAG（Retrieval-Augmented Generation） 把外部资料检索与模型生成连接起来。系统先找到与问题有关的文档，再把证据组织进上下文，让模型依据这些内容回答。它适合私有知识、频繁更新的信息和需要解释依据的任务。 RAG 的质量取决于整个数据链路。原文解析错误会影响切块，切块错误会影响召回，召回噪声会影响回答。因此，不能只通过更换大模型或增加 Top-K 来解决全部问题。 技术">
+<meta property="og:type" content="article">
+<meta property="og:title" content="应用系统体系架构-03：RAG">
+<meta property="og:url" content="https://acannedfish.github.io/2026/10/08/SE3353_03/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="RAG（Retrieval-Augmented Generation） 把外部资料检索与模型生成连接起来。系统先找到与问题有关的文档，再把证据组织进上下文，让模型依据这些内容回答。它适合私有知识、频繁更新的信息和需要解释依据的任务。 RAG 的质量取决于整个数据链路。原文解析错误会影响切块，切块错误会影响召回，召回噪声会影响回答。因此，不能只通过更换大模型或增加 Top-K 来解决全部问题。 技术">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background11.png">
+<meta property="article:published_time" content="2026-10-08T03:03:00.000Z">
+<meta property="article:modified_time" content="2026-10-09T07:10:28.515Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="SE3353">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background11.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "应用系统体系架构-03：RAG",
+  "url": "https://acannedfish.github.io/2026/10/08/SE3353_03/",
+  "image": "https://acannedfish.github.io/img/background11.png",
+  "datePublished": "2026-10-08T03:03:00.000Z",
+  "dateModified": "2026-10-09T07:10:28.515Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/10/08/SE3353_03/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '应用系统体系架构-03：RAG',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">95</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">55</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;应用系统体系架构-03：RAG&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">应用系统体系架构-03：RAG</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-08T03:03:00.000Z" title="发表于 2026-10-08 11:03:00">2026-10-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-09T07:10:28.515Z" title="更新于 2026-10-09 15:10:28">2026-10-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E5%BA%94%E7%94%A8%E7%B3%BB%E7%BB%9F%E4%BD%93%E7%B3%BB%E6%9E%B6%E6%9E%84/">应用系统体系架构</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><p><strong>RAG（Retrieval-Augmented Generation）</strong> 把外部资料检索与模型生成连接起来。系统先找到与问题有关的文档，再把证据组织进上下文，让模型依据这些内容回答。它适合私有知识、频繁更新的信息和需要解释依据的任务。</p>
+<p>RAG 的质量取决于整个数据链路。原文解析错误会影响切块，切块错误会影响召回，召回噪声会影响回答。因此，不能只通过更换大模型或增加 Top-K 来解决全部问题。</p>
+<h2 id="技术定位">技术定位</h2>
+<p>预训练模型可能缺少企业私有知识，也可能不知道最新政策、代码或库存。RAG 通过更新外部索引提供资料，<strong>微调（Fine-tuning）</strong> 通过训练改变模型参数，常用于特定任务能力、格式或行为调整。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>RAG</th>
+<th>微调</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>更新对象</td>
+<td>文档、索引与检索规则</td>
+<td>模型参数</td>
+</tr>
+<tr>
+<td>信息更新</td>
+<td>可以增量更新资料</td>
+<td>通常需要训练和重新部署</td>
+</tr>
+<tr>
+<td>依据追踪</td>
+<td>可保留文档与位置</td>
+<td>参数中的知识较难直接追踪</td>
+</tr>
+<tr>
+<td>主要用途</td>
+<td>外部知识、证据和权限过滤</td>
+<td>行为、风格与任务能力</td>
+</tr>
+<tr>
+<td>工程成本</td>
+<td>摄取、检索、索引和生成</td>
+<td>数据集、训练、部署和评测</td>
+</tr>
+</tbody>
+</table>
+<p>两者可以组合。微调并非不能学习知识，RAG 也不保证回答一定正确。选型时要考虑知识变化频率、可审计性、延迟和运维成本。</p>
+<h2 id="参数微调">参数微调</h2>
+<p>RAG 和 MCP 可以为一次请求补入外部知识，但通常没有更新基础模型参数。全参数微调通过训练修改所选模型参数，<strong>LoRA</strong> 则冻结基础权重，用较少的可训练参数表示权重增量。</p>
+<p>设 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>0</mn></msub><mo>∈</mo><msup><mi mathvariant="double-struck">R</mi><mrow><msub><mi>d</mi><mrow><mi>o</mi><mi>u</mi><mi>t</mi></mrow></msub><mo>×</mo><msub><mi>d</mi><mrow><mi>i</mi><mi>n</mi></mrow></msub></mrow></msup></mrow><annotation encoding="application/x-tex">W_0\in\mathbb{R}^{d_{out}\times d_{in}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2963em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">u</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mbin mtight">×</span><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3281em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">in</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span>，LoRA 可以写为：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>W</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup><mo>=</mo><msub><mi>W</mi><mn>0</mn></msub><mo>+</mo><mi mathvariant="normal">Δ</mi><mi>W</mi><mo separator="true">,</mo><mspace width="2em"/><mi mathvariant="normal">Δ</mi><mi>W</mi><mo>=</mo><mfrac><mi>α</mi><mi>r</mi></mfrac><mi>B</mi><mi>A</mi><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">W&#x27;=W_0+\Delta W,\qquad
+\Delta W=\frac{\alpha}{r}BA,
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8019em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8019em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord">Δ</span><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">Δ</span><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.7936em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.1076em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0037em;">α</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span><span class="mord mathnormal">A</span><span class="mpunct">,</span></span></span></span></span></p>
+<p>其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>A</mi><mo>∈</mo><msup><mi mathvariant="double-struck">R</mi><mrow><mi>r</mi><mo>×</mo><msub><mi>d</mi><mrow><mi>i</mi><mi>n</mi></mrow></msub></mrow></msup></mrow><annotation encoding="application/x-tex">A\in\mathbb{R}^{r\times d_{in}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7224em;vertical-align:-0.0391em;"></span><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span><span class="mbin mtight">×</span><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3281em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">in</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span>、<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>B</mi><mo>∈</mo><msup><mi mathvariant="double-struck">R</mi><mrow><msub><mi>d</mi><mrow><mi>o</mi><mi>u</mi><mi>t</mi></mrow></msub><mo>×</mo><mi>r</mi></mrow></msup></mrow><annotation encoding="application/x-tex">B\in\mathbb{R}^{d_{out}\times r}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7224em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2963em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">u</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mbin mtight">×</span><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span></span></span></span></span></span></span></span></span>，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi></mrow><annotation encoding="application/x-tex">r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span></span></span></span> 是较小的秩，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mi mathvariant="normal">/</mi><mi>r</mi></mrow><annotation encoding="application/x-tex">\alpha/r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0037em;">α</span><span class="mord">/</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span></span></span></span> 是缩放系数。训练 A、B 后，可以在推理时使用这项增量或在合适条件下合并到权重中。</p>
+<p>对一个 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4096</mn><mo>×</mo><mn>4096</mn></mrow><annotation encoding="application/x-tex">4096\times4096</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">4096</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4096</span></span></span></span> 矩阵，完整参数有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16,777,216</mn></mrow><annotation encoding="application/x-tex">16{,}777{,}216</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">16</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">777</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">216</span></span></span></span> 个；取 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi><mo>=</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">r=5</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">5</span></span></span></span>，两个低秩矩阵共有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>5</mn><mo stretchy="false">(</mo><mn>4096</mn><mo>+</mo><mn>4096</mn><mo stretchy="false">)</mo><mo>=</mo><mn>40,960</mn></mrow><annotation encoding="application/x-tex">5(4096+4096)=40{,}960</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">5</span><span class="mopen">(</span><span class="mord">4096</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">4096</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">40</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">960</span></span></span></span> 个可训练参数。这说明某个目标权重的训练参数规模如何减小，不代表整套训练只需存储这两个矩阵，基础模型仍需参与计算。</p>
+<p>低秩更新不是把“私有知识对应的一块权重”切出来，也不意味着所有知识都按领域存放在固定区域。微调改变参数中的行为与能力，RAG 保留可更新的外部证据；需要频繁更新、核对来源或删除的业务事实，仍可以与检索和工具结合。</p>
+<h2 id="系统架构">系统架构</h2>
+<p>RAG 包含离线索引与在线查询两条管道。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008120656789.png" alt="RAG 双管道"></p>
+<p>离线管道读取文档，解析并清洗内容，生成分块，计算 Embedding，再写入向量库。在线管道处理问题，检索候选，排序并组装上下文，最后调用模型生成回答。</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Parser / Loader</td>
+<td>从 PDF、Markdown、HTML 等资料取得结构化内容</td>
+</tr>
+<tr>
+<td>Splitter</td>
+<td>控制分块长度、边界、重叠和来源位置</td>
+</tr>
+<tr>
+<td>Embedder</td>
+<td>将查询与文档映射到可比较的向量空间</td>
+</tr>
+<tr>
+<td>Vector Store</td>
+<td>存储向量、正文和元数据并执行检索</td>
+</tr>
+<tr>
+<td>Router</td>
+<td>选择数据源或判断是否需要检索</td>
+</tr>
+<tr>
+<td>LLM Driver</td>
+<td>装配请求、调用模型并解析结果</td>
+</tr>
+</tbody>
+</table>
+<p>文档标识、分块标识、标题路径、版本、页码和权限应贯穿两条管道。只保存向量而丢失原文及来源，会使回答难以验证，也不便处理删除和更新。</p>
+<p>最小实验可以先用内存保存 <code>(原文, 向量)</code>：读取一组长短不同的自然段，为每段生成 Embedding；问题也经过兼容编码，计算相似度并降序取 Top-N，最后把入选正文与问题送给生成模型。</p>
+<p>这条链路中有 <strong>两种模型职责</strong>：Embedding 模型生成定长向量，生成模型理解问题和证据并输出回答。它们可以由同一服务托管，但不是同一个接口，也不要求使用同一种模型。调试时分别检查正文、向量维数、召回片段和最终回答，才能判断问题出在检索还是生成。</p>
+<h2 id="数据解析">数据解析</h2>
+<p>PDF 解析需要处理双栏顺序、编码、扫描图像、页眉页脚和表格。HTML 解析需要区分正文与导航、广告或脚本，Markdown 则需要保留标题、列表、代码和表格边界。</p>
+<p>清洗的目标是删除噪声并保留意义，而不是把全部内容转成一串无结构文本。过滤不可打印字符可以解决部分控制字符问题，但不能修复错误阅读顺序，也不能恢复被摊平的表格。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">clean_text</span>(<span class="params">text: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;保留常规可打印字符及有意义的换行、制表符。&quot;&quot;&quot;</span></span><br><span class="line">    cleaned = <span class="string">&quot;&quot;</span>.join(</span><br><span class="line">        char <span class="keyword">for</span> char <span class="keyword">in</span> text</span><br><span class="line">        <span class="keyword">if</span> char.isprintable() <span class="keyword">or</span> char <span class="keyword">in</span> <span class="string">&quot;\n\t&quot;</span></span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">return</span> cleaned.strip()</span><br></pre></td></tr></table></figure>
+<p>这只是基础清洗步骤。工程中还需识别重复页眉、断词、乱码和空段落，并抽样与原文件对照。扫描文档需要 OCR，复杂版面则可能需要布局模型；解析失败应记录并进入修复流程，不能静默把错误文本写入知识库。</p>
+<p>PDF 的视觉呈现与文本层可能不同：被遮盖、隐藏或排版异常的文字也可能进入抽取结果。解析应保留原页或原位置的核对能力，检查与任务无关的指令性内容，不能把文档自带的评价或操作要求当成系统规则。</p>
+<h2 id="窗口切块">窗口切块</h2>
+<p>切块控制检索粒度和上下文长度。固定窗口用 <code>chunk_size</code> 规定每块长度，用 <code>overlap</code> 保留相邻块共享内容，步长为：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>s</mi><mo>=</mo><mrow><mi mathvariant="normal">c</mi><mi mathvariant="normal">h</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">k</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">i</mi><mi mathvariant="normal">z</mi><mi mathvariant="normal">e</mi></mrow><mo>−</mo><mrow><mi mathvariant="normal">o</mi><mi mathvariant="normal">v</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">l</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">p</mi></mrow><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">s=\mathrm{chunk\_size}-\mathrm{overlap}.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord"><span class="mord mathrm">chunk_size</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathrm">overlap</span></span><span class="mord">.</span></span></span></span></span></p>
+<p>要求 <code>chunk_size &gt; 0</code> 且 <code>0 ≤ overlap &lt; chunk_size</code>。重叠缓解跨块句子或实体被截断的问题，但会增加存储、重复召回和上下文冗余。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">split_windows</span>(<span class="params"></span></span><br><span class="line"><span class="params">    text: <span class="built_in">str</span>,</span></span><br><span class="line"><span class="params">    chunk_size: <span class="built_in">int</span> = <span class="number">500</span>,</span></span><br><span class="line"><span class="params">    overlap: <span class="built_in">int</span> = <span class="number">100</span>,</span></span><br><span class="line"><span class="params"></span>) -&gt; <span class="built_in">list</span>[<span class="built_in">str</span>]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;按字符窗口切分，最后一块到达结尾后立即停止。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> chunk_size &lt;= <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;chunk_size must be positive&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0</span> &lt;= overlap &lt; chunk_size:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;overlap must be smaller than chunk_size&quot;</span>)</span><br><span class="line"></span><br><span class="line">    chunks = []</span><br><span class="line">    start = <span class="number">0</span></span><br><span class="line">    stride = chunk_size - overlap</span><br><span class="line">    <span class="keyword">while</span> start &lt; <span class="built_in">len</span>(text):</span><br><span class="line">        end = <span class="built_in">min</span>(start + chunk_size, <span class="built_in">len</span>(text))</span><br><span class="line">        chunks.append(text[start:end])</span><br><span class="line">        <span class="keyword">if</span> end == <span class="built_in">len</span>(text):</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        start += stride</span><br><span class="line">    <span class="keyword">return</span> chunks</span><br></pre></td></tr></table></figure>
+<p>字符数量与 Token 数量不同。实际模型预算应使用相应分词器计算。块过小可能缺少解释所需背景，块过大则容易把多个主题混在一起，降低匹配精度并增加生成输入成本。</p>
+<p>向量输出长度固定，不表示返回给生成模型的证据也同样短。若一个块很长，Top-3 仍要拼入三个长正文，既增加预算，也可能让答案所需几句信息被大量无关文本掩盖。切块同时服务于编码、检索粒度和最终上下文。</p>
+<p>重叠适合相邻段确实有依赖的资料；若每段本来就是独立事实，重叠可能只增加重复。<code>readlines()</code> 得到的是文本行，不自动等于完整语义段落，长段也仍需按模型输入上限再次划分。</p>
+<h2 id="语义切块">语义切块</h2>
+<p><strong>语义切块</strong> 依据文档结构划分内容。例如 Markdown 标题可以形成章节边界，代码块和表格应尽量完整保留。较长章节还需要二次切分。</p>
+<p>一个分块对象可以保存以下字段：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;document_id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;handbook-v3&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;chunk_id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;handbook-v3-section-2-part-1&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;title_path&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;开发规范&quot;</span><span class="punctuation">,</span> <span class="string">&quot;数据库访问&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;text&quot;</span><span class="punctuation">:</span> <span class="string">&quot;查询应使用参数绑定……&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;page&quot;</span><span class="punctuation">:</span> <span class="number">8</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;version&quot;</span><span class="punctuation">:</span> <span class="number">3</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;tenant_id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;team-a&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>不能只用标题字符串作为字典键，因为同名标题可能出现在不同章节并被意外合并。应使用文档 ID、标题路径和分块位置构造稳定标识，并保留原始顺序。</p>
+<p>标题、单位、脚注和相邻说明也可能影响理解。检索到某个表格行时，应同时提供其表头、适用条件与必要注释，避免只返回孤立数值。</p>
+<h2 id="文本向量">文本向量</h2>
+<p><strong>Embedding</strong> 将文本映射成固定维数向量。查询和文档必须使用兼容的模型与版本，才能在同一向量空间中比较。向量维数由模型决定，不能把某个示例的 768 或 1536 维当作固定要求。</p>
+<p>余弦相似度为：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">cos</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>A</mi><mo separator="true">,</mo><mi>B</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mrow><mi>A</mi><mo>⋅</mo><mi>B</mi></mrow><mrow><mo stretchy="false">∥</mo><mi>A</mi><mo stretchy="false">∥</mo><mo stretchy="false">∥</mo><mi>B</mi><mo stretchy="false">∥</mo></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\operatorname{cos}(A,B)=\frac{A\cdot B}{\lVert A\rVert\lVert B\rVert}.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop"><span class="mord mathrm">cos</span></span><span class="mopen">(</span><span class="mord mathnormal">A</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.2963em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mopen">∥</span><span class="mord mathnormal">A</span><span class="mclose">∥</span><span class="mopen">∥</span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span><span class="mclose">∥</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">A</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord">.</span></span></span></span></span></p>
+<p>若向量已归一化，余弦相似度可以直接用点积计算；零向量没有有效的余弦方向，应拒绝或单独处理。文本相似并不意味着业务事实相同，例如两个不同版本号可能具有很接近的向量。</p>
+<p>本地 Embedding 服务有助于控制数据处理位置，但仍有硬件、能耗和维护成本。BGE 等模型可以作为候选，选型需对目标语言、领域、长短文本和查询形式做评测。</p>
+<p>Token 级表示与整段向量也不同。长度为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span></span></span></span> 的文本可能产生 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>×</mo><mi>h</mi></mrow><annotation encoding="application/x-tex">L\times h</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">L</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">h</span></span></span></span> 的隐藏表示，再由相应模型形成 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span> 维的段落向量；段落有三个词，不意味着原表示就是三维。模型的输入长度、隐藏维数和输出维数是不同参数。</p>
+<p>两个向量同为 128 维，也不证明它们处于同一语义空间。查询与文档需要兼容的训练与编码配置；文本、图像等跨模态检索则需要经过对齐的模型，而不是随意把几个独立模型的输出放进同一个库。</p>
+<h2 id="距离度量">距离度量</h2>
+<p>余弦相似度衡量方向接近程度：1 表示同向，0 表示正交，-1 表示反向。这是向量几何关系，不是“答案正确概率”；0 也不必被解释成两个业务对象完全无关。</p>
+<p>常见距离还包括：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>d</mi><mn>1</mn></msub><mo stretchy="false">(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mo>∑</mo><mi>i</mi></munder><mi mathvariant="normal">∣</mi><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub><mi mathvariant="normal">∣</mi><mo separator="true">,</mo><mspace width="2em"/><msub><mi>d</mi><mn>2</mn></msub><mo stretchy="false">(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo stretchy="false">)</mo><mo>=</mo><msqrt><mrow><munder><mo>∑</mo><mi>i</mi></munder><mo stretchy="false">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub><msup><mo stretchy="false">)</mo><mn>2</mn></msup></mrow></msqrt><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">d_1(x,y)=\sum_i|x_i-y_i|,\qquad
+ d_2(x,y)=\sqrt{\sum_i(x_i-y_i)^2}.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.3277em;vertical-align:-1.2777em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.05em;"><span style="top:-1.8723em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2777em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">∣</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∣</span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:3.04em;vertical-align:-1.52em;"></span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.52em;"><span class="svg-align" style="top:-5em;"><span class="pstrut" style="height:5em;"></span><span class="mord" style="padding-left:1em;"><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.05em;"><span style="top:-1.8723em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2777em;"><span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7401em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span><span style="top:-3.48em;"><span class="pstrut" style="height:5em;"></span><span class="hide-tail" style="min-width:1.02em;height:3.08em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="3.08em" viewBox="0 0 400000 3240" preserveAspectRatio="xMinYMin slice"><path d="M473,2793
+c339.3,-1799.3,509.3,-2700,510,-2702 l0 -0
+c3.3,-7.3,9.3,-11,18,-11 H400000v40H1017.7
+s-90.5,478,-276.2,1466c-185.7,988,-279.5,1483,-281.5,1485c-2,6,-10,9,-24,9
+c-8,0,-12,-0.7,-12,-2c0,-1.3,-5.3,-32,-16,-92c-50.7,-293.3,-119.7,-693.3,-207,-1200
+c0,-1.3,-5.3,8.7,-16,30c-10.7,21.3,-21.3,42.7,-32,64s-16,33,-16,33s-26,-26,-26,-26
+s76,-153,76,-153s77,-151,77,-151c0.7,0.7,35.7,202,105,604c67.3,400.7,102,602.7,104,
+606zM1001 80h400000v40H1017.7z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.52em;"><span></span></span></span></span></span><span class="mord">.</span></span></span></span></span></p>
+<p>它们分别是 Manhattan 距离和 Euclidean 距离。Hamming 距离适合比较位串等离散表示，Mahalanobis 距离还涉及协方差结构，不能认为所有向量库对任何表示都支持相同度量。</p>
+<p>相似度与距离的换算要按具体定义。对于单位归一化向量，有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">∥</mo><mi>x</mi><mo>−</mo><mi>y</mi><msubsup><mo stretchy="false">∥</mo><mn>2</mn><mn>2</mn></msubsup><mo>=</mo><mn>2</mn><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>cos</mi><mo>⁡</mo><mi>θ</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\lVert x-y\rVert_2^2=2(1-\cos\theta)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">∥</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mclose"><span class="mclose">∥</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-2.4519em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2481em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">cos</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">θ</span><span class="mclose">)</span></span></span></span>，因而两种排序在该条件下对应；一般情况下不能直接把相似度称为距离的倒数或导数。选择的度量应与 Embedding 模型和索引配置一致。</p>
+<h2 id="内存向量库">内存向量库</h2>
+<p>内存原型可以用 NumPy 保存归一化向量，并通过矩阵运算扫描全部文档。它能清楚展示向量库的基础行为。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TinyVectorDB</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;保存归一化文档向量，以余弦相似度执行精确检索。&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, vectors, texts: <span class="built_in">list</span>[<span class="built_in">str</span>]</span>):</span><br><span class="line">        matrix = np.asarray(vectors, dtype=<span class="built_in">float</span>)</span><br><span class="line">        <span class="keyword">if</span> matrix.ndim != <span class="number">2</span> <span class="keyword">or</span> <span class="built_in">len</span>(matrix) != <span class="built_in">len</span>(texts):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;Vectors and texts must have matching rows&quot;</span>)</span><br><span class="line">        norms = np.linalg.norm(matrix, axis=<span class="number">1</span>, keepdims=<span class="literal">True</span>)</span><br><span class="line">        <span class="keyword">if</span> np.<span class="built_in">any</span>(norms == <span class="number">0</span>):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;Document vectors must be non-zero&quot;</span>)</span><br><span class="line">        <span class="variable language_">self</span>.vectors = matrix / norms</span><br><span class="line">        <span class="variable language_">self</span>.texts = texts</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">search</span>(<span class="params">self, query_vector, top_k: <span class="built_in">int</span> = <span class="number">3</span></span>) -&gt; <span class="built_in">list</span>[<span class="built_in">dict</span>]:</span><br><span class="line">        <span class="string">&quot;&quot;&quot;验证查询维数，再返回按相似度降序排列的候选。&quot;&quot;&quot;</span></span><br><span class="line">        query = np.asarray(query_vector, dtype=<span class="built_in">float</span>)</span><br><span class="line">        <span class="keyword">if</span> query.shape != (<span class="variable language_">self</span>.vectors.shape[<span class="number">1</span>],):</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;Query dimension does not match&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> top_k &lt;= <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;top_k must be positive&quot;</span>)</span><br><span class="line">        norm = np.linalg.norm(query)</span><br><span class="line">        <span class="keyword">if</span> norm == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">&quot;Query vector must be non-zero&quot;</span>)</span><br><span class="line"></span><br><span class="line">        scores = <span class="variable language_">self</span>.vectors @ (query / norm)</span><br><span class="line">        indices = np.argsort(-scores)[:top_k]</span><br><span class="line">        <span class="keyword">return</span> [</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="string">&quot;text&quot;</span>: <span class="variable language_">self</span>.texts[index],</span><br><span class="line">                <span class="string">&quot;score&quot;</span>: <span class="built_in">float</span>(scores[index]),</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> index <span class="keyword">in</span> indices</span><br><span class="line">        ]</span><br></pre></td></tr></table></figure>
+<p>若文档数为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span>、向量维数为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span>，扫描约需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>N</mi><mi>d</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(Nd)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mord mathnormal">d</span><span class="mclose">)</span></span></span></span> 运算，排序还产生额外成本。对于小数据，它是有效基线；大规模高并发服务则需要索引、过滤和存储治理。</p>
+<h2 id="向量索引">向量索引</h2>
+<p>工业向量库提供持久化、元数据过滤、近似最近邻搜索和服务管理。Qdrant、Milvus 等系统可用于构建这些能力，但具体选择需考虑数据规模、过滤需求、吞吐、运维和一致性。</p>
+<p><strong>HNSW</strong> 用多层图组织向量，在较高层快速接近目标，再在低层细化搜索。它用近似结果换取较低延迟，不能保证对任意数据都具有固定最坏复杂度。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>主要影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>m</code></td>
+<td>图连接规模、内存和索引质量</td>
+</tr>
+<tr>
+<td><code>ef_construct</code></td>
+<td>建图搜索范围、构建时间和召回</td>
+</tr>
+<tr>
+<td>查询 <code>ef</code></td>
+<td>在线搜索范围、延迟和召回</td>
+</tr>
+<tr>
+<td>精确搜索阈值</td>
+<td>小集合是否直接扫描</td>
+</tr>
+</tbody>
+</table>
+<p>增大参数通常会增加资源消耗。应对照精确检索计算 Recall@k，并同时观察 P95 延迟和内存，而不是只测一条查询的速度。</p>
+<p>HNSW 与跳表的类比主要在于“较高层快速移动，较低层细化”。它是分层近邻图，不是保证把空间递归分成互不重叠的簇。高层通常较稀疏，低层包含更多点；搜索依据邻接关系逐步靠近查询。</p>
+<p><code>m</code> 主要控制每个节点连接的规模，不表示每层有 m 个“小世界”。<code>ef_construct</code> 控制构建时搜索范围，查询 <code>ef</code> 控制在线候选范围。ANN 有召回与延迟权衡，不提供对任意数据都固定为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>O</mi><mo stretchy="false">(</mo><mi>log</mi><mo>⁡</mo><mi>N</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">O(\log N)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">O</span><span class="mopen">(</span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mclose">)</span></span></span></span> 的最坏保证。</p>
+<h2 id="基础检索">基础检索</h2>
+<p>最小 RAG 流程可以表达为以下五步：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">将问题转换成查询向量。</span><br><span class="line">从向量库取得 Top-K 文档。</span><br><span class="line">按长度预算组织正文和文档标识。</span><br><span class="line">告诉生成器仅依据给定证据回答，不足时说明无法判断。</span><br><span class="line">返回回答与所使用的文档标识。</span><br></pre></td></tr></table></figure>
+<p>真正服务还需要空召回处理、权限过滤、超时、长度限制和引用核对。把无关文本拼进上下文，会使模型围绕错误材料生成看似合理的回答。</p>
+<p>检索结果也不是最终答案本身。制度查询可能同时需要适用对象、条件和截止时间，生成器要把多段资料与用户情况组合起来。若知识不足，不能把模型推导出的新内容伪装成文档明确规定。</p>
+<p>在“猫的知识”一类小实验中，即使 Top-N 的正文已经正确进入上下文，小型生成模型也可能错误理解或忽略它们。应同时展示候选片段、分数和回答，分别验证检索与证据使用。</p>
+<p><strong>Naïve RAG</strong> 常见问题包括检索不到、候选太杂和长上下文中关键证据被忽略。诊断时应先确认正确答案是否在库中，再检查切块、召回、排序和生成，不能直接把全部失败归因于模型。</p>
+<h2 id="查询改写">查询改写</h2>
+<p>用户问题往往包含省略、错字、上下文指代或非专业用语。<strong>Query Rewriting</strong> 将其改写为适合检索的明确问题，可能展开缩写、补充已确认上下文或拆成多个子查询。</p>
+<p>例如“这个版本怎么升级？”缺少产品和当前版本。系统可以从已有对话中取得明确产品；无法确定时应澄清，不能自行选择一个版本并写入检索问题。</p>
+<p>也可以用多个角度生成检索候选，例如把“怎么连不上”分别展开为网络、认证或服务可用性相关查询。它们只是调查方向，不能未经确认就认定用户正在遭遇某一种故障。多角度结果需要去重，并保留原始问题。</p>
+<p>改写应保留原始查询以及新增信息的依据。它增加一次推理成本，所以可以只对短问题、歧义问题或召回失败启用，并比较改写前后的证据召回。</p>
+<h2 id="假设文档">假设文档</h2>
+<p><strong>HyDE</strong> 先生成一段可能回答问题的假设文档，再用其向量检索真实资料。这利用较完整的文档语义缓解短查询与长答案之间的表达差异。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">问题：分布式事务失败后怎样恢复？</span><br><span class="line">假设文档：描述事务日志、补偿操作和恢复状态。</span><br><span class="line">向量化：把假设文档转换成查询向量。</span><br><span class="line">检索：寻找知识库中真实的恢复方案。</span><br><span class="line">回答：依据真实方案生成结果。</span><br></pre></td></tr></table></figure>
+<p>假设文档可能含有错误细节，<strong>不能作为最终证据</strong>。它只辅助定位真实文档。额外生成会提高延迟，适合准确性要求较高且能接受该成本的查询。</p>
+<p>可以把假设文档理解成检索的“中间表达”，但不是任意插入一个文本就一定更靠近答案。生成内容应尽量与问题领域相符，并以召回的真实资料验证效果；错误实体或虚构术语可能把检索带向其他方向。</p>
+<h2 id="混合检索">混合检索</h2>
+<p>稠密向量擅长语义匹配，<strong>BM25</strong> 依据词项统计捕捉字面匹配。版本号、产品型号、股票代码、序列号等内容可能需要精确词项，因此两路召回可以互补。</p>
+<p>BM25 的常见形式为：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">BM25</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>q</mi><mo separator="true">,</mo><mi>d</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mo>∑</mo><mrow><mi>t</mi><mo>∈</mo><mi>q</mi></mrow></munder><mi mathvariant="normal">IDF</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mfrac><mrow><mi>f</mi><mo stretchy="false">(</mo><mi>t</mi><mo separator="true">,</mo><mi>d</mi><mo stretchy="false">)</mo><mo stretchy="false">(</mo><msub><mi>k</mi><mn>1</mn></msub><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo></mrow><mrow><mi>f</mi><mo stretchy="false">(</mo><mi>t</mi><mo separator="true">,</mo><mi>d</mi><mo stretchy="false">)</mo><mo>+</mo><msub><mi>k</mi><mn>1</mn></msub><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>b</mi><mo>+</mo><mi>b</mi><mi mathvariant="normal">∣</mi><mi>d</mi><mi mathvariant="normal">∣</mi><mi mathvariant="normal">/</mi><mi mathvariant="normal">avgdl</mi><mo>⁡</mo><mo stretchy="false">)</mo></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\operatorname{BM25}(q,d)=\sum_{t\in q}\operatorname{IDF}(t)
+\frac{f(t,d)(k_1+1)}{f(t,d)+k_1(1-b+b|d|/\operatorname{avgdl})}.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop"><span class="mord mathrm">BM25</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">d</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.8131em;vertical-align:-1.3861em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.05em;"><span style="top:-1.9em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mrel mtight">∈</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">q</span></span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.3861em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop"><span class="mord mathrm">IDF</span></span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">d</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0315em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal">b</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal">b</span><span class="mord">∣</span><span class="mord mathnormal">d</span><span class="mord">∣/</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop"><span class="mord mathrm">avgdl</span></span><span class="mclose">)</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">d</span><span class="mclose">)</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0315em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">1</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord">.</span></span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo stretchy="false">(</mo><mi>t</mi><mo separator="true">,</mo><mi>d</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">f(t,d)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">d</span><span class="mclose">)</span></span></span></span> 是词频，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∣</mi><mi>d</mi><mi mathvariant="normal">∣</mi></mrow><annotation encoding="application/x-tex">|d|</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∣</span><span class="mord mathnormal">d</span><span class="mord">∣</span></span></span></span> 是文档长度，<code>avgdl</code> 是平均长度，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>k</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">k_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8444em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0315em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 与 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi></mrow><annotation encoding="application/x-tex">b</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">b</span></span></span></span> 控制词频饱和和长度归一化。实际系统还需合适的分词器和字段设计。</p>
+<p>向量相似度与 BM25 分数不处于相同标尺，不能直接相加。可以对分数校准，也可以使用基于排名的融合方法。</p>
+<p>例如查询软件版本 <code>2.4.1</code> 时，向量检索可能同时召回 <code>2.4.0</code>、<code>2.4.2</code> 的材料；关键词或版本元数据可以保留这一精确条件。融合不会自动把所有不满足版本的候选删除，硬条件仍需明确过滤。</p>
+<p><strong>Dense 与 Sparse 描述表示方式，不描述召回数量</strong>：Dense Embedding 通常多数坐标非零，词项稀疏表示只有少数词项有权重。两路各返回多少候选由检索参数决定，两者都可以返回多或少的结果。</p>
+<h2 id="排名融合">排名融合</h2>
+<p><strong>倒数排名融合（RRF）</strong> 只利用各路候选中的排名：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">RRF</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>d</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mo>∑</mo><mrow><mi>m</mi><mo>∈</mo><mi>M</mi></mrow></munder><mfrac><mn>1</mn><mrow><mi>k</mi><mo>+</mo><msub><mi>r</mi><mi>m</mi></msub><mo stretchy="false">(</mo><mi>d</mi><mo stretchy="false">)</mo></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\operatorname{RRF}(d)=\sum_{m\in M}\frac{1}{k+r_m(d)}.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop"><span class="mord mathrm">RRF</span></span><span class="mopen">(</span><span class="mord mathnormal">d</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.6431em;vertical-align:-1.3217em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.05em;"><span style="top:-1.8557em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span><span class="mrel mtight">∈</span><span class="mord mathnormal mtight" style="margin-right:0.10903em;">M</span></span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.3217em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">d</span><span class="mclose">)</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord">.</span></span></span></span></span></p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>r</mi><mi>m</mi></msub><mo stretchy="false">(</mo><mi>d</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">r_m(d)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">d</span><span class="mclose">)</span></span></span></span> 从 1 开始，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span></span></span></span> 是平滑常数。未出现在某路结果中的文档不贡献该路分数。常见的 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>60</mn></mrow><annotation encoding="application/x-tex">k=60</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">60</span></span></span></span> 会减少第一名对第三名等相邻位置的过度优势，具体值仍应根据任务验证。</p>
+<p>若同一文档在两路分别排名 2、3，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>60</mn></mrow><annotation encoding="application/x-tex">k=60</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">60</span></span></span></span> 时贡献为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mn>62</mn><mo>+</mo><mn>1</mn><mi mathvariant="normal">/</mi><mn>63</mn></mrow><annotation encoding="application/x-tex">1/62+1/63</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1/62</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1/63</span></span></span></span>。两路原分数即使分别是余弦值和较大的 BM25 分数，也可以在排名层面相加。BM25 包含词频、逆文档频率和长度处理，不只是统计匹配次数。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reciprocal_rank_fusion</span>(<span class="params"></span></span><br><span class="line"><span class="params">    ranked_lists: <span class="built_in">list</span>[<span class="built_in">list</span>[<span class="built_in">str</span>]],</span></span><br><span class="line"><span class="params">    k: <span class="built_in">int</span> = <span class="number">60</span>,</span></span><br><span class="line"><span class="params"></span>) -&gt; <span class="built_in">list</span>[<span class="built_in">tuple</span>[<span class="built_in">str</span>, <span class="built_in">float</span>]]:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;合并不同检索路径的排名，避免同一路重复文档被累计。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> k &lt; <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;k must be non-negative&quot;</span>)</span><br><span class="line"></span><br><span class="line">    scores = defaultdict(<span class="built_in">float</span>)</span><br><span class="line">    <span class="keyword">for</span> ranked_docs <span class="keyword">in</span> ranked_lists:</span><br><span class="line">        seen = <span class="built_in">set</span>()</span><br><span class="line">        unique_rank = <span class="number">0</span></span><br><span class="line">        <span class="keyword">for</span> doc_id <span class="keyword">in</span> ranked_docs:</span><br><span class="line">            <span class="keyword">if</span> doc_id <span class="keyword">in</span> seen:</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            seen.add(doc_id)</span><br><span class="line">            unique_rank += <span class="number">1</span></span><br><span class="line">            scores[doc_id] += <span class="number">1.0</span> / (k + unique_rank)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">sorted</span>(scores.items(), key=<span class="keyword">lambda</span> item: (-item[<span class="number">1</span>], item[<span class="number">0</span>]))</span><br></pre></td></tr></table></figure>
+<p>融合前要统一文档标识，并处理同文档重复分块。相同证据反复出现会占用上下文，也可能让结果被重复计分。</p>
+<h2 id="候选重排">候选重排</h2>
+<p><strong>Bi-Encoder</strong> 分别编码查询与文档，文档向量可以预计算，适合大规模召回。<strong>Cross-Encoder</strong> 把查询与候选联合输入模型，让两者在同一次编码中交互，适合对有限候选精排。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008120656961.png" alt="双编码器与交叉编码器"></p>
+<p>双编码器本身也可以使用注意力，区别在于查询和文档是否联合编码。常见流程是先用低成本检索得到较大候选集，再用 Cross-Encoder 选出少量高相关证据。</p>
+<p>精排成本随候选数量和长度增长。分类模型输出的 logits 或概率需要按模型定义解释，不能假设所有模型分数都在同一范围。图中的数值表示示意匹配，并非适用于任意问题的置信度。</p>
+<p>可以先召回 50 个候选，再对查询与每个候选联合编码，选出 5 个作为证据。这些数量是示例：先扩大候选避免漏掉，再把较昂贵的联合计算限制在有限集合内。</p>
+<p>Cross-Encoder 通常由训练得到的评分头输出相关性分数，并不是简单取某个 Attention 权重作为最终得分。若直接对全库每份文档联合推理，延迟和算力成本会明显增加。</p>
+<h2 id="上下文压缩">上下文压缩</h2>
+<p>检索后的优化包括去重、重排、过滤和压缩。应先删除无关候选，再控制重复证据，最后在预算内保留能够支持回答的内容。</p>
+<p>LLMLingua 等压缩方法可以减少 Token，但压缩后必须保留否定词、单位、数字、适用条件和文档标识。仅用压缩比评价效果，可能鼓励删除必要信息。</p>
+<p>相关证据可以放到更容易利用的位置，避免长上下文中间包含大量噪声。生成器还需要知道哪些内容属于同一文档或版本，不能把相互矛盾的材料混成一个结论。</p>
+<p>可以对已按相关性降序选出的证据采用首尾交替安排。例如原排名为 <code>[1, 2, 3, 4, 5]</code>，可组织为 <code>[1, 3, 5, 4, 2]</code>，让第一、第二名分别位于两端。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">place_evidence_at_ends</span>(<span class="params">ranked_items: <span class="built_in">list</span></span>) -&gt; <span class="built_in">list</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;将高相关候选交替放在两端，保留所有入选项。&quot;&quot;&quot;</span></span><br><span class="line">    left = ranked_items[::<span class="number">2</span>]</span><br><span class="line">    right = ranked_items[<span class="number">1</span>::<span class="number">2</span>]</span><br><span class="line">    <span class="keyword">return</span> left + <span class="built_in">list</span>(<span class="built_in">reversed</span>(right))</span><br></pre></td></tr></table></figure>
+<p>这种布局是可以评测的策略，不是所有模型必然受益的规则。需要先过滤噪声，保留来源与时间；具有明确先后语义的条款和步骤不宜因重排而改变含义。</p>
+<h2 id="图谱检索">图谱检索</h2>
+<p>普通 Top-K 检索适合局部事实，对跨文档全局问题可能缺乏整体关系。<strong>GraphRAG</strong> 从资料中抽取实体和关系，形成社区结构与摘要，再结合图和文本回答问题。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008120657197.png" alt="实体关系与社区结构"></p>
+<p>例如总结两家公司三年的合作，需要连接项目、公司、时间和成果，而不是只找到一个最相似段落。社区摘要可以帮助全局归纳，原文片段则用于核对具体事实。</p>
+<p>图抽取和摘要同样可能出错，还带来构建与更新成本。实体合并、关系来源和时间变化必须可追踪。图检索与向量检索可以结合，是否值得使用应由问题类型和评测结果决定。</p>
+<p>跨段落关系可以用一个两跳例子说明：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">张三 --father_of--&gt; 李四</span><br><span class="line">李四 --works_at--&gt; 某公司</span><br><span class="line">张三 --occupation--&gt; 出租车司机</span><br></pre></td></tr></table></figure>
+<p>第一条明确表示张三是李四的父亲。沿两跳可说明“张三是该公司员工李四的父亲”，不能推出张三也在该公司工作，更不能倒置父子方向。关系抽取和答案生成都要核对边的方向与证据。</p>
+<p>补考、重修、退课等条款也可能在业务上有关联，虽然文本向量未必很接近。保留章节、适用条件和关系有助于补充关联资料；不能仅因出现了这些词就推定所有学校都允许同一处理路线。</p>
+<p><strong>k-hop 邻域与社区是不同概念</strong>。前者按边数扩展，后者依据图中的连接结构分组；社区层级参数不一定等于一跳、两跳。社区报告可以摘要相关实体与关系，仍需保留原始证据。</p>
+<p>同一个人可能以姓名、职位或其他名称出现，但相同职位也可能在不同公司、时期对应不同人。实体归一化需结合主体、时间和证据，不能只靠模型把类似字符串合并。普通检索若取得相同事实，也可能回答两跳问题，GraphRAG 的收益需要实际比较。</p>
+<h2 id="多模态资料">多模态资料</h2>
+<p>财报中的表格和统计图包含空间关系。把表格按文本直接摊平，可能丢失列名、单位、行列对应和合并单元格，导致模型错误比较数值。</p>
+<p>表格应保留标题、表头、单位、脚注和页码。简单表格可以转换为 Markdown；复杂表格还需单独记录合并关系。统计图可以生成文字说明，但描述必须保留可核对数值，不能仅保存“增长明显”这样的概括。</p>
+<p>LayoutLMv3 等文档理解模型可以辅助版面和内容处理。选用时要考虑文本是否可直接提取、是否扫描、布局复杂度及任务类型，不能用一个布局模型替代全部解析与验证。</p>
+<p>多模态处理可以走两条路线：先用 OCR 或视觉模型把表格、图像转成可核对的文本，再使用文本 Embedding；或者直接用经过对齐的多模态编码器做跨模态检索。前者的 Caption 与表格转换可能丢失细节，后者也需要能向生成器返回原资源。</p>
+<p>因此应把转换文本、原图或原表格位置关联起来，尤其保留单位、表头、脚注和关键数值。生成了一段流畅描述，不表示原模态的全部信息都已保存。</p>
+<h2 id="自动评估">自动评估</h2>
+<p>RAG 评估需要区分 <strong>检索质量</strong> 和 <strong>生成质量</strong>。Ragas 等框架提供不同维度的指标，具体定义应与所用版本一致。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>需要检查的内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>上下文召回</td>
+<td>应有证据是否进入候选</td>
+</tr>
+<tr>
+<td>上下文精度</td>
+<td>候选是否集中于相关内容</td>
+</tr>
+<tr>
+<td>忠实性</td>
+<td>回答是否受给定证据支持</td>
+</tr>
+<tr>
+<td>回答相关性</td>
+<td>是否回答用户真正的问题</td>
+</tr>
+<tr>
+<td>答案正确性</td>
+<td>结论是否符合标注或业务事实</td>
+</tr>
+<tr>
+<td>服务指标</td>
+<td>延迟、成本、错误率和更新时效</td>
+</tr>
+</tbody>
+</table>
+<p>黄金集应包含正常问题、无答案问题、跨文档问题、权限边界和文档更新。自动裁判可能存在偏差，需要人工抽样与硬断言校准。</p>
+<p>改变切块、Embedding、Top-K、重排或模型后，应运行回归。检索分数提高不一定意味着回答更好，端到端指标和关键类别都需要比较。</p>
+<h2 id="增量更新">增量更新</h2>
+<p>生产知识库需要处理新增、修改和删除。文档 ID、内容哈希与版本可用于识别变化；更新后必须删除或替换旧分块，并同步索引、元数据和缓存。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">读取文档标识与内容哈希。</span><br><span class="line">若未变化：跳过重新向量化。</span><br><span class="line">若变化：解析新内容，生成新分块和向量。</span><br><span class="line">写入新版本，确认成功后使旧版本失效。</span><br><span class="line">若文档删除：删除相关分块并使缓存失效。</span><br><span class="line">记录流水线状态，失败任务可重试和恢复。</span><br></pre></td></tr></table></figure>
+<p>只向库中追加新内容会留下过时证据。更新流程还需要明确一致性窗口，让在线查询知道自己使用的是哪个版本。</p>
+<p>哈希可以定位内容变化，但需要选择合适算法。把字符数值相加再取模，会让 <code>ab</code> 与 <code>ba</code> 等不同内容得到相同值；这种弱指纹不适合作为唯一更新依据。SHA-256 等内容指纹降低碰撞风险，关键数据仍需配合标识、版本和完整性策略。</p>
+<p>Merkle Tree 将子节点摘要逐层汇总，某个文件或分块变化会影响其祖先路径，便于定位局部更新。<strong>文本不变也不一定可以跳过重建</strong>：解析器、切块规则或 Embedding 模型版本变化，都可能使旧索引失效。更新键应同时包含内容与生成配置，并同步替换旧分块和索引。</p>
+<h2 id="链路观测">链路观测</h2>
+<p>一次查询应能还原问题、改写、候选、分数、精排结果、最终上下文、模型配置和回答。Trace 帮助判断延迟来自 Embedding、检索、精排还是生成，也帮助定位错误证据从哪里进入回答。</p>
+<p>观测工具可以使用 OpenTelemetry、Phoenix 等实现。日志应脱敏并控制访问，尤其不能把所有私有文档和用户内容直接写入公共监控平台。</p>
+<p>长上下文与 RAG 需要依据任务比较。小文档集合可能适合直接输入，较大或频繁更新的库需要检索。比较应包括总 Token、索引维护、证据质量、权限过滤和端到端延迟，而不是只比较模型窗口上限。</p>
+<h2 id="安全与缓存">安全与缓存</h2>
+<p>多租户系统应在检索阶段实施权限过滤，并核对最终证据集合。仅在 Prompt 中要求“不要泄露其他用户的数据”无法完成隔离。缓存、日志和引用链接也必须遵守相同权限。</p>
+<p>检索文档可能包含间接 Prompt Injection，应作为资料处理，不能让其中的命令获得执行权。回答生成与工具执行需要独立的控制边界。</p>
+<p><strong>语义缓存</strong> 利用问题相似度复用结果，但相似问题未必答案相同。实体、时间、租户、授权和知识版本都可能改变结果。缓存键应包含这些因素，并设置有效期与失效机制；相似度阈值需要根据误命中代价评测。</p>
+<h2 id="自主检索">自主检索</h2>
+<p><strong>Agentic RAG</strong> 根据问题决定是否检索、选择哪个库，以及是否继续查找证据。问候和简单常识不必总是检索，复杂业务问题则可能需要多数据源或多轮查询。</p>
+<p>Self-RAG 与 Corrective RAG 分别研究生成与检索反馈，不能仅用同一个重试循环代替全部算法。工程上可以先检查证据相关性和充分性，再选择改写、补充检索、外部查询或拒答。</p>
+<p>路由结果应限定在已注册的数据源中，未知意图允许澄清或降级。循环必须有最大轮次和成本预算，模型自评“证据足够”也应尽量结合来源、内容与可验证条件。</p>
+<p>MCP 可以统一外部资料与检索工具的接入，但不自动完成解析、切块、向量化和索引更新。把协议、算法与业务权限分开，有利于独立测试。</p>
+<h2 id="工程实践">工程实践</h2>
+<p>Cursor、Windsurf、Bolt.new 等工具可以辅助实现检索模块。使用这些工具时，应明确数据接口、BM25 与向量召回格式、RRF、去重、精排和失败处理，并提供可验收的固定测试数据。开发流程仍包括需求、生成、审核、验证和迭代。</p>
+<p>Unstructured、LlamaParse 等负责解析，LangChain、LlamaIndex 提供编排，Ollama 提供本地推理，Qdrant、Milvus 承担向量检索，Ragas 与 Phoenix 支持评估和观测。各组件需要稳定接口，不能任意拼接并假定数据含义一致。</p>
+<p>综合实验应保存文档、参数、评测集与结果，检查数据预处理、多路召回、重排序和自动评估。工程师需要理解算法和业务约束，才能判断生成代码是否正确。</p>
+<blockquote>
+<p>RAG 的核心是让证据从原文到回答的每一步转换都可检查。数据质量、检索策略、生成约束和持续评测需要共同维护。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/08/SE3353_03/">https://acannedfish.github.io/2026/10/08/SE3353_03/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/SE3353/">SE3353</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/10/08/SE3353_04/" title="应用系统体系架构-04：Skill 与 Tool Calling"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">应用系统体系架构-04：Skill 与 Tool Calling</div></div></div></a><a class="pagination-related  no-desc" href="/2026/10/08/SE3353_02/" title="应用系统体系架构-02：MCP 协议"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info text-right"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">应用系统体系架构-02：MCP 协议</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/10/08/SE3353_04/" title="应用系统体系架构-04：Skill 与 Tool Calling"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-04：Skill 与 Tool Calling</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_06/" title="应用系统体系架构-06：Agent 架构"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-06：Agent 架构</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_05/" title="应用系统体系架构-05：Skill 设计模式"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-05：Skill 设计模式</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/09/SE3353_07/" title="应用系统体系架构-07：控制流与 Harness"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-09</div><div class="info-item-2">应用系统体系架构-07：控制流与 Harness</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_01/" title="应用系统体系架构-01：Prompt 工程"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-01：Prompt 工程</div></div></div></a><a class="pagination-related no-desc" href="/2026/10/08/SE3353_02/" title="应用系统体系架构-02：MCP 协议"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-08</div><div class="info-item-2">应用系统体系架构-02：MCP 协议</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">95</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">55</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">12</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E5%AE%9A%E4%BD%8D"><span class="toc-text">技术定位</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%BE%AE%E8%B0%83"><span class="toc-text">参数微调</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84"><span class="toc-text">系统架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E8%A7%A3%E6%9E%90"><span class="toc-text">数据解析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AA%97%E5%8F%A3%E5%88%87%E5%9D%97"><span class="toc-text">窗口切块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%AD%E4%B9%89%E5%88%87%E5%9D%97"><span class="toc-text">语义切块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E6%9C%AC%E5%90%91%E9%87%8F"><span class="toc-text">文本向量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%9D%E7%A6%BB%E5%BA%A6%E9%87%8F"><span class="toc-text">距离度量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%90%91%E9%87%8F%E5%BA%93"><span class="toc-text">内存向量库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E7%B4%A2%E5%BC%95"><span class="toc-text">向量索引</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E6%A3%80%E7%B4%A2"><span class="toc-text">基础检索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E8%AF%A2%E6%94%B9%E5%86%99"><span class="toc-text">查询改写</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%87%E8%AE%BE%E6%96%87%E6%A1%A3"><span class="toc-text">假设文档</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B7%B7%E5%90%88%E6%A3%80%E7%B4%A2"><span class="toc-text">混合检索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%92%E5%90%8D%E8%9E%8D%E5%90%88"><span class="toc-text">排名融合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%80%99%E9%80%89%E9%87%8D%E6%8E%92"><span class="toc-text">候选重排</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E5%8E%8B%E7%BC%A9"><span class="toc-text">上下文压缩</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%BE%E8%B0%B1%E6%A3%80%E7%B4%A2"><span class="toc-text">图谱检索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E6%A8%A1%E6%80%81%E8%B5%84%E6%96%99"><span class="toc-text">多模态资料</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E8%AF%84%E4%BC%B0"><span class="toc-text">自动评估</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A2%9E%E9%87%8F%E6%9B%B4%E6%96%B0"><span class="toc-text">增量更新</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%93%BE%E8%B7%AF%E8%A7%82%E6%B5%8B"><span class="toc-text">链路观测</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E4%B8%8E%E7%BC%93%E5%AD%98"><span class="toc-text">安全与缓存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E4%B8%BB%E6%A3%80%E7%B4%A2"><span class="toc-text">自主检索</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5"><span class="toc-text">工程实践</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/site-navigation.js" defer></script><script src="/js/site-motion.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#route-state","#page-header","#route-content","#aside-content","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+  const navigationSwitches = window.SiteNavigation ? window.SiteNavigation.switches : {}
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    switches: navigationSwitches,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: true,
+    // Route switches position new pages before their first painted frame.
+    scrollTo: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
