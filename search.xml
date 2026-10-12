@@ -491,9 +491,9 @@
       
         <tags>
             
-            <tag> 分布式系统 </tag>
-            
             <tag> RPC </tag>
+            
+            <tag> 分布式系统 </tag>
             
         </tags>
       
@@ -707,9 +707,9 @@
       
         <tags>
             
-            <tag> 操作系统 </tag>
-            
             <tag> 内存与存储 </tag>
+            
+            <tag> 操作系统 </tag>
             
         </tags>
       
@@ -736,9 +736,9 @@
       
         <tags>
             
-            <tag> 操作系统 </tag>
-            
             <tag> 内存与存储 </tag>
+            
+            <tag> 操作系统 </tag>
             
         </tags>
       
@@ -1080,9 +1080,9 @@
             
             <tag> 数据结构 </tag>
             
-            <tag> 并行计算 </tag>
-            
             <tag> 哈希 </tag>
+            
+            <tag> 并行计算 </tag>
             
         </tags>
       
@@ -1653,9 +1653,9 @@
             
             <tag> 图像分割 </tag>
             
-            <tag> 表征学习 </tag>
-            
             <tag> 多模态 </tag>
+            
+            <tag> 表征学习 </tag>
             
         </tags>
       
