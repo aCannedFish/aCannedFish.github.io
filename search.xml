@@ -435,9 +435,9 @@
       
         <tags>
             
-            <tag> 文件系统 </tag>
-            
             <tag> 分布式系统 </tag>
+            
+            <tag> 文件系统 </tag>
             
         </tags>
       
@@ -491,9 +491,9 @@
       
         <tags>
             
-            <tag> RPC </tag>
-            
             <tag> 分布式系统 </tag>
+            
+            <tag> RPC </tag>
             
         </tags>
       
@@ -707,9 +707,9 @@
       
         <tags>
             
-            <tag> 内存与存储 </tag>
-            
             <tag> 操作系统 </tag>
+            
+            <tag> 内存与存储 </tag>
             
         </tags>
       
@@ -736,9 +736,9 @@
       
         <tags>
             
-            <tag> 内存与存储 </tag>
-            
             <tag> 操作系统 </tag>
+            
+            <tag> 内存与存储 </tag>
             
         </tags>
       
@@ -1651,11 +1651,11 @@
       
         <tags>
             
-            <tag> 图像分割 </tag>
+            <tag> 表征学习 </tag>
             
             <tag> 多模态 </tag>
             
-            <tag> 表征学习 </tag>
+            <tag> 图像分割 </tag>
             
         </tags>
       
@@ -1945,11 +1945,11 @@
       
         <tags>
             
-            <tag> CNN </tag>
-            
             <tag> 正则化 </tag>
             
             <tag> 归一化 </tag>
+            
+            <tag> CNN </tag>
             
         </tags>
       
@@ -2177,9 +2177,9 @@
             
             <tag> 树结构 </tag>
             
-            <tag> 查找与索引 </tag>
-            
             <tag> 排序与选择 </tag>
+            
+            <tag> 查找与索引 </tag>
             
         </tags>
       
