@@ -491,9 +491,9 @@
       
         <tags>
             
-            <tag> 分布式系统 </tag>
-            
             <tag> RPC </tag>
+            
+            <tag> 分布式系统 </tag>
             
         </tags>
       
@@ -991,9 +991,9 @@
       
         <tags>
             
-            <tag> 图算法 </tag>
-            
             <tag> 并行计算 </tag>
+            
+            <tag> 图算法 </tag>
             
         </tags>
       
@@ -1049,9 +1049,9 @@
       
         <tags>
             
-            <tag> 图算法 </tag>
-            
             <tag> 并行计算 </tag>
+            
+            <tag> 图算法 </tag>
             
         </tags>
       
@@ -1078,11 +1078,11 @@
       
         <tags>
             
+            <tag> 并行计算 </tag>
+            
             <tag> 数据结构 </tag>
             
             <tag> 哈希 </tag>
-            
-            <tag> 并行计算 </tag>
             
         </tags>
       
@@ -1109,9 +1109,9 @@
       
         <tags>
             
-            <tag> 数据结构 </tag>
-            
             <tag> 并行计算 </tag>
+            
+            <tag> 数据结构 </tag>
             
         </tags>
       
@@ -1248,9 +1248,9 @@
             
             <tag> 数据结构 </tag>
             
-            <tag> 树结构 </tag>
-            
             <tag> 查找与索引 </tag>
+            
+            <tag> 树结构 </tag>
             
         </tags>
       
@@ -1279,9 +1279,9 @@
             
             <tag> 数据结构 </tag>
             
-            <tag> 树结构 </tag>
-            
             <tag> 查找与索引 </tag>
+            
+            <tag> 树结构 </tag>
             
         </tags>
       
@@ -1310,9 +1310,9 @@
             
             <tag> 数据结构 </tag>
             
-            <tag> 树结构 </tag>
-            
             <tag> 查找与索引 </tag>
+            
+            <tag> 树结构 </tag>
             
         </tags>
       
@@ -1341,9 +1341,9 @@
             
             <tag> 数据结构 </tag>
             
-            <tag> 哈希 </tag>
-            
             <tag> 概率数据结构 </tag>
+            
+            <tag> 哈希 </tag>
             
         </tags>
       
@@ -1622,9 +1622,9 @@
       
         <tags>
             
-            <tag> 多模态 </tag>
-            
             <tag> 机器人学习 </tag>
+            
+            <tag> 多模态 </tag>
             
         </tags>
       
@@ -1651,11 +1651,11 @@
       
         <tags>
             
+            <tag> 图像分割 </tag>
+            
             <tag> 表征学习 </tag>
             
             <tag> 多模态 </tag>
-            
-            <tag> 图像分割 </tag>
             
         </tags>
       
@@ -1947,9 +1947,9 @@
             
             <tag> 正则化 </tag>
             
-            <tag> 归一化 </tag>
-            
             <tag> CNN </tag>
+            
+            <tag> 归一化 </tag>
             
         </tags>
       
@@ -2088,11 +2088,11 @@
       
         <tags>
             
-            <tag> 信息论 </tag>
-            
             <tag> 分类 </tag>
             
             <tag> 模型训练 </tag>
+            
+            <tag> 信息论 </tag>
             
         </tags>
       
@@ -2175,11 +2175,11 @@
       
         <tags>
             
+            <tag> 查找与索引 </tag>
+            
             <tag> 树结构 </tag>
             
             <tag> 排序与选择 </tag>
-            
-            <tag> 查找与索引 </tag>
             
         </tags>
       
@@ -2233,9 +2233,9 @@
       
         <tags>
             
-            <tag> 树结构 </tag>
-            
             <tag> 查找与索引 </tag>
+            
+            <tag> 树结构 </tag>
             
             <tag> 哈希 </tag>
             
@@ -2322,11 +2322,11 @@
       
         <tags>
             
+            <tag> 信息论 </tag>
+            
             <tag> 数据结构 </tag>
             
             <tag> 树结构 </tag>
-            
-            <tag> 信息论 </tag>
             
         </tags>
       
