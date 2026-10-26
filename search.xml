@@ -1155,9 +1155,9 @@
       
         <tags>
             
-            <tag> 并行计算 </tag>
-            
             <tag> 计算机体系结构 </tag>
+            
+            <tag> 并行计算 </tag>
             
         </tags>
       
@@ -1294,9 +1294,9 @@
       
         <tags>
             
-            <tag> 信息论 </tag>
-            
             <tag> 概率论 </tag>
+            
+            <tag> 信息论 </tag>
             
             <tag> 马尔可夫链 </tag>
             
@@ -1325,9 +1325,9 @@
       
         <tags>
             
-            <tag> 图算法 </tag>
-            
             <tag> 并行计算 </tag>
+            
+            <tag> 图算法 </tag>
             
         </tags>
       
@@ -1354,9 +1354,9 @@
       
         <tags>
             
-            <tag> 序列模型 </tag>
-            
             <tag> Transformer </tag>
+            
+            <tag> 序列模型 </tag>
             
         </tags>
       
@@ -1383,9 +1383,9 @@
       
         <tags>
             
-            <tag> 图算法 </tag>
-            
             <tag> 并行计算 </tag>
+            
+            <tag> 图算法 </tag>
             
         </tags>
       
@@ -1412,11 +1412,11 @@
       
         <tags>
             
+            <tag> 并行计算 </tag>
+            
             <tag> 数据结构 </tag>
             
             <tag> 哈希 </tag>
-            
-            <tag> 并行计算 </tag>
             
         </tags>
       
@@ -1443,9 +1443,9 @@
       
         <tags>
             
-            <tag> 数据结构 </tag>
-            
             <tag> 并行计算 </tag>
+            
+            <tag> 数据结构 </tag>
             
         </tags>
       
@@ -1582,9 +1582,9 @@
             
             <tag> 数据结构 </tag>
             
-            <tag> 树结构 </tag>
-            
             <tag> 查找与索引 </tag>
+            
+            <tag> 树结构 </tag>
             
         </tags>
       
@@ -1613,9 +1613,9 @@
             
             <tag> 数据结构 </tag>
             
-            <tag> 树结构 </tag>
-            
             <tag> 查找与索引 </tag>
+            
+            <tag> 树结构 </tag>
             
         </tags>
       
@@ -1644,9 +1644,9 @@
             
             <tag> 数据结构 </tag>
             
-            <tag> 树结构 </tag>
-            
             <tag> 查找与索引 </tag>
+            
+            <tag> 树结构 </tag>
             
         </tags>
       
@@ -1675,9 +1675,9 @@
             
             <tag> 数据结构 </tag>
             
-            <tag> 哈希 </tag>
-            
             <tag> 概率数据结构 </tag>
+            
+            <tag> 哈希 </tag>
             
         </tags>
       
@@ -1735,11 +1735,11 @@
       
         <tags>
             
-            <tag> 序列模型 </tag>
-            
             <tag> 生成模型 </tag>
             
             <tag> 扩散模型 </tag>
+            
+            <tag> 序列模型 </tag>
             
             <tag> 马尔可夫链 </tag>
             
@@ -1768,13 +1768,13 @@
       
         <tags>
             
-            <tag> 信息论 </tag>
-            
             <tag> 生成模型 </tag>
             
             <tag> 扩散模型 </tag>
             
             <tag> 潜变量模型 </tag>
+            
+            <tag> 信息论 </tag>
             
         </tags>
       
@@ -1801,11 +1801,11 @@
       
         <tags>
             
+            <tag> 生成模型 </tag>
+            
             <tag> CNN </tag>
             
             <tag> Transformer </tag>
-            
-            <tag> 生成模型 </tag>
             
         </tags>
       
@@ -1834,9 +1834,9 @@
             
             <tag> 生成模型 </tag>
             
-            <tag> 流匹配 </tag>
-            
             <tag> 扩散模型 </tag>
+            
+            <tag> 流匹配 </tag>
             
         </tags>
       
@@ -1925,11 +1925,11 @@
             
             <tag> 生成模型 </tag>
             
-            <tag> 流匹配 </tag>
-            
             <tag> 扩散模型 </tag>
             
             <tag> 概率论 </tag>
+            
+            <tag> 流匹配 </tag>
             
         </tags>
       
@@ -1956,9 +1956,9 @@
       
         <tags>
             
-            <tag> 多模态 </tag>
-            
             <tag> 机器人学习 </tag>
+            
+            <tag> 多模态 </tag>
             
         </tags>
       
@@ -2047,9 +2047,9 @@
             
             <tag> 生成模型 </tag>
             
-            <tag> 流匹配 </tag>
-            
             <tag> 扩散模型 </tag>
+            
+            <tag> 流匹配 </tag>
             
         </tags>
       
@@ -2105,9 +2105,9 @@
       
         <tags>
             
-            <tag> 模型训练 </tag>
-            
             <tag> 并行计算 </tag>
+            
+            <tag> 模型训练 </tag>
             
         </tags>
       
@@ -2136,9 +2136,9 @@
             
             <tag> CNN </tag>
             
-            <tag> 序列模型 </tag>
-            
             <tag> Transformer </tag>
+            
+            <tag> 序列模型 </tag>
             
         </tags>
       
@@ -2192,9 +2192,9 @@
       
         <tags>
             
-            <tag> 序列模型 </tag>
-            
             <tag> Transformer </tag>
+            
+            <tag> 序列模型 </tag>
             
         </tags>
       
@@ -2279,9 +2279,9 @@
       
         <tags>
             
-            <tag> 正则化 </tag>
-            
             <tag> CNN </tag>
+            
+            <tag> 正则化 </tag>
             
             <tag> 归一化 </tag>
             
@@ -2364,9 +2364,9 @@
       
         <tags>
             
-            <tag> 模型训练 </tag>
-            
             <tag> 最优化 </tag>
+            
+            <tag> 模型训练 </tag>
             
         </tags>
       
@@ -2509,9 +2509,9 @@
       
         <tags>
             
-            <tag> 树结构 </tag>
-            
             <tag> 查找与索引 </tag>
+            
+            <tag> 树结构 </tag>
             
             <tag> 排序与选择 </tag>
             
@@ -2567,11 +2567,11 @@
       
         <tags>
             
-            <tag> 树结构 </tag>
-            
             <tag> 查找与索引 </tag>
             
             <tag> 哈希 </tag>
+            
+            <tag> 树结构 </tag>
             
         </tags>
       
@@ -2656,11 +2656,11 @@
       
         <tags>
             
+            <tag> 信息论 </tag>
+            
             <tag> 数据结构 </tag>
             
             <tag> 树结构 </tag>
-            
-            <tag> 信息论 </tag>
             
         </tags>
       
