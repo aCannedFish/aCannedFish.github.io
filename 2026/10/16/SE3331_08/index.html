@@ -1,0 +1,1181 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-08：事务机制 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="事务范围 事务（transaction，简称 TX）把需要共同处理的一组数据操作联系起来。数据可以是数据库中的账户、键值存储中的记录，也可以是目录项、inode 或共享内存中的对象。 程序用 begin 标记开始，用 commit 请求提交。系统据此知道哪些读取需要共同解释、哪些修改需要共同生效。一次服务请求还可能包含参数解析、网络传输和响应生成，事务边界应覆盖业务依赖的数据操作。  购物程序可能">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机系统工程-08：事务机制">
+<meta property="og:url" content="https://acannedfish.github.io/2026/10/16/SE3331_08/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="事务范围 事务（transaction，简称 TX）把需要共同处理的一组数据操作联系起来。数据可以是数据库中的账户、键值存储中的记录，也可以是目录项、inode 或共享内存中的对象。 程序用 begin 标记开始，用 commit 请求提交。系统据此知道哪些读取需要共同解释、哪些修改需要共同生效。一次服务请求还可能包含参数解析、网络传输和响应生成，事务边界应覆盖业务依赖的数据操作。  购物程序可能">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background11.png">
+<meta property="article:published_time" content="2026-10-16T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-16T03:23:39.858Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="乐观并发">
+<meta property="article:tag" content="硬件事务">
+<meta property="article:tag" content="多版本">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background11.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机系统工程-08：事务机制",
+  "url": "https://acannedfish.github.io/2026/10/16/SE3331_08/",
+  "image": "https://acannedfish.github.io/img/background11.png",
+  "datePublished": "2026-10-16T03:00:00.000Z",
+  "dateModified": "2026-10-16T03:23:39.858Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/10/16/SE3331_08/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机系统工程-08：事务机制',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"><link rel="stylesheet" href="/lib/katex/katex.min.css">
+<style data-katex-display>
+/* Hide the MathML fallback; when it is laid out, every formula renders twice. */
+#article-container .katex .katex-mathml {
+  display: none !important;
+}
+
+/* Reveal KaTeX without waiting for the theme loader to add .katex-show. */
+#article-container .katex {
+  display: inline !important;
+}
+
+#article-container .katex-display > .katex {
+  display: block !important;
+}
+</style>
+</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">112</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">66</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-08：事务机制&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-08：事务机制</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-16T03:00:00.000Z" title="发表于 2026-10-16 11:00:00">2026-10-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-16T03:23:39.858Z" title="更新于 2026-10-16 11:23:39">2026-10-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="事务范围">事务范围</h2>
+<p>事务（transaction，简称 TX）把需要共同处理的一组数据操作联系起来。数据可以是数据库中的账户、键值存储中的记录，也可以是目录项、inode 或共享内存中的对象。</p>
+<p>程序用 <code>begin</code> 标记开始，用 <code>commit</code> 请求提交。系统据此知道哪些读取需要共同解释、哪些修改需要共同生效。一次服务请求还可能包含参数解析、网络传输和响应生成，事务边界应覆盖业务依赖的数据操作。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859250.png" alt="购物订单的提交同时涉及商品数量与订单记录"></p>
+<p>购物程序可能先检查 <code>item.count&gt;0</code>，再扣减数量并把商品加入购物车或订单。检查与扣减分开执行时，其他请求也可能读到同一份库存；扣减成功但订单没有建立时，业务也缺少完整结果。事务用于协调这些相关动作。库存仅减少 1，还要与需要建立的订单数量相符；金额、商品和用户身份等条件由业务继续检查。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859251.png" alt="金融服务异常的公开讨论，用于说明用户对账户结果的要求"></p>
+<p>图中是经过遮挡处理的公开讨论，反映用户对金融服务和账户显示的关注。单凭截图无法判断故障原因。账户系统需要依据可靠交易记录核对结果，让扣款、入账与交易身份保持对应，并处理失败、重试和恢复。</p>
+<blockquote>
+<p>思考题：金融应用为什么经常用事务组织转账？只让每次余额写入都完整执行，足够吗？</p>
+<p>解答：</p>
+<p>一笔转账同时涉及扣款、入账和交易记录，需要共同生效；多笔请求还要避免读取和覆盖彼此的中间状态。单次写入完整，只保证那一次访问，整笔业务仍可能只完成一部分。事务边界把这些操作交给共同的提交、隔离与恢复规则。</p>
+</blockquote>
+<h2 id="ACID">ACID</h2>
+<p>ACID 概括事务需要提供或共同维护的四类性质：</p>
+<table>
+<thead>
+<tr>
+<th>字母</th>
+<th>名称</th>
+<th>对应用的含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>Atomicity，原子性</td>
+<td>整笔修改完整保留或完整撤销</td>
+</tr>
+<tr>
+<td>C</td>
+<td>Consistency，一致性</td>
+<td>正确事务把数据从符合业务约束的状态变到另一个符合约束的状态</td>
+</tr>
+<tr>
+<td>I</td>
+<td>Isolation，隔离性</td>
+<td>并发事务按接口规定的规则相互影响；可串行化要求能用某个完整事务顺序解释</td>
+</tr>
+<tr>
+<td>D</td>
+<td>Durability，持久性</td>
+<td>已确认提交的结果在规定故障后仍可恢复</td>
+</tr>
+</tbody>
+</table>
+<p>原子性和持久性的日志、提交点与检查点见<a href="/2026/10/10/SE3331_06/">故障原子性</a>。提交点之前要能回退，之后要有足够恢复依据完成事务；收到成功确认后，结果需要保留。</p>
+<p>业务约束及单笔程序正确性见<a href="/2026/10/13/SE3331_07/#%E4%B8%9A%E5%8A%A1%E6%AD%A3%E7%A1%AE%E6%80%A7">并发原子性中的业务正确性</a>。数据库可以检查声明的约束，应用仍需正确表达金额、库存和权限等规则。ACID 中的 C 描述这些业务约束；<a href="/2026/10/08/SE3331_05/">并发一致性</a>讨论的模型则规定读写顺序和可见结果。</p>
+<p>本篇重点解释隔离性的三种实现思路：OCC 在执行后验证，HTM 用硬件跟踪内存访问，MVCC 让读取使用历史快照。下面先按无机器故障的内存读写分析，持久化再与日志协议结合。</p>
+<h2 id="乐观执行">乐观执行</h2>
+<p>乐观并发控制（Optimistic Concurrency Control，简称 OCC）让事务先在自己的工作区内计算，提交前检查这些计算依赖的数据是否仍然有效。检查失败就丢弃本次暂存结果，重新读取并计算。</p>
+<p>“乐观”表示执行阶段先允许工作继续。提交阶段仍需同步，保证通过检查的结果按规定发布。对读多写少、冲突较少的负载，可以减少计算过程中持锁和等待的时间。<a target="_blank" rel="noopener" href="https://www.eecs.harvard.edu/~htk/publication/1981-tods-kung-robinson.pdf">Kung 与 Robinson，1981</a>提出了经典 OCC 方法。</p>
+<p>一次事务分成三阶段：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>做什么</th>
+<th>结果保存在哪里</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>执行</td>
+<td>读取数据，运行业务计算，暂存修改</td>
+<td>事务私有工作区</td>
+</tr>
+<tr>
+<td>验证</td>
+<td>检查读取版本及相关并发状态</td>
+<td>验证通过才可继续</td>
+</tr>
+<tr>
+<td>发布</td>
+<td>将全部暂存修改安装到共享存储</td>
+<td>形成已确认的新版本</td>
+</tr>
+</tbody>
+</table>
+<p>这里的“发布”表示修改开始按协议对其他事务可见。需要持久性时，还要在规定时刻完成日志等可靠保存，才能向用户报告相应的成功。</p>
+<h2 id="读写集合">读写集合</h2>
+<p>事务开始时分配自己的执行上下文，至少包含读集合（read set）和写集合（write set）。</p>
+<p>读集合记录本次计算依赖哪些记录、读到它们的哪个版本。写集合记录准备修改哪些记录、最终要写入什么值。例如执行 <code>B=A+B</code>，初始 <code>A=B=100</code>：</p>
+<table>
+<thead>
+<tr>
+<th>结构</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>读集合</td>
+<td>A 的值 100 与版本 vA；B 的值 100 与版本 vB</td>
+</tr>
+<tr>
+<td>写集合</td>
+<td>B 的暂存新值 200</td>
+</tr>
+</tbody>
+</table>
+<p>此时共享 B 仍为 100。其他事务不能直接取走当前事务尚未提交的 200；当前事务再次读取 B，则应取得自己已经暂存的 200，这称为读到自己的写入。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">tx_read</span>(<span class="params">tx, key</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;先读取本事务的暂存写入，再读取共享记录并记住原版本。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> key <span class="keyword">in</span> tx.write_set:</span><br><span class="line">        <span class="keyword">return</span> tx.write_set[key]</span><br><span class="line">    <span class="keyword">if</span> key <span class="keyword">in</span> tx.read_set:</span><br><span class="line">        <span class="keyword">return</span> tx.read_set[key].value</span><br><span class="line"></span><br><span class="line">    value, version = read_stable_record(key)</span><br><span class="line">    tx.read_set[key] = ReadEntry(value=value, version=version)</span><br><span class="line">    <span class="keyword">return</span> value</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">tx_write</span>(<span class="params">tx, key, value</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;暂存新值，保留首次共享读取时记录的版本。&quot;&quot;&quot;</span></span><br><span class="line">    tx.write_set[key] = value</span><br></pre></td></tr></table></figure>
+<p><code>read_stable_record</code> 表示按记录协议取得相互匹配的数据与版本；<code>ReadEntry</code> 是私有的读取记录。写入自己的暂存值时，验证所需的原版本仍应保留，避免把“计算出的新值”误当成“共享存储原来就有的值”。</p>
+<h2 id="稳定读取">稳定读取</h2>
+<p>一个数据值和它的版本号也可能分开读取。例如先读到旧 A=100，再遇到其他事务提交 A=110，最后才读到新版本 v2。如果把 <code>100,v2</code> 作为同一份读取记录，后续验证就会依据错误的对应关系。</p>
+<p>因此，记录读取需要保证内容、版本和并发状态相互匹配。常见思路是先读元信息，复制内容，再检查一次元信息；记录被其他写入者锁住或版本发生变化时，重新读取。也可以使用其他能取得稳定记录的接口。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 概念流程；元信息访问和内容复制需符合语言、硬件的同步规则。</span><br><span class="line">重复：</span><br><span class="line">    before = 读取记录的版本和锁状态</span><br><span class="line">    如果有写入正在安装：重试或等待</span><br><span class="line">    value = 安全复制记录内容</span><br><span class="line">    after = 再读取版本和锁状态</span><br><span class="line">    如果 before 与 after 匹配且记录可读：</span><br><span class="line">        返回 value 和对应版本</span><br></pre></td></tr></table></figure>
+<p>这段代码表达稳定读取的条件。实际多字节对象不能靠普通变量反复读取自动取得正确同步，还需由数据库记录格式、原子元信息和内存顺序提供保证。事务输出等有外部效果的动作应在相应提交决定之后执行，验证失败时才能安全地重新计算。</p>
+<blockquote>
+<p>思考题：为什么“读取数据，再把它记入读集合”需要取得一份稳定记录？</p>
+<p>解答：</p>
+<p>其他事务可能同时安装新内容。若值来自旧版本、验证标记来自新版本，就会错误地接受基于旧值的计算。读取接口应返回相互对应的值、版本和有效状态，并让原版本保留到提交验证。</p>
+</blockquote>
+<h2 id="提交检查">提交检查</h2>
+<p>最简单的 OCC 实现让验证和发布共用一把全局提交锁。事务取得锁后，逐项检查读集合；全部通过，才安装写集合。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">validate_and_commit</span>(<span class="params">tx, store</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;在共同提交范围内验证依赖，并发布全部暂存写入。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">with</span> store.commit_lock:</span><br><span class="line">        <span class="keyword">for</span> key, old <span class="keyword">in</span> tx.read_set.items():</span><br><span class="line">            <span class="keyword">if</span> store.version(key) != old.version:</span><br><span class="line">                <span class="keyword">return</span> ABORTED</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> key, new_value <span class="keyword">in</span> tx.write_set.items():</span><br><span class="line">            store.install_new_value_and_version(key, new_value)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> COMMITTED</span><br></pre></td></tr></table></figure>
+<p>代码使用抽象的记录接口，假定所有写入者都遵守共同提交规则，读取者遵守稳定读取规则。失败时尚未向共享存储安装任何本事务的新值，因此可以丢弃私有集合；离开代码块时释放提交锁。</p>
+<p>业务计算仍可由多个事务并发执行。全局锁只覆盖版本验证和修改发布，不覆盖计算的全部过程；短事务的提交工作较少时，这个互斥范围通常也较短。</p>
+<h2 id="验证间隔">验证间隔</h2>
+<p>若验证与发布之间允许另一个提交者插入，两者都可能通过过期的检查。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859237.png" alt="两笔事务都先验证旧值，再各自安装 2，丢失了一次增加"></p>
+<p>图中 R 为读，V 为验证，W 为写。初始 <code>A=B=1</code>，T1、T2 都要执行 <code>A+=1;B+=1</code>。每笔完整执行一次，两个数最终都应为 3。</p>
+<blockquote>
+<p>例题：两笔事务都先读到 A=B=1，计算出各自的暂存结果 2；随后都在任何发布之前完成验证，再依次发布。最终是多少，问题出在哪里？</p>
+<p>解答：</p>
+<p>两次验证都看到旧版本，都会通过；随后两次发布都写入 2，最终 A=B=2。一笔计算依赖的旧状态在验证之后已经被另一笔提交改变，但它仍沿用原计算。</p>
+<p>验证及其保护下的发布需要共同协调。使用全局提交锁时，一笔事务完成发布后，另一笔才验证；后者会发现版本改变并重试。</p>
+</blockquote>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859239.png" alt="共同提交锁让第二笔事务验证失败，避免直接覆盖第一笔结果"></p>
+<p>T1 发布后 A、B 为 2。T2 从头重试，重新读到 2、计算 3，再验证和发布。注意重试要重新读取、重新计算，不能只把旧写集合再次提交。</p>
+<h2 id="版本变化">版本变化</h2>
+<p>验证可以比较“当前值是否仍相同”，也可以比较“当前版本是否仍相同”。两者检查的条件不同。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859238.png" alt="A 经历 1 到 2 再到 1，较早读取 A 的事务仅比较整数时看不见中间修改"></p>
+<p>图中 T1、T2 都执行 <code>A+=1</code>，T3 执行 <code>A=1</code>。初始 A=1：</p>
+<table>
+<thead>
+<tr>
+<th>顺序</th>
+<th>动作</th>
+<th>当前 A</th>
+<th>示例版本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>①</td>
+<td>T1 读取 A</td>
+<td>1</td>
+<td>v0</td>
+</tr>
+<tr>
+<td>②</td>
+<td>T2 读到 1，提交新值 2</td>
+<td>2</td>
+<td>v1</td>
+</tr>
+<tr>
+<td>③</td>
+<td>T3 提交 A=1</td>
+<td>1</td>
+<td>v2</td>
+</tr>
+<tr>
+<td>④</td>
+<td>T1 进入验证</td>
+<td>1</td>
+<td>v2</td>
+</tr>
+</tbody>
+</table>
+<p>这个“原来是 A、变成 B、后来又回到 A”的现象称为 ABA 问题。只比较整数 1，T1 无法发现中间已提交两次修改；比较 v0 与 v2，就能发现它的原版本已过期。版本应在相应更新后推进，并处理编号复用或溢出的规则。</p>
+<p>图中的冲突环表示，原先那些读取和写入的依赖不能全部对应同一个串行顺序。若只观察整数结果，这个特定例子仍能按 T2、T3、T1 得到相同数值；版本验证所检查的是“读取之后没有发生过相关已提交修改”这一更具体的条件。数据值相等和同一版本各有明确含义。</p>
+<blockquote>
+<p>思考题：比较原值和比较版本会拒绝完全相同的调度吗？图中 T1 分别会看到什么？</p>
+<p>解答：</p>
+<p>比较原值时，T1 看到 <code>1=1</code>，会通过；比较版本时，看到 <code>v0≠v2</code>，会中止。版本标记保留修改历史，适合实现本节要求原读取保持有效的验证规则。</p>
+</blockquote>
+<h2 id="提交粒度">提交粒度</h2>
+<p>全局提交锁会让互不访问同一记录的提交也排队。可以改成按记录加锁，在提交时只协调相关记录。</p>
+<p>一个直接方案是按统一顺序取得 <code>read_set∪write_set</code> 中全部记录的锁，验证完读集合后，安装写集合，最后释放。集合要去重，固定顺序用来避免循环取锁；基本规则见<a href="/2026/10/13/SE3331_07/#%E4%B8%A4%E9%98%B6%E6%AE%B5%E9%94%81">两阶段锁与死锁</a>。</p>
+<p>进一步优化只锁写集合，读集合由版本验证保护。不过，验证还要检查相关记录有没有被其他事务锁住、准备发布。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859240.png" alt="T1 只锁 A，T2 只锁 B，若忽略对方的锁，两者可能同时通过旧读取验证"></p>
+<p>图中 T1 执行 <code>A+=B</code>，T2 执行 <code>B+=A</code>。设初始 A=B=1，两者都先读到 1、1。T1 只锁 A，T2 只锁 B，两个目标锁不同；若仅比较尚未改变的版本，两者都能通过，再分别发布 A=2、B=2。</p>
+<p>但先 T1 后 T2 应为 A=2、B=3，先 T2 后 T1 应为 A=3、B=2。2、2 没有相应的串行解释。两个事务都读取了对方即将覆盖的旧数据，形成双向依赖。</p>
+<blockquote>
+<p>思考题：只锁写集合以后，对读集合只检查版本够吗？应该怎样处理已经由其他提交者锁住的记录？</p>
+<p>解答：</p>
+<p>记录可能尚未改变版本，但另一提交者已经取得它的写锁，即将安装新值。验证应同时检查原版本仍有效，以及记录未被其他事务以冲突方式锁住；遇到冲突时中止或按协议重试。</p>
+<p>自己已经持有的写锁需要按所有者识别。既在读集合又在写集合中的记录，由本事务自己的锁保护，验证它原来的版本，不能把自己的锁当成外部冲突。</p>
+</blockquote>
+<h2 id="记录验证">记录验证</h2>
+<p>简化后的提交逻辑如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 省略持久化，只说明数据记录的并发提交条件。</span><br><span class="line">按固定顺序取得写集合中各个不同记录的锁</span><br><span class="line">验证全部读取：</span><br><span class="line">    原版本仍然匹配</span><br><span class="line">    记录没有被其他提交者以冲突方式锁住</span><br><span class="line">若失败：</span><br><span class="line">    释放本事务持有的全部锁，丢弃私有修改，重新执行</span><br><span class="line">若通过：</span><br><span class="line">    安全安装全部新值，推进版本，发布相应状态</span><br><span class="line">    按协议释放锁</span><br></pre></td></tr></table></figure>
+<p>所有写入者都要遵守记录锁、版本推进和发布规则。验证时读取锁与版本的方式、发布新内容的内存顺序，也属于协议的一部分。上面的步骤用于说明依赖条件；成熟系统还要保护索引、范围查询和新记录插入等访问。</p>
+<p>读阶段不长期持有记录锁，因此在本节模型中避免了业务计算过程中持锁等待。不过，若提交时逐把取锁且没有共同顺序，OCC 同样可能发生死锁。成功与失败路径都需要释放已取得的锁。</p>
+<h2 id="只读成本">只读成本</h2>
+<p>只读取记录时，2PL 通常包含取得相应锁、读取内容、释放锁；取得锁经常需要原子读改写，释放还要修改锁状态。OCC 的低冲突读路径则主要读取内容，在提交时再读取版本和锁状态。</p>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>理想无重试情况下的一次只读访问</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2PL</td>
+<td>取得锁、读内容、释放锁</td>
+</tr>
+<tr>
+<td>OCC</td>
+<td>读内容及其版本，随后验证元信息</td>
+</tr>
+</tbody>
+</table>
+<p>记录采用读锁还是互斥锁、如何复制内容，会改变具体指令数。这张表说明的是同步方式和共享写入量的区别。理解为什么一次取锁可能更贵，需要先看硬件的原子操作。</p>
+<h2 id="原子交换">原子交换</h2>
+<p>设锁状态 0 表示空闲、1 表示已持有。若取锁被写成“先读取，看到 0 再写 1”，两个线程可以同时读到 0，然后都认为自己成功，锁本身就出现竞态。</p>
+<p>比较并交换（compare-and-swap，简称 CAS）把比较与条件修改作为一个原子操作。其含义可以写为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 这是硬件操作的语义描述，整个过程须由原子原语保证。</span><br><span class="line">old = *ptr</span><br><span class="line">如果 old == expected：</span><br><span class="line">    *ptr = desired</span><br><span class="line">返回 old</span><br></pre></td></tr></table></figure>
+<p>用它把 <code>flag</code> 从 0 改为 1 时，只有一个线程能在这次状态变化上成功。其他线程取得的旧值为 1，于是继续等待。CAS 的不同语言接口可能返回布尔成功标记，或把实际值写回 expected，使用时要依据具体接口。</p>
+<p>x86 通常用带 <code>LOCK</code> 前缀的内存 <code>CMPXCHG</code> 完成这种跨核心原子读改写；其他体系结构也有相应原语。源代码中写出相同的普通读、比较和赋值，并不会自动取得这些保证。<a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html">Intel 指令手册</a></p>
+<h2 id="自旋锁">自旋锁</h2>
+<p>自旋锁在未取得锁时反复尝试。下面使用 C11 原子对象，明确取锁与释放的内存顺序：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdatomic.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 用 0/1 原子状态协调互斥访问；等待者持续尝试。 */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="type">atomic_int</span> flag;</span><br><span class="line">&#125; <span class="type">spin_lock_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 初始化应在锁被其他线程访问之前完成。 */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">spin_init</span><span class="params">(<span class="type">spin_lock_t</span> *lock)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">atomic_init</span>(&amp;lock-&gt;flag, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 成功的 acquire 与前一持有者的 release 配合发布临界区数据。 */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">spin_acquire</span><span class="params">(<span class="type">spin_lock_t</span> *lock)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="type">int</span> expected = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (atomic_compare_exchange_weak_explicit(</span><br><span class="line">                &amp;lock-&gt;flag,</span><br><span class="line">                &amp;expected,</span><br><span class="line">                <span class="number">1</span>,</span><br><span class="line">                memory_order_acquire,</span><br><span class="line">                memory_order_relaxed)) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 释放时把空闲状态发布给后续取得锁的线程。 */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">spin_release</span><span class="params">(<span class="type">spin_lock_t</span> *lock)</span></span><br><span class="line">&#123;</span><br><span class="line">    atomic_store_explicit(&amp;lock-&gt;flag, <span class="number">0</span>, memory_order_release);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>compare_exchange_weak</code> 可能要求重试，因此放在循环里；每轮重新设置 expected=0。取锁成功后，线程才访问受保护数据。释放使用原子 store 即可，仍需满足正确的发布顺序。</p>
+<p>这个实现便于理解，不包含退避、让出 CPU 或其他优化。临界区很长、持有者被暂停时，忙等会消耗执行资源；选择自旋或阻塞式等待，需要结合持锁时间与调度条件。</p>
+<h2 id="同步开销">同步开销</h2>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859241.png" alt="历史延迟示意中，L1 读取约 1 ns，mutex 加解锁对约 17 ns"></p>
+<p>图中给出某组历史示意数值：L1 缓存读取约 1 ns，分支预测错误约 3 ns，L2 读取约 4 ns，mutex 加解锁一对约 17 ns，主存读取约 100 ns。它们用于说明数量级，实际数值随处理器、缓存状态和争用改变。</p>
+<p>原子读改写通常还需要协调缓存行的所有权。多个核争用同一锁时，状态在核之间反复转移，成本可能进一步增加。因此，“少给只读记录做共享写入”能成为 OCC 的优化方向；最终仍要测量验证、重试和发布的完整成本。</p>
+<h2 id="提交次序">提交次序</h2>
+<p>沿一个具体例子看验证怎样工作。初始 A=B=100：</p>
+<ul>
+<li>T1 计算 <code>B=A+B</code>，读集合包含 A=100、B=100，写集合准备 B=200。</li>
+<li>T2 计算 <code>A=A×1.1</code>，读集合包含 A=100，写集合准备 A=110。</li>
+</ul>
+<p>这里按示例的精确十进制数计算，实际货币程序还要使用合适的金额表示。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859242.png" alt="T2 先提交 A=110，T1 随后发现 A 的原读取已经过期"></p>
+<p>T2 先进入提交范围，A 的原版本仍匹配，可以发布 A=110。T1 随后验证时，发现它曾读取的 A 已更新，丢弃暂存的 B=200。重试 T1 会读到 A=110、B=100，重新计算 B=210。</p>
+<p>这套验证自然地把后来成功重试的 T1 排在 T2 之后。它维护了一个具体的可串行化顺序，同时可能限制其他原本也合法的排列。</p>
+<h2 id="保守中止">保守中止</h2>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859243.png" alt="同一个例子只产生 T1 指向 T2 的依赖，原计算其实可按 T1、T2 排列"></p>
+<p>仍看上节同一组读取和暂存写入。若允许把 T1 排在 T2 前，则 T1 先根据旧值把 B 改为 200，T2 再把 A 改为 110，最终可以是 A=110、B=200。T1 读旧 A 只产生 <code>T1→T2</code> 的依赖，没有相反方向的冲突环。</p>
+<p>但本节这套按提交时的当前版本检查依赖的 OCC，会因 T2 先发布 A 而拒绝原 T1。这称为保守中止或误中止（false abort）：协议拒绝了一个按更灵活顺序仍可接受的执行。这个说法针对该协议选择的检查条件。</p>
+<blockquote>
+<p>思考题：上例为什么可以中止 T1，又称它为误中止？T1 重试后得到的 B=210，与原本可接受的 B=200 各对应什么顺序？</p>
+<p>解答：</p>
+<p>原 T1 的 A 版本已经变化，按本算法应中止；若另选 T1→T2 的顺序，原来的 B=200 也有合法解释，因此称为保守拒绝。重试后的 B=210 对应 T2→T1；B=200 对应 T1→T2。两种结果各自依赖一个完整的串行顺序。</p>
+</blockquote>
+<p>读取记录越多，执行时间越长，读集合中某一项被其他事务修改的机会通常越大。重试要丢掉这段已经完成的计算；冲突频繁时，同一笔事务可能反复失败。需要结合重试调度和完成机会处理活锁、饥饿，基本区别见<a href="/2026/10/13/SE3331_07/#%E9%87%8D%E8%AF%95%E6%B4%BB%E6%80%A7">重试活性</a>。</p>
+<h2 id="冲突负载">冲突负载</h2>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859244.png" alt="并发事务增加时，OCC 在低争用处较高，争用加重后下降更明显"></p>
+<p>横轴为并发事务数，纵轴为事务吞吐量。图中没有给出完整数值刻度，用于概括一种负载趋势：OCC 在低冲突时减少持锁与等待；共享热点增加以后，验证失败、回滚和重复计算消耗更多资源。2PL 的等待也有成本，但可以避免先完成大量工作再因冲突丢弃。</p>
+<p>并发数本身没有决定冲突程度。如果事务始终访问不同对象，增加并发可以继续分担工作；若都修改少数热点，等待或重试会更明显。选择方案要测量读写集合大小、执行时间、热点分布、成功提交率和完成事务的总成本。</p>
+<h2 id="硬件事务">硬件事务</h2>
+<p>硬件事务内存（Hardware Transactional Memory，HTM）由处理器跟踪一段代码的内存访问，尝试让这些访问作为一个整体提交；冲突或资源条件不满足时，中止这次尝试，撤销相应的事务性修改。</p>
+<p>Intel 的 RTM 是 Restricted Transactional Memory，属于 Intel TSX 的接口之一，最早出现在支持该功能的 Haswell 产品中。其他体系结构也提出过相应机制，例如 Arm TME；具体处理器、系统和指令接口需要分别确认。</p>
+<p>RTM 的基本指令为：</p>
+<table>
+<thead>
+<tr>
+<th>指令或接口</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>XBEGIN / _xbegin</code></td>
+<td>开始一次事务尝试，指定中止后的控制流</td>
+</tr>
+<tr>
+<td><code>XEND / _xend</code></td>
+<td>尝试提交当前事务</td>
+</tr>
+<tr>
+<td><code>XABORT / _xabort</code></td>
+<td>程序主动中止</td>
+</tr>
+</tbody>
+</table>
+<p>事务成功开始后，代码可以按普通内存访问的形式读取和修改受保护数据。中止时，CPU 撤销这次区域内的事务性写入和相应寄存器状态，再进入失败处理分支。<code>_xbegin</code> 返回的状态帮助程序判断是否进入事务、是否适合重试。</p>
+<p>这种原子性保护内存执行中的相关访问。数据库还需要日志等持久化规则；网络发送、设备 I/O 等外部效果也不能靠这段内存回滚随意撤销。因此事务区域应选择适合这种执行方式的代码。<a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/articles/technical/transactional-memory-speculative-spin-mutex-tbb.html">Intel RTM 说明</a></p>
+<h2 id="硬件冲突">硬件冲突</h2>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859245.png" alt="CPU 0 的事务读取 x 后，CPU 1 在区域外写 x，引起事务中止"></p>
+<p>图中 x 最初为 0：</p>
+<ol>
+<li>CPU 0 执行 <code>_xbegin</code>，进入事务区域，读取 x=0。</li>
+<li>x 所在缓存行进入硬件读集合。</li>
+<li>CPU 1 在事务区域之外执行 x=1。</li>
+<li>硬件检测到冲突，让 CPU 0 的这次事务尝试中止。</li>
+<li>CPU 0 进入 fallback 分支，之前尚未提交的事务性修改被撤销；CPU 1 的 x=1 保留。</li>
+</ol>
+<p>图中的处理不要求普通写入者等待这段事务完成。检测后怎样选择中止者和处理争用，由具体硬件实现决定。区域外由多步组成的业务，也仍需要它自己的同步安排。</p>
+<blockquote>
+<p>思考题：另一个线程在 RTM 区域之外写入 x，会自动被纳入同一笔事务吗？</p>
+<p>解答：</p>
+<p>该写入属于另一个执行过程。图中它改变了当前事务已经读取的缓存行，引起事务中止；它自己的写入仍生效。事务的失败处理随后决定重试或采用其他同步路径。</p>
+</blockquote>
+<h2 id="失败处理">失败处理</h2>
+<p>RTM 采用尽力而为的事务执行，架构没有保证某一段代码最终一定能以硬件事务方式成功。只用无限重试，可能一直停在失败循环。</p>
+<p>一种常见方法是有限次尝试后，回到保证能够推进的普通加锁路径。事务快速路径也要读取并检查同一把后备锁，让它与慢路径共同协调。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># 逻辑流程；具体代码需使用编译器支持的 RTM 和锁接口。</span><br><span class="line">最多尝试 K 次：</span><br><span class="line">    status = xbegin()</span><br><span class="line">    如果成功进入事务：</span><br><span class="line">        读取后备锁状态；已被持有时主动 xabort</span><br><span class="line">        执行业务的内存操作</span><br><span class="line">        xend()</span><br><span class="line">        返回成功</span><br><span class="line">    若状态表明不宜继续事务重试：</span><br><span class="line">        结束尝试</span><br><span class="line"></span><br><span class="line">取得后备锁</span><br><span class="line">执行同一组业务操作</span><br><span class="line">释放后备锁</span><br><span class="line">返回结果</span><br></pre></td></tr></table></figure>
+<p>这里的 K 是重试上限。RTM 可用性要在相应平台上确认，不支持或被禁用时直接走后备路径。快速、后备和其他相关访问路径还要共同遵守同步规则。</p>
+<blockquote>
+<p>思考题：为什么快速路径必须读后备锁？只在多次失败后取得锁就够吗？</p>
+<p>解答：</p>
+<p>一台 CPU 可能正在持有后备锁修改数据，另一台却尝试硬件事务。快速路径读取锁状态，把锁所在行纳入读集合；后备路径取得锁时修改该状态，会与相关快速路径冲突。快速路径若发现锁已持有，就主动中止。</p>
+<p>这样两条路径共享同一套互斥条件。只有后备路径使用锁、快速路径完全忽略锁时，二者的业务可能不受同一规则协调。<a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/articles/community/tsx-fallback-paths.html">Intel 后备路径说明</a></p>
+</blockquote>
+<h2 id="缓存跟踪">缓存跟踪</h2>
+<p>HTM 可以理解为硬件中的乐观执行：先跟踪读写和暂存结果，再检测能否提交。硬件利用缓存与缓存一致性协议承担部分工作。</p>
+<p>缓存行是一小段由硬件共同管理的内存内容。一个核想写某行时，需要取得相应的写入权限；其他核可能收到使该行失效等一致性消息。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859246.png" alt="另一个核请求写入权限，一致性消息命中事务读集合，引发中止"></p>
+<p>图中 CPU 0 读取 x 后，本地缓存将其标为共享状态，并记录它属于当前事务的读集合。CPU 1 想写 x，要求取得对应行的独占权限；失效消息到达 CPU 0，命中读集合标记，CPU 0 中止事务。</p>
+<p>暂存写入同样需要硬件保存追踪状态，并在提交时按规定发布。缓存行中的 read-bit 等框表示概念上的事务跟踪信息，具体内部结构因处理器而异。追踪以缓存行为单位，还可能让访问同一行不同字段的线程发生额外冲突。</p>
+<h2 id="容量限制">容量限制</h2>
+<p>缓存用于跟踪事务，也限制了能够同时保存多少事务状态。工作集指这次事务读取或写入所涉及的数据范围。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859247.png" alt="历史 Haswell 测试中，写集合与读集合的容量限制不同"></p>
+<p>横轴是工作集大小，纵轴是中止率，两者都采用非线性的刻度。图中标出写集合约 31 KB、读集合约 4 MB 的历史测试结果。随着集合增大，中止率上升；写集合更早达到图示限制。</p>
+<p>写集合需要暂存尚未提交的修改，读集合需要保留检测冲突的状态。图示实现把事务写入与 L1 缓存容量联系起来，读集合的跟踪还能利用其他缓存层级。缓存容量、关联度、地址分布和同时运行的工作都会影响结果，不能直接把总缓存大小当成每笔事务一定可用的空间。</p>
+<p>这些数值来自特定 Haswell 时代实验，作用是说明硬件追踪资源有限，不构成所有处理器的统一事务容量保证。<a target="_blank" rel="noopener" href="https://ipads.se.sjtu.edu.cn/zh/publications/WangEuroSys14.pdf">Wang 等，EuroSys 2014</a></p>
+<h2 id="执行时长">执行时长</h2>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859248.png" alt="事务运行时间增加时，中止率逐渐升高，图中标出约 3.9 ms 的测试结果"></p>
+<p>横轴是事务执行时间，从微秒增加到毫秒；纵轴为中止率。图中在长事务处接近 100%，并标出约 3.9 ms。这个结果描述相应实验中的长事务中止现象，具体时长还取决于平台、执行事件与访问方式。</p>
+<p>事务越长，遇到中断、调度、缓存状态变化或其他冲突的机会通常越多。某些指令和事件本身也会引起中止。适合 RTM 的代码应尽量保持内存工作集和执行时间可控，避免把等待网络或设备响应的长过程直接放进区域。</p>
+<p>失败后的后备路径仍要保持业务正确，并能够在这些条件下继续运行。成功路径较快与整体程序能够稳定完成，需要一起评估。</p>
+<h2 id="负载差异">负载差异</h2>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859249.png" alt="SmallBank 与 TPC-C 两类实验中，HTM 与软件 OCC 的性能关系不同"></p>
+<p>两张图横轴都是线程数，纵轴都是每秒百万事务，但纵轴范围不同。左图 SmallBank 中，HTM 曲线增长较快；右图 TPC-C 中，软件 OCC 系统 Silo 随线程增加取得更高吞吐，实验中的 HTM 方案增长有限。</p>
+<p>SmallBank 包括较短的账户操作。TPC-C 的新订单等业务会访问多条商品、库存与订单明细，读写集合和控制流程更复杂，硬件容量及中止成本更容易产生影响。图示结果说明硬件支持仍需与负载特点配合。</p>
+<p>Silo 是 SOSP 2013 提出的内存数据库，使用面向多核的 OCC 提交协议。这里的比较针对图中的系统版本和配置，不能据此给所有软件 OCC 与 HTM 排出固定优劣顺序。<a target="_blank" rel="noopener" href="https://read.seas.harvard.edu/~kohler/pubs/tu13speedy.pdf">Silo 原论文</a></p>
+<p>成功时，HTM 可以减少显式记录读写集合和部分软件同步的工作；失败处理、容量限制、普通代码路径的协调仍由程序设计者安排。OCC 的方法也因此有软件与硬件等多种实现形式。</p>
+<h2 id="长时间读取">长时间读取</h2>
+<p>浏览商品、生成报表和审计可能读取很多记录，真正修改数据的请求相对较少。2PL 需要安排读锁与写锁的协调，OCC 则可能因读取期间出现更新而让较长计算重新开始。</p>
+<p>如果一笔事务只查询一个完整历史状态，读到稍早的结果也许符合业务。保留旧版本，就能给这类读取提供另一种执行方式。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859252.png" alt="T1 已经读完同一旧状态，T2 更新后，普通 OCC 仍因版本变化中止 T1"></p>
+<p>T1 计算 A+B，先读到 <code>A0、B0</code>。T2 随后把 A、B 改成新值并提交。T1 到提交检查时，旧版本已经过期，于是被本节前面的 OCC 算法中止。</p>
+<blockquote>
+<p>思考题：T1 已完整读取旧 A、旧 B，只准备返回它们的和。为了取得一个可串行化的读取结果，是否必然要中止它？</p>
+<p>解答：</p>
+<p>若这两项来自同一个合法旧状态，可以把只读 T1 排在 T2 前。普通 OCC 的当前版本验证仍会拒绝它，但业务可以选择由多版本机制继续提供这份完整旧快照。前提是旧状态确实一致，并且满足接口所承诺的时效。</p>
+</blockquote>
+<p>另一种交错更需要保留旧版本：T1 读完 A0，T2 更新 A、B 并提交，T1 才准备读 B。如果只剩新 B，它就会组合到旧 A、新 B。将旧 B 留下来，才能继续取得原先那份快照。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859253.png" alt="新旧版本同时保留后，T1 继续读取与 A0 配套的 B0"></p>
+<p>图中较新的 B 仍供之后的事务使用，较早开始的 T1 继续选择 B0。保留版本需要同时规定如何选取版本，才能保证每次读取来自同一份逻辑状态。</p>
+<h2 id="多版本">多版本</h2>
+<p>多版本并发控制（Multi-Version Concurrency Control，MVCC）为一条记录保存多个版本。每个版本至少包含数据值，以及决定它何时可见的标记。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859254.png" alt="单一 value 变为版本列表，每个版本分别保存值与版本标记"></p>
+<p>例如 A 的版本链可以写为：</p>
+<table>
+<thead>
+<tr>
+<th>版本标记</th>
+<th>数据值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2</td>
+</tr>
+<tr>
+<td>7</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<p>快照时间为 4 的事务选版本 3，取得值 2；快照时间为 8 的事务选版本 7，取得值 5。版本号和数据值分别表示历史位置与实际内容。</p>
+<p>快照表示一组在同一可见性规则下选出的记录。事务开始时取得快照边界，之后每次读取都按同一个边界选择，自己的暂存写入仍优先对本事务可见。</p>
+<p>写入则创建新版本，保留旧版本供仍在使用它们的读者访问。不同记录的最新版本号不必相同：某条记录较久没变化，它较早创建的版本仍可属于当前快照。</p>
+<h2 id="逻辑时间">逻辑时间</h2>
+<p>本例使用全局原子计数器产生递增编号，作为开始时间 sts 和提交版本标记 cts。它们决定版本的逻辑次序，不要求等于现实中的秒数。</p>
+<p>FAA 是 fetch-and-add，原子地取出计数器旧值并加上给定增量。例如计数器从 0 开始，可以用 <code>FAA(g,1)+1</code> 得到编号 1、2、3。不同线程取得不同编号；开始与发布过程使用同一套次序规则。</p>
+<p>只读事务的版本选择为：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>v</mi><mo>∗</mo></msup><mo stretchy="false">(</mo><mi>X</mi><mo separator="true">,</mo><mi>T</mi><mo stretchy="false">)</mo><mo>=</mo><mi>max</mi><mo>⁡</mo><mo stretchy="false">{</mo><mi>v</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo><mo>∣</mo><mi>c</mi><mi>t</mi><mi>s</mi><mo stretchy="false">(</mo><mi>v</mi><mo stretchy="false">)</mo><mo>≤</mo><mi>s</mi><mi>t</mi><mi>s</mi><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mtext> </mtext><mi>v</mi><mtext> 按协议可见</mtext><mo stretchy="false">}</mo></mrow><annotation encoding="application/x-tex">v^*(X,T)=\max\{v(X)\mid cts(v)\le sts(T),\ v\text{ 按协议可见}\}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7387em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mbin mtight">∗</span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">max</span><span class="mopen">{</span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">t</span><span class="mord mathnormal">s</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal">s</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace"> </span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mord text"><span class="mord"> </span><span class="mord cjk_fallback">按协议可见</span></span><span class="mclose">}</span></span></span></span></span></p>
+<p>含义是：在对象 X 的可见版本中，找出提交标记不超过 T 开始边界的最新一个。式中的 max 按版本时间排序。</p>
+<blockquote>
+<p>练习：A 有提交标记 0、3、7 的三个可见版本，值分别为 1、2、5。事务开始边界为 4，应读哪个版本？它后来再次读 A 时，能否直接换成最新版本 7？</p>
+<p>解答：</p>
+<p>读取标记 3 的版本，得到 2。固定事务快照继续使用边界 4，版本 7 超出该边界；再次读取仍应按同一个快照规则选择。若本事务已暂存修改，则按读自己写入的规则取得本地结果。</p>
+</blockquote>
+<h2 id="部分快照">部分快照</h2>
+<p>只给新版本加上编号，还不能自动保证一整笔修改共同可见。写入包含多个记录，物理安装仍是分步完成的。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859255.png" alt="T2 已取编号并安装 B1，但尚未安装 A1，T1 组合到 A0 与 B1"></p>
+<p>图中的过程为：</p>
+<ol>
+<li>T2 取得版本时间 1，准备同时生成 A1、B1。</li>
+<li>T2 先安装 B1，A1 还没写入。</li>
+<li>T1 取得开始时间 2。</li>
+<li>T1 读取 A，只找到 A0；读取 B，则找到满足 <code>1≤2</code> 的 B1。</li>
+<li>T2 最后才安装 A1。</li>
+</ol>
+<p>T1 取得的 A0、B1 混合了同一笔事务的前后状态。虽然每次读取都遵守了编号比较，一组更新的发布边界仍缺少协调。</p>
+<p>这里的 cts 是发布过程中使用的逻辑标记。分配到它，只代表取得了编号；只有满足协议的安装、可见性和持久化条件，才具有相应的“提交完成”含义。</p>
+<h2 id="完整可见">完整可见</h2>
+<p>一种便于理解的办法是：写入者先锁住全部写集合，再取得用于发布的时间标记，然后逐项安装新版本。读者遇到仍在安装的记录，就等待它变为可安全读取的状态。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859256.png" alt="先锁 A、B 再取提交时间，T1 读取尚未安装的 A 时等待"></p>
+<p>图中 T2 先锁 A、B，再取得时间 1。安装 B1 并释放 B 的锁后，T1 取得开始时间 2。它读取 A 时发现 A 仍被锁住，所以暂时等待；A1 安装完毕并释放后，T1 读取 A1，再按同一边界读取 B1。</p>
+<p>这个示例允许已经安装完成的记录先释放锁。每条记录都必须在自己的新版本安全发布后才能解锁；读者要遵守锁状态、版本可见性和并发遍历规则。也可以选择全部安装后统一发布状态或统一解锁，实际数据库还有其他快照发布方案。</p>
+<blockquote>
+<p>思考题：在这套读者遇锁等待的方案中，能先取提交时间，再去锁记录吗？</p>
+<p>解答：</p>
+<p>若写入者先取得 1，后来才锁 A、B，读者可能在这段间隔取得开始时间 2，并在任何锁出现前读走旧 A。之后写入者安装新 B，读者又按 <code>1≤2</code> 选到它，仍会组合旧 A、新 B。</p>
+<p>因此这套规则要求全部相关写锁先建立，再分配发布版本时间；或者另用能保证完整快照可见的协议。时间编号的分配顺序需要与记录的保护和发布顺序一起设计。</p>
+</blockquote>
+<p>版本链还需要安全访问：读者取得的节点不能在访问途中被释放，链头等共享元信息需要正确发布。只在普通代码中检查一次布尔变量，并不足以实现完整的并发数据结构。</p>
+<h2 id="写入冲突">写入冲突</h2>
+<p>多版本让读者选择历史版本，修改共享结果时仍要检测竞争。下面两笔事务都执行 A+=1，初始 A0=0。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859257.png" alt="两笔事务从 A0=0 计算，各自生成值为 1 的新版本，仍丢失一次增加"></p>
+<p>T1 的开始时间为 1，T2 为 2，二者都读 A0=0。若不验证就提交，T1 生成 A3=1，T2 又生成 A4=1。版本链里虽然有两个新版本，最新值仍为 1；两次完整自增应得到 2。</p>
+<blockquote>
+<p>思考题：保存了两个值为 1 的新版本，是否意味着两次自增都正确生效？第二个写入者需要检查什么？</p>
+<p>解答：</p>
+<p>自增的新值取决于读取的旧值。两者都从 0 计算出 1，第二次没有接续第一次已经产生的结果。提交时应检查目标记录是否出现了本事务开始之后的新提交；若已经有，就丢弃旧计算、重试，或按其他明确的冲突规则处理。</p>
+</blockquote>
+<p>在写锁保护下，可以对写集合中每个对象检查：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>c</mi><mi>t</mi><msub><mi>s</mi><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">t</mi></mrow></msub><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo><mo>&gt;</mo><mi>s</mi><mi>t</mi><mi>s</mi><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">)</mo><mspace width="1em"/><mo>⟹</mo><mspace width="1em"/><mi>T</mi><mtext> 发生写冲突</mtext></mrow><annotation encoding="application/x-tex">cts_{\mathrm{latest}}(X)&gt;sts(T)\quad\Longrightarrow\quad
+T\text{ 发生写冲突}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">t</span><span class="mord"><span class="mord mathnormal">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathrm mtight">latest</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal">s</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mclose">)</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">⟹</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord text"><span class="mord"> </span><span class="mord cjk_fallback">发生写冲突</span></span></span></span></span></span></p>
+<p>T2 开始于 2，提交时 A 的最新提交标记已为 3，满足 <code>3&gt;2</code>，所以中止。重试取得更新的开始边界，读到 A3=1，再计算 2，才能接续这笔增加。</p>
+<h2 id="快照隔离">快照隔离</h2>
+<p>把前面的固定快照读取与写写冲突检测合在一起，就得到一类快照隔离（Snapshot Isolation，SI）的实现思路。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859258.png" alt="开始、快照读取、暂存写入与提交检查共同组成事务流程"></p>
+<p>可以按下表跟踪：</p>
+<table>
+<thead>
+<tr>
+<th>时刻</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>开始</td>
+<td>取得 sts，建立私有写集合</td>
+</tr>
+<tr>
+<td>读取 X</td>
+<td>优先读自己的写入，否则选择可见的最新 <code>cts≤sts</code> 版本</td>
+</tr>
+<tr>
+<td>修改 X</td>
+<td>在私有工作区计算，并放入写集合</td>
+</tr>
+<tr>
+<td>提交准备</td>
+<td>按共同规则锁住写集合，检查最新写版本是否超过 sts</td>
+</tr>
+<tr>
+<td>发布</td>
+<td>取得合适的 cts，安全安装完整新版本，再按协议解锁与确认</td>
+</tr>
+</tbody>
+</table>
+<p>验证和取得编号的具体安排由实现决定，必须满足前面解释的发布条件。在本例中，写集合被保护期间再决定相应检查与编号，避免其他写入者插入冲突更新。</p>
+<p>一笔只读事务没有写集合；已经取得完整有效的固定快照时，可以按它读完，通常无需因后续写入更新了当前版本而重新验证、重跑。它仍可能等正在发布的版本，系统故障、用户取消等情况则按相应接口处理。</p>
+<p>读写事务即使通过这套写写检查，也还没有检查所有跨记录依赖。</p>
+<h2 id="写偏差">写偏差</h2>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859259.png" alt="两笔事务读取对方的旧值，分别写入不同记录，写集合虽不重叠仍形成依赖环"></p>
+<p>图中 T1 开始于 1，读取 X0，再提交 Y3；T2 开始于 2，读取 Y0，再提交 X4。两个事务写不同对象，彼此的写集合没有重叠，所以写写检查可能都通过。</p>
+<p>但 T1 使用了 T2 修改之前的 X，要求在相应串行解释中位于 T2 前；T2 又使用 T1 修改之前的 Y，要求位于 T1 前。依赖成环，无法将两笔完整事务排成符合这些观察的串行顺序。这类异常称为写偏差（write skew）。</p>
+<blockquote>
+<p>例题：两位值班人员 X、Y 初始都在岗，1 表示在岗、0 表示离岗。规则要求至少一人在岗。T1 读取 X，确认 X=1 就将 Y 改为 0；T2 读取 Y，确认 Y=1 就将 X 改为 0。二者从同一旧状态开始，快照隔离的写写检查会发现冲突吗？业务结果是否正确？</p>
+<p>解答：</p>
+<p>T1 的写集合只有 Y，T2 的写集合只有 X，没有共同写入的记录，因此仅检查写写冲突时可以都通过。二者分别看到对方仍在岗，最终得到 X=0、Y=0，违反至少一人在岗的规则。</p>
+<p>如果 T1 完整先执行，T2 随后会看到 Y=0，不能再让 X 离岗；反过来也一样。两者都离岗没有合法串行解释。这正对应图中的双向读取依赖。</p>
+</blockquote>
+<p>SI 能提供稳定快照并避免这里的同记录丢失更新，跨记录业务约束仍可能因这种依赖受到破坏。MVCC 是保存和选择版本的机制，可以与不同的并发控制协议结合；SI 是其中一种隔离保证。<a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf">Berenson 等，1995</a>系统讨论了快照隔离与这些异常。</p>
+<h2 id="读取验证">读取验证</h2>
+<p>一种继续加强的办法是：读写事务在提交时验证读集合，检查它依赖的记录是否出现了会破坏串行解释的变化，并与相应的提交锁协议配合。前面的 OCC 思路可以用于这类多版本读写事务。</p>
+<p>在值班例子中，若 T1 已发布 Y=0，T2 再验证它读取的旧 Y，就会发现依赖过期；若两者同时准备发布，锁状态与依赖检查也必须共同协调。不能让双方都仅在对方发布之前通过检查，然后独立写入。</p>
+<p>纯只读事务可以继续使用完整快照，减少长查询的重跑。读写事务则根据需要选择更强的验证、锁定业务约束涉及的对象，或使用数据库已经实现的可串行化机制。</p>
+<blockquote>
+<p>思考题：SI 下可以默认忽略写偏差吗？“使用 MVCC”是否已经说明系统提供了可串行化？</p>
+<p>解答：</p>
+<p>应先检查业务是否依赖跨记录条件；值班人数、额度总和等规则都可能受到影响。需要这些条件时，应选择能处理相应依赖的事务机制。</p>
+<p>MVCC 说明保存并选择多个版本，具体隔离还取决于写冲突、读依赖和提交规则。MV-2PL、MV-OCC 等可以在多版本存储上提供不同保证，不能只凭 MVCC 这个名称确定事务的隔离级别。</p>
+</blockquote>
+<h2 id="版本回收">版本回收</h2>
+<p>保留旧版本会占空间。某个仍在运行的事务可能还要读旧快照，过早删除它需要的版本，就会破坏后续读取。</p>
+<p>系统可以跟踪活跃快照边界，保留每个边界所需的最新历史版本和之后仍可能被访问的版本；确认没有读者需要某段历史后，再安全回收。新链头的发布和旧节点的释放也要与并发访问协调。</p>
+<p>长查询因此可能增加历史保留量。需要同时考虑读取稳定性、内存或存储占用以及回收进度，不能只根据某版本“已经被新版本替代”就将它删除。</p>
+<h2 id="机制选择">机制选择</h2>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>主要做法</th>
+<th>适用条件与成本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2PL</td>
+<td>访问前取得相应锁，遵守取锁与释放阶段</td>
+<td>冲突时等待，注意锁范围和死锁</td>
+</tr>
+<tr>
+<td>OCC</td>
+<td>私有计算、验证依赖、发布写集合</td>
+<td>低冲突时减少持锁，高冲突或长事务可能反复中止</td>
+</tr>
+<tr>
+<td>HTM</td>
+<td>硬件跟踪内存读写并尝试原子提交</td>
+<td>受容量、执行事件与平台支持限制，必须有正确后备路径</td>
+</tr>
+<tr>
+<td>MVCC</td>
+<td>读取固定快照，写入保留新旧版本</td>
+<td>长读可减少重跑，隔离保证取决于进一步的冲突检查</td>
+</tr>
+</tbody>
+</table>
+<p>同一系统可以组合这些方法。例如用 MVCC 服务长只读事务，给读写事务增加 OCC 验证；或者用 HTM 作为一段锁保护代码的快速路径，失败时回到锁。</p>
+<p>检查实现时，依次确认读取来自哪个版本、暂存修改是否已经共享可见、验证与发布怎样协调、冲突后怎样清理重试，以及整笔事务最终承诺哪种隔离与持久性。</p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li>Kung 与 Robinson，1981，<a target="_blank" rel="noopener" href="https://www.eecs.harvard.edu/~htk/publication/1981-tods-kung-robinson.pdf">On Optimistic Methods for Concurrency Control</a>，ACM TODS 6(2)，213–226。</li>
+<li>Intel，<a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html">指令手册</a>、<a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/articles/technical/transactional-memory-speculative-spin-mutex-tbb.html">RTM 接口</a>与<a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/articles/community/tsx-fallback-paths.html">后备路径</a>。</li>
+<li>Colin Scott，<a target="_blank" rel="noopener" href="https://colin-scott.github.io/personal_website/research/interactive_latency.html">Numbers Every Programmer Should Know By Year</a>，历史延迟示意。</li>
+<li>Mu 等，2014，<a target="_blank" rel="noopener" href="https://www.usenix.org/system/files/conference/osdi14/osdi14-paper-mu.pdf">Extracting More Concurrency from Distributed Transactions</a>，OSDI。</li>
+<li>Wang 等，2014，<a target="_blank" rel="noopener" href="https://ipads.se.sjtu.edu.cn/zh/publications/WangEuroSys14.pdf">Using Restricted Transactional Memory to Build a Scalable In-Memory Database</a>，EuroSys。</li>
+<li>Tu 等，2013，<a target="_blank" rel="noopener" href="https://read.seas.harvard.edu/~kohler/pubs/tu13speedy.pdf">Speedy Transactions in Multicore In-Memory Databases</a>，SOSP。</li>
+<li>Saltzer 与 Kaashoek，2009，Principles of Computer System Design: An Introduction，事务与原子性。</li>
+<li>Berenson 等，1995，<a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf">A Critique of ANSI SQL Isolation Levels</a>，SIGMOD。</li>
+<li>PostgreSQL，<a target="_blank" rel="noopener" href="https://www.postgresql.org/docs/current/transaction-iso.html">事务隔离文档</a>，快照与可串行化的接口实例。</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/16/SE3331_08/">https://acannedfish.github.io/2026/10/16/SE3331_08/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E4%B9%90%E8%A7%82%E5%B9%B6%E5%8F%91/">乐观并发</a><a class="post-meta__tags" href="/tags/%E7%A1%AC%E4%BB%B6%E4%BA%8B%E5%8A%A1/">硬件事务</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E7%89%88%E6%9C%AC/">多版本</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width no-desc" href="/2026/10/13/SE3331_07/" title="计算机系统工程-07：并发原子性"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-07：并发原子性</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">112</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">66</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E8%8C%83%E5%9B%B4"><span class="toc-number">1.</span> <span class="toc-text">事务范围</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ACID"><span class="toc-number">2.</span> <span class="toc-text">ACID</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%90%E8%A7%82%E6%89%A7%E8%A1%8C"><span class="toc-number">3.</span> <span class="toc-text">乐观执行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%86%99%E9%9B%86%E5%90%88"><span class="toc-number">4.</span> <span class="toc-text">读写集合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A8%B3%E5%AE%9A%E8%AF%BB%E5%8F%96"><span class="toc-number">5.</span> <span class="toc-text">稳定读取</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E6%A3%80%E6%9F%A5"><span class="toc-number">6.</span> <span class="toc-text">提交检查</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E9%97%B4%E9%9A%94"><span class="toc-number">7.</span> <span class="toc-text">验证间隔</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%8F%98%E5%8C%96"><span class="toc-number">8.</span> <span class="toc-text">版本变化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E7%B2%92%E5%BA%A6"><span class="toc-number">9.</span> <span class="toc-text">提交粒度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B0%E5%BD%95%E9%AA%8C%E8%AF%81"><span class="toc-number">10.</span> <span class="toc-text">记录验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%AA%E8%AF%BB%E6%88%90%E6%9C%AC"><span class="toc-number">11.</span> <span class="toc-text">只读成本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E5%AD%90%E4%BA%A4%E6%8D%A2"><span class="toc-number">12.</span> <span class="toc-text">原子交换</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E6%97%8B%E9%94%81"><span class="toc-number">13.</span> <span class="toc-text">自旋锁</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%BC%80%E9%94%80"><span class="toc-number">14.</span> <span class="toc-text">同步开销</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E6%AC%A1%E5%BA%8F"><span class="toc-number">15.</span> <span class="toc-text">提交次序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%9D%E5%AE%88%E4%B8%AD%E6%AD%A2"><span class="toc-number">16.</span> <span class="toc-text">保守中止</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%B2%E7%AA%81%E8%B4%9F%E8%BD%BD"><span class="toc-number">17.</span> <span class="toc-text">冲突负载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E4%BA%8B%E5%8A%A1"><span class="toc-number">18.</span> <span class="toc-text">硬件事务</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E5%86%B2%E7%AA%81"><span class="toc-number">19.</span> <span class="toc-text">硬件冲突</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%B1%E8%B4%A5%E5%A4%84%E7%90%86"><span class="toc-number">20.</span> <span class="toc-text">失败处理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E8%B7%9F%E8%B8%AA"><span class="toc-number">21.</span> <span class="toc-text">缓存跟踪</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%B9%E9%87%8F%E9%99%90%E5%88%B6"><span class="toc-number">22.</span> <span class="toc-text">容量限制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%97%B6%E9%95%BF"><span class="toc-number">23.</span> <span class="toc-text">执行时长</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B4%9F%E8%BD%BD%E5%B7%AE%E5%BC%82"><span class="toc-number">24.</span> <span class="toc-text">负载差异</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%95%BF%E6%97%B6%E9%97%B4%E8%AF%BB%E5%8F%96"><span class="toc-number">25.</span> <span class="toc-text">长时间读取</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E7%89%88%E6%9C%AC"><span class="toc-number">26.</span> <span class="toc-text">多版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E6%97%B6%E9%97%B4"><span class="toc-number">27.</span> <span class="toc-text">逻辑时间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%83%A8%E5%88%86%E5%BF%AB%E7%85%A7"><span class="toc-number">28.</span> <span class="toc-text">部分快照</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E5%8F%AF%E8%A7%81"><span class="toc-number">29.</span> <span class="toc-text">完整可见</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%85%A5%E5%86%B2%E7%AA%81"><span class="toc-number">30.</span> <span class="toc-text">写入冲突</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E7%85%A7%E9%9A%94%E7%A6%BB"><span class="toc-number">31.</span> <span class="toc-text">快照隔离</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%81%8F%E5%B7%AE"><span class="toc-number">32.</span> <span class="toc-text">写偏差</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E9%AA%8C%E8%AF%81"><span class="toc-number">33.</span> <span class="toc-text">读取验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%9B%9E%E6%94%B6"><span class="toc-number">34.</span> <span class="toc-text">版本回收</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%BA%E5%88%B6%E9%80%89%E6%8B%A9"><span class="toc-number">35.</span> <span class="toc-text">机制选择</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">36.</span> <span class="toc-text">参考资料</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/site-navigation.js" defer></script><script src="/js/site-motion.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#route-state","#page-header","#route-content","#aside-content","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+  const navigationSwitches = window.SiteNavigation ? window.SiteNavigation.switches : {}
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    switches: navigationSwitches,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: true,
+    // Route switches position new pages before their first painted frame.
+    scrollTo: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

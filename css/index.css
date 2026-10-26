@@ -4160,11 +4160,11 @@ figure.highlight pre .javascript .function {
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  -webkit-transition: height 0.42s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.3s ease, box-shadow 0.3s ease;
-  -moz-transition: height 0.42s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.3s ease, box-shadow 0.3s ease;
-  -o-transition: height 0.42s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.3s ease, box-shadow 0.3s ease;
-  -ms-transition: height 0.42s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.3s ease, box-shadow 0.3s ease;
-  transition: height 0.42s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.3s ease, box-shadow 0.3s ease;
+  -webkit-transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  -moz-transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  -o-transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  -ms-transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 #page-header.full_page {
   height: 100vh;

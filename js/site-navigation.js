@@ -275,14 +275,11 @@
     const oldOffsetTop = oldContent.offsetTop
     const oldOffsetLeft = oldContent.offsetLeft
     const incomingStartTransform = `translate3d(${12 * direction}px, 8px, 0) scale(.994)`
-    const prepaintIncomingRoute = window.matchMedia('(max-width: 768px)').matches
-    const incomingInlineStyles = prepaintIncomingRoute
-      ? ['opacity', 'transform', 'will-change'].map(property => ({
-          property,
-          priority: newContent.style.getPropertyPriority(property),
-          value: newContent.style.getPropertyValue(property)
-        }))
-      : []
+    const incomingInlineStyles = ['opacity', 'transform', 'will-change'].map(property => ({
+      property,
+      priority: newContent.style.getPropertyPriority(property),
+      value: newContent.style.getPropertyValue(property)
+    }))
 
     /** Restore only the presentation properties owned during this transition. */
     const restoreIncomingInlineStyles = () => {
@@ -308,14 +305,11 @@
     oldContent.setAttribute('aria-hidden', 'true')
     prepareIncomingRoute(newContent)
 
-    // Mobile Safari can paint an inserted node once before WAAPI applies its
-    // first keyframe. Seed the same start state while the node is detached so
-    // the route cannot flash at its final position and appear to enter twice.
-    if (prepaintIncomingRoute) {
-      newContent.style.opacity = '0'
-      newContent.style.transform = incomingStartTransform
-      newContent.style.willChange = 'opacity, transform'
-    }
+    // Safari can paint an inserted node before WAAPI applies its first frame,
+    // including on desktop. Seed that frame before the route joins the layout.
+    newContent.style.opacity = '0'
+    newContent.style.transform = incomingStartTransform
+    newContent.style.willChange = 'opacity, transform'
 
     parent.insertBefore(newContent, oldContent)
     scrollImmediately(immediateScrollTarget)

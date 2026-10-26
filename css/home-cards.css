@@ -30,7 +30,12 @@
   }
 }
 
-/* Topic collections expand inline in the same homepage list. */
+/* Home sections and collection pages share the existing card layout. */
+.collection-intro {
+  margin-bottom: 20px;
+  padding: 50px 40px;
+}
+
 #recent-posts.two-level-root .recent-post-items {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -73,6 +78,16 @@
 
 #recent-posts.two-level-root .recent-post-info.no-cover {
   padding: 20px 30px;
+}
+
+/* Make the whole section card a keyboard-accessible link. */
+#recent-posts.two-level-root .section-entry {
+  color: var(--font-color);
+}
+
+#recent-posts.two-level-root .section-entry:focus-visible {
+  outline: 2px solid var(--theme-color);
+  outline-offset: -4px;
 }
 
 #recent-posts.two-level-root .article-title,
@@ -187,6 +202,10 @@ html.site-motion-ready .topic-collection[data-topic-expanded="true"] .topic-coll
 }
 
 @media screen and (max-width: 768px) {
+  .collection-intro {
+    padding: 36px 14px;
+  }
+
   #recent-posts.two-level-root .recent-post-item {
     min-height: 8.25rem;
     height: auto;
