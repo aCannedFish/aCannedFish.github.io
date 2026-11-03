@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-10：复制共识 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="共识入门 共识目标 上一篇用视图服务决定“下一任 primary 是谁”。为了避免视图服务自身成为单点，可以把它复制到多台机器；但这些副本又必须对同一次换主给出相同答案。如果一个副本选 S1，另一个选 S2，复制后的服务仍会产生冲突。共识协议解决的基本问题就是：多个节点可以提出候选值，但对同一个决定，最多选定一个值；一旦选定，后续执行和故障恢复都必须保留它。 这里采用非拜占庭故障模型。节点可能崩溃">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-10：Paxos 与 Raft | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="共识入门 共识目标 把视图服务复制到多台机器后，各副本必须对同一次换主给出同一决定。一个选 S1、另一个选 S2，仍会产生冲突。共识先解决“同一个决定最多选定一个值，并在后续故障恢复中保留它”。 本篇采用非拜占庭模型：节点可能崩溃恢复，消息可能延迟、丢失、重复或被分区阻断，但节点不伪造状态、任意违反协议。重启后应恢复要求持久保存的记录。 安全性要求不选出矛盾结果，有效性要求结果来自允许提出的值，活">
 <meta property="og:type" content="article">
-<meta property="og:title" content="计算机系统工程-10：复制共识">
+<meta property="og:title" content="计算机系统工程-10：Paxos 与 Raft">
 <meta property="og:url" content="https://acannedfish.github.io/2026/10/29/SE3331_10/index.html">
 <meta property="og:site_name" content="aCannedFish&#39;s Home">
-<meta property="og:description" content="共识入门 共识目标 上一篇用视图服务决定“下一任 primary 是谁”。为了避免视图服务自身成为单点，可以把它复制到多台机器；但这些副本又必须对同一次换主给出相同答案。如果一个副本选 S1，另一个选 S2，复制后的服务仍会产生冲突。共识协议解决的基本问题就是：多个节点可以提出候选值，但对同一个决定，最多选定一个值；一旦选定，后续执行和故障恢复都必须保留它。 这里采用非拜占庭故障模型。节点可能崩溃">
+<meta property="og:description" content="共识入门 共识目标 把视图服务复制到多台机器后，各副本必须对同一次换主给出同一决定。一个选 S1、另一个选 S2，仍会产生冲突。共识先解决“同一个决定最多选定一个值，并在后续故障恢复中保留它”。 本篇采用非拜占庭模型：节点可能崩溃恢复，消息可能延迟、丢失、重复或被分区阻断，但节点不伪造状态、任意违反协议。重启后应恢复要求持久保存的记录。 安全性要求不选出矛盾结果，有效性要求结果来自允许提出的值，活">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://acannedfish.github.io/img/background11.png">
 <meta property="article:published_time" content="2026-10-29T06:02:28.000Z">
-<meta property="article:modified_time" content="2026-11-02T10:52:27.029Z">
+<meta property="article:modified_time" content="2026-11-02T11:42:59.477Z">
 <meta property="article:author" content="aCannedFish">
 <meta property="article:tag" content="Paxos">
 <meta property="article:tag" content="Raft">
@@ -16,11 +16,11 @@
 <meta name="twitter:image" content="https://acannedfish.github.io/img/background11.png"><script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "计算机系统工程-10：复制共识",
+  "headline": "计算机系统工程-10：Paxos 与 Raft",
   "url": "https://acannedfish.github.io/2026/10/29/SE3331_10/",
   "image": "https://acannedfish.github.io/img/background11.png",
   "datePublished": "2026-10-29T06:02:28.000Z",
-  "dateModified": "2026-11-02T10:52:27.029Z",
+  "dateModified": "2026-11-02T11:42:59.477Z",
   "author": [
     {
       "@type": "Person",
@@ -157,7 +157,7 @@
   },
   autoDarkmode: false
 }</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
-  title: '计算机系统工程-10：复制共识',
+  title: '计算机系统工程-10：Paxos 与 Raft',
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
@@ -177,10 +177,11 @@
   display: block !important;
 }
 </style>
-</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-10：复制共识&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-10：复制共识</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-29T06:02:28.000Z" title="发表于 2026-10-29 14:02:28">2026-10-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-02T10:52:27.029Z" title="更新于 2026-11-02 18:52:27">2026-11-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="共识入门">共识入门</h2>
+</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-10：Paxos 与 Raft&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-10：Paxos 与 Raft</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-29T06:02:28.000Z" title="发表于 2026-10-29 14:02:28">2026-10-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-02T11:42:59.477Z" title="更新于 2026-11-02 19:42:59">2026-11-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="共识入门">共识入门</h2>
 <h3 id="共识目标">共识目标</h3>
-<p>上一篇用视图服务决定“下一任 primary 是谁”。为了避免视图服务自身成为单点，可以把它复制到多台机器；但这些副本又必须对同一次换主给出相同答案。如果一个副本选 S1，另一个选 S2，复制后的服务仍会产生冲突。共识协议解决的基本问题就是：多个节点可以提出候选值，但对同一个决定，最多选定一个值；一旦选定，后续执行和故障恢复都必须保留它。</p>
-<p>这里采用非拜占庭故障模型。节点可能崩溃后恢复，消息可能延迟、丢失或重复，网络也可能分区，但节点不会故意伪造协议状态，也不会任意违背规定的处理规则。故障恢复后，节点必须能够读回协议要求的持久状态，不能把自己当成从未参与过协议的新节点。</p>
+<p>把视图服务复制到多台机器后，各副本必须对同一次换主给出同一决定。一个选 S1、另一个选 S2，仍会产生冲突。共识先解决“同一个决定最多选定一个值，并在后续故障恢复中保留它”。</p>
+<p>本篇采用非拜占庭模型：节点可能崩溃恢复，消息可能延迟、丢失、重复或被分区阻断，但节点不伪造状态、任意违反协议。重启后应恢复要求持久保存的记录。</p>
+<p>安全性要求不选出矛盾结果，有效性要求结果来自允许提出的值，活性要求在运行条件满足时最终能够作出并获知决定。多数机器开着但彼此无法通信，仍不能保证推进。</p>
 <table>
 <thead>
 <tr>
@@ -203,16 +204,16 @@
 </tr>
 </tbody>
 </table>
-<p>这几种性质的要求不同。即使消息长时间延迟，安全性也不能因此失效，系统仍不能选出互相冲突的决定。活性则需要额外运行条件：足够多的节点能够互相通信，消息最终送达，竞争最终缓和等。多数机器虽然开着，却彼此联系不上，仍无法共同推进协议。</p>
 <h3 id="多数交集">多数交集</h3>
-<p>Paxos 由一组接受者（acceptor）保存协议记录。N 个 acceptor 中，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">⌊</mo><mi>N</mi><mi mathvariant="normal">/</mi><mn>2</mn><mo stretchy="false">⌋</mo><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">\lfloor N/2\rfloor+1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">⌊</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mord">/2</span><span class="mclose">⌋</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> 个就构成多数派。例如五个节点中的任意两个三节点集合，至少共享一个节点。因此，先前的提案得到一个多数派接受后，后来联系另一个多数派的节点，就有机会通过交集找到先前的记录。</p>
-<p>不过，“找到保存过记录的节点”还不等于已经保证安全。交集节点必须把承诺与接受记录持久保存，后来的提议者（proposer）也必须根据回复遵守旧值继承规则。集合交集负责让历史信息能够传到后来者，协议规则负责让后来者不能随意忽略它。</p>
+<p>N 个 acceptor 中，超过一半构成多数派。五节点的任意两个三节点集合至少共享一个节点，因此新一轮收集多数回复时，有机会遇到保存旧接受历史的节点。</p>
+<p>交集只是信息来源。节点要持久记住承诺与接受记录，新 proposer 也必须按历史选值，不能找到旧记录后仍随意忽略。</p>
 <h2 id="Paxos">Paxos</h2>
-<p>先只考虑日志的一个位置，候选值为 foo 或 bar。提案编号决定本轮请求是否足够新，值决定该位置最终写什么。编号更大只赋予继续尝试的机会，不能授权改掉已经选定的值。准备阶段收集旧记录，接受阶段让多数节点保存按继承规则选出的值。</p>
 <h3 id="单值共识">单值共识</h3>
-<p>单值 Paxos（Single-decree Paxos）为一个实例（instance）选定一个值。可以把实例理解为一个有编号、等待填入最终答案的位置。例如“第 37 号决定”一旦选定 <code>foo</code>，这个位置以后就不能再改成 <code>bar</code>。业务需要作出下一次决定时，应使用新的实例，而非覆盖旧实例的答案。</p>
-<p>如果始终只有一个指定写入者，决定由谁作出就很容易处理；但这个写入者崩溃后，其他节点也无法继续。Paxos 允许新的 proposer 使用更大的提案编号接续工作，同时要求它先检查旧记录，并限制它可以提出什么值。这样既能更换提议者，也能保留已经形成的决定。</p>
+<p>单值 Paxos 为一个实例选定一个值。可把实例理解为有编号的位置，例如位置 37最终填 foo，以后不能再改成 bar。下一次业务决定使用另一个实例。</p>
+<p>若只允许一个永不更换的写者，写者崩溃就无法继续。Paxos 用可比较的提案编号允许后来者接续，并通过准备回复约束新值，兼顾更换写者与保留决定。</p>
 <h3 id="协议角色">协议角色</h3>
+<p>proposer 发起提案、收集回复并按规则选值；acceptor 保存承诺和接受记录；learner 获知哪个值已经选定，再交给上层。</p>
+<p>这些是职责，不必对应三组独立机器。同一节点可以同时提出请求、保存协议状态和获知结果。分析消息时，应先确定它此刻以哪种角色行动。</p>
 <table>
 <thead>
 <tr>
@@ -235,15 +236,13 @@
 </tr>
 </tbody>
 </table>
-<p>learner 即学习者，负责获知已经形成的决定，并交给上层使用。这三个名称描述不同职责，不要求使用三组独立机器。同一台服务器可以一边发起提案，一边作为 acceptor 保存记录，并在决定形成后作为 learner 执行相应命令。</p>
 <h3 id="提案编号">提案编号</h3>
-<p>提案编号（proposal number，也常称 ballot）用来比较不同提案的新旧。编号必须唯一，而且任意两个编号都能比较大小，这称为全序。常见表示为 <code>(counter, node_id)</code>：先比较计数器，计数器相同时再比较节点编号。例如 <code>(3,A)</code> 与 <code>(3,B)</code> 是不同编号，也能按约定的节点编号顺序比较。</p>
-<p>只使用每台机器自己的整数计数器，可能让两个 proposer 都提出编号 1，并为同一编号携带不同值。这样会破坏协议对“一个编号对应一个提案”的假设。</p>
-<p>崩溃恢复后也要避免重复使用自己已经用过的编号。可以可靠保存计数器，或采用能够确保新编号更大且不重复的生成方法。</p>
+<p>proposal number 或 ballot 标识提案轮次，必须唯一且能够全序比较。可用 (counter,node_id)，先比 counter，再比节点编号，避免两个节点都用整数 1 却携带不同值。</p>
+<p>重启后仍不能不安全地复用旧编号，可以持久保存计数或采用符合约束的生成方法。同一实例、同一编号的重试不能改成另一个值。</p>
 <h3 id="持久状态">持久状态</h3>
-<p>先读一份具体状态：Nh=8，Na=5，Va=foo。它表示这个 acceptor 已承诺拒绝编号低于 8 的新请求，最近接受的值则来自编号 5，内容为 foo。承诺推进到 8，并不会把已接受值自动变成一个“编号 8 的值”。</p>
-<p>后来 PREPARE(9) 到达，acceptor 可以把 Nh 提高到 9，同时仍报告曾接受的 (5,foo)。新 proposer 汇总回复时，根据最大 Na 选择旧值。这样，表示未来限制的 Nh 与表示过去接受历史的 Na、Va 各自承担清楚的职责。</p>
-<p>为一个实例，acceptor 至少保存：</p>
+<p>acceptor 的 Nh，即 promised_n，记录承诺拒绝更低编号的门槛；Na、Va，即 accepted_n、accepted_v，记录最近接受的提案编号与值。它们必须在相应成功回复前可靠保存。</p>
+<p>例如 Nh=8、Na=5、Va=foo，表示未来拒绝低于 8 的请求，过去最近接受的是 (5,foo)。PREPARE(9) 到来后可以把 Nh 改为 9，同时仍返回 (5,foo)，承诺新编号不会凭空产生一个新接受值。</p>
+<p>proposer 还维护本轮编号与待提议值，并保证重启后的编号约束。</p>
 <table>
 <thead>
 <tr>
@@ -270,47 +269,37 @@
 </tr>
 </tbody>
 </table>
-<p>表中的两类记录作用不同：<code>promised_n</code> 约束今后还能接受哪些编号，<code>accepted_n</code> 与 <code>accepted_v</code> 记录已经接受过什么。它们都必须在相应成功回复之前可靠保存。否则，节点可能发出承诺后重启，却忘掉这一承诺，又接受本应拒绝的旧提案。</p>
-<p>proposer 还维护本轮编号及待提议值。课件将它们画为内存状态；工程实现仍需保证重启后编号不会与旧轮次发生不安全的复用。</p>
 <h3 id="准备阶段">准备阶段</h3>
-<p>准备阶段中，proposer 选择一个新的编号 n，向 acceptor 发送 <code>PREPARE(n)</code>。每个 acceptor 将 n 与自己的 <code>promised_n</code> 比较：如果已经承诺过更大编号，就拒绝；否则保存对 n 的承诺，并返回自己最近接受的 <code>(accepted_n, accepted_v)</code>。回复因此同时包含“以后不再接受更低编号”和“过去已经接受过什么”两类信息。</p>
+<p>proposer 选择 n，向 acceptor 发 PREPARE(n)。已经承诺更高编号的节点拒绝，否则保存承诺，再回复自己的最近接受记录。成功回复同时说明未来门槛和过去历史。</p>
+<p>图中编号 1 的请求使 Nh 推进到 1，返回 promise-ok，但此时尚未接受具体值。取得多数 promise 后，proposer 才有足够信息按规则进入接受阶段。</p>
+<p>课件允许相同编号重试，只拒绝 n&lt;Nh，前提是重复请求含义一致。promise 也不让本轮永久独占，后来更高编号仍可取得承诺并打断它。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141542754.png" alt="Paxos 准备阶段用提案编号获取承诺，并把 Nh 保存到接受者（课件第 11 页）"></p>
-<p>图中 S1 以编号 1 发起 proposal，三台机器的 Nh 都推进到 1，再返回 promise-ok。黄色圆柱表示这些承诺需要持久保存。此时节点尚未接受具体值，得到的只是继续按选值规则推进的条件；图中的 3/3 是示例选择，基本协议取得多数即可。</p>
-<p>课件采用 <code>n &lt; promised_n</code> 时才拒绝的写法，允许相同编号的请求重试。重试不能改变已作出的承诺或制造矛盾结果，即应保持幂等。这依赖前面提到的编号约束：同一个编号不能被不同 proposer 复用，也不能在同一实例中携带不同值。</p>
-<p>获得多数承诺后，proposer 已收集到进入第二阶段所需的历史信息，而且这个多数派将不再接受更低编号的请求。但这些承诺不会让当前 proposer 永久独占写入权：如果另一个 proposer 用更大编号取得新承诺，当前轮次仍可能被打断。</p>
 <h3 id="继承旧值">继承旧值</h3>
+<p>准备回复都没有接受历史时，可以使用自己的候选值。只要有历史，就选择回复中 Na 最大者对应的 Va。例如 (3,foo) 与 (5,bar)，应选 bar。</p>
+<p>比较的是已接受编号 Na，不是承诺门槛 Nh，不是值大小，也不是回复先后或旧值票数。哪怕只看到一份接受记录，也不能自行断言它从未在别处达到多数。</p>
+<p>反例图中 V1 已在 S1、S2 达到多数，后来的 S3 若只凭更高编号让 S2、S3 接受 V2，就产生两个决定。继承规则要求把交集带回的历史用于选值，阻止这种改写。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141543041.png" alt="没有旧值继承规则时，更高编号仍可能选出与已有决定冲突的值（课件第 13 页）"></p>
-<p>这张图展示尚不完整的协议：V1 已经在 S1、S2 上达到多数，S3 却用更大编号 2 在 S2、S3 上写入自己的 V2。两个多数派确实共享 S2，但如果 S2 只更新编号、不把旧接受记录交回并约束新提案，V2 仍可达到多数。下面的继承规则正是为排除这种执行。</p>
-<p>proposer 收到一个多数派的承诺后，按以下规则选值：</p>
-<ol>
-<li>如果回复中都没有已接受提案，可以使用自己的候选值。</li>
-<li>只要有回复携带已接受提案，就必须选择其中 <code>accepted_n</code> 最大者对应的值。</li>
-</ol>
-<p>这里比较的是回复中的 <code>accepted_n</code>，即已经接受过的提案编号。例如收到 <code>(3,foo)</code> 和 <code>(5,bar)</code>，本轮就应继承编号 5 对应的 <code>bar</code>。<code>promised_n</code> 只是接受者对未来编号的限制，不能代替 <code>accepted_n</code>；也不能比较 <code>foo</code>、<code>bar</code> 本身的大小，或按响应顺序、票数选择。</p>
-<p>即使一个旧值实际上只被一个 acceptor 接受，也可能需要继承。proposer 只看到了本次回复，通常不知道还有哪些节点曾经接受过它，无法据此排除“这个值已在别处达到多数”的情况。因此，只要回复带回了接受记录，就必须按统一规则参与选值，不能因为自己只看见一份记录而忽略它。</p>
 <blockquote>
 <p>某提案只被一个 acceptor 接受，新 proposer 能否直接忽略？</p>
 <p>若该记录出现在本次准备回复中，就必须参与最大已接受编号的选择。proposer 不一定知道其他节点还接受过什么。</p>
 </blockquote>
 <h3 id="接受阶段">接受阶段</h3>
-<p>选好值 v 后，proposer 发送 <code>ACCEPT(n,v)</code>。acceptor 再检查一次编号，因为从准备阶段到现在，可能已经收到更高编号的请求。如果已承诺更大编号，就拒绝；否则可靠保存 <code>promised_n=n</code>、<code>accepted_n=n</code>、<code>accepted_v=v</code>，再回复接受成功。</p>
-<p>当同一个提案 <code>(n,v)</code> 被多数 acceptor 接受并可靠保存时，v 就已经被选定（chosen）。这个事实不需要等 proposer 收到回复才成立；即使确认消息在途中丢失，接受记录也已经存在。proposer 收到多数成功回复后，才能确认自己知道了这个事实，并发送决定通知。</p>
+<p>proposer 按准备回复确定 v，发送 ACCEPT(n,v)。acceptor 检查 n 是否仍符合承诺门槛，符合时可靠保存 (n,v) 再确认，已经答应更高编号则拒绝。</p>
+<p>同一提案被多数实际接受时，值就已选定；proposer 收到足够确认时，才知道这一事实；learner 收到通知后再获知。决定通知丢失不撤销已形成的决定。</p>
+<p>“多数收到消息”不够，它们可能拒绝或尚未保存。多数 promise 也不够，接受阶段最后选出的值还可能是继承的旧客户端请求。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141542884.png" alt="接受者持久保存 Va 后，提议者通知学习者并返回客户端（课件第 12 页）"></p>
-<p>与准备阶段对比，三台机器现在除了 Nh，还保存了具体值 Va=V1。图右侧画的是值已选定后的 decide 通知，左上方再向客户端返回结果。判断决定是否已经成立，应看同一提案是否被多数接受者可靠保存，不能把最后一条通知到达当成唯一依据。</p>
-<p>因此，要分清三个时刻：获得多数 promise，只是具备了按规则发送提案的条件，不能仅凭这一步判断值已选定；多数 acceptor 实际接受同一提案，决定已经形成；proposer 收到多数确认，它才获知决定已经形成。后文的故障分析会反复使用这一区别。</p>
-<p>仅仅“多数节点收到 ACCEPT 消息”也不够，节点可能因更高承诺而拒绝，或尚未完成可靠保存。<a target="_blank" rel="noopener" href="https://lamport.azurewebsites.net/pubs/paxos-simple.pdf">Lamport，2001</a>给出了该协议的原始规则。</p>
 <blockquote>
 <p>Paxos 获得多数 promise，原客户端值就被选定了吗？</p>
 <p>没有。还需选择符合历史约束的值，并让同一提案被多数 acceptor 接受。最后选定值甚至可能是此前接受的另一个客户端请求。</p>
 </blockquote>
 <h2 id="决定的延续">决定的延续</h2>
-<p>设 A、B 已接受 foo，C 还不知道。新的提议者联系 B、C，B 将旧接受记录带回来。新的提议者因此继续使用 foo。多数派有交集，使历史能够被找到；继承规则要求后来者使用这份历史。两者结合，才能阻止同一个位置先选 foo、再选 bar。</p>
 <h3 id="安全推导">安全推导</h3>
-<p>假设 <code>(n,foo)</code> 已被多数派 Q1 接受。一个更高编号 m 想继续运行，需要先从另一个多数派 Q2 获取承诺。Q1 与 Q2 必然相交，所以 Q2 中至少一个节点保存过先前的接受历史。即使原 proposer 已经崩溃，这部分记录仍可通过准备回复传给新 proposer。</p>
-<p>如果交集节点尚未接受更高编号，它会直接带回 <code>foo</code>；如果已经接受过中间轮次，就带回那个轮次的记录。对中间各轮重复使用相同的继承规则，可以归纳证明：在 n 之后，能够获得接受的更高编号提案仍必须使用 <code>foo</code>。否则，取第一个成功偏离 <code>foo</code> 的高编号提案，它的准备回复又会要求它保留此前的值，与它选择不同值相矛盾。</p>
-<p>与此同时，Q2 一旦承诺编号 m，就拒绝低于 m 的新接受请求，使旧轮次无法再通过这个多数派继续取得接受。Paxos 由两套规则共同保证安全：承诺限制旧轮次继续写入，接受记录与继承规则限制新轮次随意改值。</p>
+<p>设 (n,foo) 已被多数 Q1 接受，更高编号 m 先收集另一多数 Q2。交集至少有节点保存过历史，它向后来者报告最近接受记录。</p>
+<p>若没有中间更高接受，回复直接带 foo；若已有更高轮次，按同样继承规则逐轮归纳，那些成功提案也必须延续 foo。取第一个偏离 foo 的高编号提案，它自己的准备条件又要求继承旧值，产生矛盾。</p>
+<p>同时，Q2 承诺 m 后拒绝较低编号的新接受，使旧轮次无法再绕开新门槛取得所需多数。门槛限制旧请求，历史继承限制新请求，两者共同维持安全。</p>
 <h3 id="三节点示例">三节点示例</h3>
-<p>设 A、B、C 是三个 acceptor，多数派为 2。</p>
+<p>A、B、C 的多数为 2。P1 先获 A、B 承诺，再让它们接受 (1,foo)，foo 已选定。P1 即使通知前崩溃，这个事实也保留。</p>
+<p>P2 用编号 2 联系 B、C，B 带回 (1,foo)，所以新提案应为 (2,foo)。图中 S1、S2、S3 对应这三个接受者，红叉不会抹去可靠保存的记录。若 P2 无视 B，就可能选出 bar，因此交集与继承缺一不可。</p>
 <table>
 <thead>
 <tr>
@@ -348,9 +337,9 @@
 </tbody>
 </table>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141543177.png" alt="交集节点 S2 把已经接受的 foo 带回，新提议者继续提出 foo（课件第 17 页）"></p>
-<p>图中的 S1、S2、S3 对应表里的 A、B、C。前一轮在 S1、S2 接受 foo 后，原提议者失效；S3 取得新承诺时，S2 的回复带着编号 1 和 foo。因此最后发送的是 accept(2,foo)，不能改成 S3 原先想写的其他值。红叉表示故障或消息无法到达，不会抹去已经持久保存的记录。</p>
-<p>沿表中的步骤看，两个多数派分别是 A、B 和 B、C，共享节点 B 把 <code>foo</code> 带给了 P2。如果删去继承规则，P2 就可能无视 B 的记录，让 B、C 接受 <code>bar</code>，同一个实例便先后选出两个值。因此，多数派交集与正确使用交集带回的记录缺一不可。</p>
 <h3 id="故障分析">故障分析</h3>
+<p>promise 后崩溃，需要恢复承诺继续拒绝低编号；接受后回复前崩溃，需要恢复已保存的值；少数接受后 proposer 失效，值未必选定，新轮次重新准备。</p>
+<p>多数已接受但确认丢失时，决定已经存在，只是 proposer 尚不知道。后续协议必须保留它，通知可以重传。分区两侧都可保持安全，只有能取得所需多数并满足其他条件的一侧有机会推进。</p>
 <table>
 <thead>
 <tr>
@@ -392,36 +381,27 @@
 </tr>
 </tbody>
 </table>
-<p>acceptor 可以在更高编号下接受另一个值，但其发送者必须遵守 Paxos 选值规则。一旦某值已选定，正确运行的后续提案就无法为同一实例选出不同值。</p>
 <h3 id="活性条件">活性条件</h3>
-<p>两个 proposer 可以不断用更大编号打断对方：P1 准备成功，P2 又获得更高承诺，P1 的 ACCEPT 被拒绝；P1 再提高编号，反过来打断 P2。</p>
-<p>这种执行没有选出冲突值，安全性仍然成立，但双方不断抢占，迟迟没有决定。常见做法是让一个相对稳定的 proposer 负责提议，并在失败后稍作退避，配合超时和故障检测减少竞争。网络最终稳定、可通信的多数派存活，竞争又能得到控制时，系统才有条件持续推进。</p>
-<p>因此，不应把课件中的“多数节点存活即可最终接受”理解为在任意异步调度和持续竞争下都必然终止。</p>
+<p>两个 proposer 不断用更大编号互相抢占，可能都无法完成接受阶段。安全规则仍阻止矛盾决定，系统却没有进展。</p>
+<p>活性需要足够节点可通信、消息最终传递，并让某个 proposer 在一段时间内不再被持续打断。退避或稳定 leader 可以减少竞争。安全性不依赖用某次超时证明节点死亡，超时主要用于安排重新尝试。</p>
 <h2 id="扩展成日志">扩展成日志</h2>
 <h3 id="日志扩展">日志扩展</h3>
-<p>Multi-Paxos 为一系列位置分别运行共识：</p>
+<p>单值实例只决定一个位置，复制状态机需要一串命令。Multi-Paxos 为每个日志位置运行相应实例，分别选定该位置的命令，再按位置顺序应用。</p>
+<p>每个实例有自己的接受历史，不能把一次位置上的决定直接用于另一个位置。并发 proposer 还需要处理位置竞争、空洞以及各节点获知进度不同的问题。</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo><mo stretchy="false">[</mo><mn>0</mn><mo stretchy="false">]</mo><mo separator="true">,</mo><mi mathvariant="normal">log</mi><mo>⁡</mo><mo stretchy="false">[</mo><mn>1</mn><mo stretchy="false">]</mo><mo separator="true">,</mo><mi mathvariant="normal">log</mi><mo>⁡</mo><mo stretchy="false">[</mo><mn>2</mn><mo stretchy="false">]</mo><mo separator="true">,</mo><mo>…</mo></mrow><annotation encoding="application/x-tex">\operatorname{log}[0],\operatorname{log}[1],\operatorname{log}[2],\ldots
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop"><span class="mord mathrm" style="margin-right:0.01389em;">log</span></span><span class="mopen">[</span><span class="mord">0</span><span class="mclose">]</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop"><span class="mord mathrm" style="margin-right:0.01389em;">log</span></span><span class="mopen">[</span><span class="mord">1</span><span class="mclose">]</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mop"><span class="mord mathrm" style="margin-right:0.01389em;">log</span></span><span class="mopen">[</span><span class="mord">2</span><span class="mclose">]</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner">…</span></span></span></span></span></p>
-<p>每个日志位置对应一个 Paxos 实例，这个实例选定的值通常是一条状态机命令，例如修改账户余额或更新视图。各副本按位置 0、1、2 的连续顺序执行命令，就得到共同的计算历史。单值协议因此可以扩展为持续接受请求的复制服务。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141543321.png" alt="使用不同 Paxos 实例依次确定视图，形成复制的配置历史（课件第 24 页）"></p>
-<p>图下方把 view 1、view 2 分别对应到 instance 1、instance 2。第一个实例决定 A 为主、B 和 C 为备，第二个实例在 A 故障后决定 B 为主、C 为备。每个位置的值一经选定就保留，持续变化的服务配置通过增加新位置表达。</p>
-<p>实例号和 ballot 表示两个不同维度。实例号确定正在填写日志的哪个位置，ballot 区分为这个位置发起的不同提案。例如“位置 3、编号 5”仍是在为位置 3 作决定，提高编号并没有新增日志位置；为位置 4 启动新实例，也不会允许覆盖位置 3 已经选定的值。</p>
 <h3 id="位置竞争">位置竞争</h3>
-<p>客户端请求 <code>yyy</code> 准备放到位置 3，但准备阶段发现该位置已有必须继承的 <code>zzz</code>。proposer 应先让位置 3 按 Paxos 规则确定 <code>zzz</code>，再为 <code>yyy</code> 寻找其他位置。</p>
+<p>客户端请求 yyy 想占位置 3，如果准备回复发现该位置已经接受 zzz，本轮必须按规则保留 zzz，再找其他位置放 yyy。客户端希望提交的内容与本轮必须恢复的历史可能不同。</p>
+<p>图中位置 0、1 已有 add、cmp，后面位置也可能被其他提议者占用。还有一种情况是位置 3 已决定，位置 2 仍为空。状态机不能跳过未知命令直接执行 3，需要恢复或决定 2，必要时用不改变业务状态的 no-op 填补，再沿连续前缀执行。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141543456.png" alt="位置 3 已有需要继承的 zzz，本轮必须先为它确定 zzz（课件第 27 页）"></p>
-<p>客户端的 yyy 在图中被划去，表示这次没有进入所选位置。S1 选择位置 3 后，从准备回复得知旧接受值 zzz，因而后续 Accept 与 Decide 都继续携带 zzz。顶部每个小框属于一个实例，位置 3 的历史约束不会因为当前客户端提出 yyy 而消失。</p>
-<p>这次 Paxos 成功完成，并不代表原客户端的 <code>yyy</code> 已经进入日志。上层必须检查最终选定的命令是否就是该请求，必要时继续提交，并借助请求身份避免重复执行。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141543648.png" alt="原请求换到新位置 4，继续执行一轮共识后进入日志（课件第 28 页）"></p>
-<p>与上一图对照，位置 3 仍然保留 zzz，S1 为 yyy 改选位置 4。在这个新实例的准备回复中没有必须继承的旧值，才可以提出 yyy。这里变化的是实例号；两张图一起说明，一个实例运行成功与某个特定客户端请求被选定是不同事件。</p>
-<p>多个 proposer 独立挑选位置，还可能留下空洞。例如位置 3 已经确定，位置 2 却还没有值。由于位置 2 的命令可能改变位置 3 的执行结果，状态机不能直接跳过它。实现需要补齐缺失位置，必要时通过共识放入一条不修改业务状态的空操作（no-op），使日志能够连续执行。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141543962.png" alt="日志位置 2 为空，即使位置 3 已选定也不能直接越过执行（课件第 34 页）"></p>
-<p>S1、S3 已保存位置 3 的 yyy，但位置 2 仍为空。由于未知的第 2 条命令可能影响 yyy 的执行结果，状态机不能仅因为位置 3 已有值就直接应用它。需要先通过对应实例恢复或确定位置 2，必要时填入 no-op，再沿连续前缀执行。</p>
 <h3 id="稳定主节点">稳定主节点</h3>
-<p>朴素实现为每条命令单独执行 Prepare 和 Accept：发送 Prepare、等待回复，再发送 Accept、等待回复，理想情况下需要两次协议往返。若多个 proposer 同时安排命令，还会反复竞争编号和日志位置。</p>
-<p>稳定的 leader 负责统一安排日志位置，并使用同一个 ballot，一次为后续多个实例取得承诺。只要没有更高 ballot 抢占，这些位置就不必逐条重新 Prepare，新命令通常只需执行 Accept 往返。</p>
+<p>每位置分别运行 Prepare 与 Accept，理想情况下需要两轮协议往返，还不含客户端与执行成本。多个 proposer 竞争位置和编号，又会增加重试。</p>
+<p>稳定 leader 统一安排位置，以同一 ballot 为后续范围取得承诺后，未被更高编号抢占期间，新命令通常只需 Accept 一轮。图中的 Prepare 覆盖位置 2 及后续，xxx、yyy 分别只做接受阶段。</p>
+<p>换 leader 后仍需重新准备并恢复各位置历史，不能永久省略。Paxos 的安全规则允许多个 proposer，单 leader 主要改善正常路径的效率与活性。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141543805.png" alt="稳定 leader 为后续实例统一准备，使新条目通常只需 Accept 往返（课件第 31 页）"></p>
-<p>第一个 Prepare 以同一 ballot 覆盖位置 2 及后续范围，顶部各实例因此保存相应承诺。随后 xxx 和 yyy 分别在位置 2、3 执行 Accept，图底部标出每条命令一个 RTT。省去的是稳定任期内的重复 Prepare；若更高 ballot 抢占，仍要重新准备和恢复历史。</p>
-<p>省去重复 Prepare 的依据，是 acceptor 已经对相关实例范围作出了承诺。leader 更换后，新 leader 仍需重新准备，并恢复各位置已经接受的记录，不能直接用自己的命令覆盖。因此，一轮 Prepare 可以服务多个位置，但不能据此永久省略领导权变化时的准备过程。</p>
 <table>
 <thead>
 <tr>
@@ -448,11 +428,10 @@
 </tr>
 </tbody>
 </table>
-<p>稳定 leader 主要改善正常路径效率。正确的 Paxos 规则允许多个 proposer 同时存在，代价可能是竞争和活性下降。</p>
 <h2 id="Raft-选主">Raft 选主</h2>
-<p>Raft 将角色分成 follower、candidate 和 leader。平时 leader 接收请求并复制日志，follower 接收这些记录。等待心跳超时后，follower 可以进入新任期竞选。投票既检查本任期是否已经投过票，也检查候选者日志是否足够新，防止选出丢失已提交历史的 leader。</p>
 <h3 id="共识分解">共识分解</h3>
-<p>Raft 直接围绕复制日志组织协议，将问题分为领导者选举、日志复制和安全提交。每台服务器在任一时刻处于三种状态之一：跟随者 follower 接受请求并保存日志；候选者 candidate 发起选举；领导者 leader 接收客户端命令，并把日志复制给其他节点。</p>
+<p>Raft 直接围绕复制日志，将选主、复制与安全提交分开描述。follower 接收 leader 或 candidate 请求，candidate 发起选举，leader 接收业务并复制日志。</p>
+<p>超时使 follower 进入 candidate，取得同任期多数票后成为 leader；重选时增加任期；接受有效 leader 或发现更高任期后回到 follower。图中的身份转换并不单独保证日志安全，还需后面的新旧检查与提交条件。</p>
 <pre><code class="highlight mermaid">stateDiagram-v2
     [*] --&gt; Follower
     Follower --&gt; Candidate: 选举超时
@@ -460,39 +439,32 @@
     Candidate --&gt; Leader: 获得同任期多数票
     Candidate --&gt; Follower: 接受有效 leader 或发现更高任期
     Leader --&gt; Follower: 发现更高任期</code></pre>
-<p>图中，follower 超时后转为 candidate；candidate 获得同任期多数票后转为 leader，未选出结果就提高任期重选；发现更高任期或接受有效 leader 后，则回到 follower。节点收到消息有先后，所以日志可能暂时落后甚至分叉。Raft 允许这些中间状态，但必须保留已提交的日志，并让各节点最终按相同命令顺序更新状态机。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141544113.png" alt="Raft 在 follower、candidate、leader 三种状态之间转换（课件第 39 页）"></p>
-<p>图中的向右箭头表示取得领导权的过程：先因超时成为 candidate，再因多数票成为 leader。下方返回箭头表示节点接受有效 leader 或发现更高任期后退回 follower。这个状态图负责说明身份变化，至于日志是否足够新、哪些条目可以提交，还要结合后面的检查条件。</p>
 <h3 id="任期">任期</h3>
-<p>任期 term 是递增的逻辑编号，用来区分不同轮次的选举和领导权。它没有固定时长，也不要求各机器同时进入新任期。一个任期可能选出一个 leader，也可能因为选票分散、无人取得多数而没有 leader。</p>
+<p>term 是递增逻辑编号，没有固定时长，各节点也不必同时进入新任期。图中一些任期有 leader，有些因分票没有 leader。</p>
+<p>请求和回复携带任期。看到更高任期时更新 currentTerm、转为 follower，重置新任期相应投票状态；过期请求则拒绝。每任期至多一个合法 leader，不等于所有节点随时都知道最新任期。</p>
+<p>分区中的旧主可能仍本地追加，但缺少多数确认不能把新尾部当作已提交历史。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141544256.png" alt="任期长度不同，分票可以使某个任期没有 leader（课件第 41 页）"></p>
-<p>蓝色区域表示选举，绿色区域表示 leader 已选出后的正常运行。Term 3 只有蓝色区域，对应选票分散、无人获得多数；Term 1、2、4、5 则分别有 leader。图中各段长短不一，说明任期是协议上的逻辑划分，并非每隔固定秒数自动换主。</p>
-<p>每次通信都会携带任期。节点收到比自己更高的任期，无论来自请求还是回复，都要更新 <code>currentTerm</code>，转回 follower，并清除原任期的投票记录，为新任期重新投票作准备。反过来，收到已经过期的任期请求时，应予以拒绝。</p>
-<p>“每任期最多一个 leader”并不表示所有节点随时都知道当前 leader 是谁。网络分区后，旧 leader 可能没有听说新任期，仍自认为 leader；另一侧已经选出了更高任期的 leader。旧 leader 可以继续在本地追加记录，但如果只联系得到少数节点，就无法取得新提交所需的多数确认。</p>
 <h3 id="选举流程">选举流程</h3>
-<p>follower 在选举超时后转为 candidate，提高任期，投自己一票，并向其他节点发送 <code>RequestVote</code>。获得当前任期多数票后成为 leader，并发送心跳维持联系。</p>
-<p>每个节点在同一任期最多投给一个 candidate，投票状态必须在回复前持久化。重发同一个 candidate 的请求可以再次确认同一票，不能视为额外选票。</p>
+<p>follower 超时后增加任期，转 candidate，投自己一票并发送 RequestVote。同一任期每节点最多支持一个 candidate，重复确认同一票不增加票数。</p>
+<p>投票要在回复前持久保存。反例图中 S3 先支持 S1，又因重启忘记 votedFor 而支持 S5，两个三票集合就能各自获胜。若 S3 记得一任期一票，两个多数派的交集便阻止双重支持。</p>
+<p>不同任期的 leader 可能暂时并存，但接受更高任期的节点拒绝旧请求，旧 leader 无法持续取得新提交所需多数。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141544411.png" alt="节点重启后若遗忘 votedFor，可能在同一任期支持两个赢家（课件第 46 页）"></p>
-<p>这是投票记录未持久化的反例。S3 先在任期 2 投给 S1，使 S1 获得三票；S3 重启后丢失 votedFor，又在同一任期投给 S5，与 S4、S5 组成另一个三票多数。两个多数派的交集正是 S3，只有它记住已投给谁，交集才能真正阻止重复投票。</p>
-<p>若两个 candidate 都要在同一任期获胜，就都需要多数票，两个选民集合必然相交。交集节点在这一任期只能投给一人，因此不可能同时支持两人当选。一任期一票、投票记录持久化和多数派交集共同保证了同任期最多一个合法赢家。</p>
 <blockquote>
 <p>两个不同任期的 leader 暂时并存，为什么不会都成功提交新命令？</p>
 <p>多数派相交。接受更高任期的交集节点会拒绝旧任期请求，旧 leader 无法持续获得所需多数。旧 leader 仍可能追加本地尾部，但这不等于提交。</p>
 </blockquote>
 <h3 id="选举超时">选举超时</h3>
-<p>如果多个 follower 同时超时，它们可能一起转为 candidate，各自投自己，再把其他选票分散给不同候选者，导致无人达到多数。随机化选举超时让节点等待不同的时长，使某个 candidate 更可能先发起选举，并在其他节点开始竞选之前获得多数。</p>
-<p>超时应明显大于正常心跳与通信延迟，具体取值依实现和环境决定。课件中的毫秒区间用于说明量级，不应当作所有部署的固定参数。</p>
-<p>计时器何时重新开始计时也很重要。收到有效 leader 的消息，或实际授予候选者选票时，可以按协议重置；若收到任意过期请求也重置，节点可能被无效消息反复推迟选举，即使没有可工作的 leader，也一直等不来新的选举。</p>
+<p>多个节点同时竞选可能分散票数。随机化超时让节点更可能错开发起，由一方先收集到多数。常见示意区间是 [T,2T]，课件中的毫秒量级需结合网络与心跳设置。</p>
+<p>计时器应在有效 leader 消息或按协议实际授票等时机重置。若任意过期请求都延后计时，无效消息可能让系统一直不选新主。</p>
 <h3 id="日志新旧">日志新旧</h3>
-<p>Raft 比较日志时，先比较最后一条的 term，再比较 index。可以把它理解为先看最后参与到了哪个任期，再在同任期内看保存到哪个位置。</p>
-<p>例如，最后记录为 (term=3,index=4) 的日志，比 (term=2,index=10) 更新，虽然它更短。只有最后 term 相同，index 更大的一方才更新。这条规则用于投票资格检查；日志真正怎样补齐，则由 AppendEntries 的前缀匹配完成。</p>
-<p>一任期一票解决了同轮选举不能有两个赢家的问题，还需要限制谁可以当选。如果一个缺少已提交日志的 candidate 也能成为 leader，它随后复制自己的旧日志，就可能丢掉已经确认的历史。因此，<code>RequestVote</code> 还要携带末条日志的任期 <code>lastLogTerm</code> 和位置 <code>lastLogIndex</code>，供投票者检查。</p>
-<p>比较日志新旧时，先比较末条日志任期，再在任期相同时比较末条索引：</p>
+<p>投票还要避免选出缺少已提交历史的 candidate。RequestVote 携带最后日志的 term 与 index，按字典序比较：先比 term，相同再比 index。</p>
+<p>末项 (3,4) 比 (2,10) 更新，即使较短；末 term 同为 2 时，index=5 比 4 更新。图中 Case A 比长度，Case B 因末 term 不同而选较短但较新的一方。</p>
+<p>currentTerm 是本次竞选任期，lastLogTerm 是旧日志最后条目的创建任期。提高竞选任期不会改写日志 term。日志条件还要与本任期投票状态一起检查。</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mo stretchy="false">(</mo><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi><mi>L</mi><mi>o</mi><mi>g</mi><mi>T</mi><mi>e</mi><mi>r</mi><msub><mi>m</mi><mi>C</mi></msub><mo separator="true">,</mo><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi><mi>L</mi><mi>o</mi><mi>g</mi><mi>I</mi><mi>n</mi><mi>d</mi><mi>e</mi><msub><mi>x</mi><mi>C</mi></msub><mo stretchy="false">)</mo><msub><mo>≥</mo><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">x</mi></mrow></msub><mo stretchy="false">(</mo><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi><mi>L</mi><mi>o</mi><mi>g</mi><mi>T</mi><mi>e</mi><mi>r</mi><msub><mi>m</mi><mi>V</mi></msub><mo separator="true">,</mo><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi><mi>L</mi><mi>o</mi><mi>g</mi><mi>I</mi><mi>n</mi><mi>d</mi><mi>e</mi><msub><mi>x</mi><mi>V</mi></msub><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">(lastLogTerm_C,lastLogIndex_C)
 \geq_{\mathrm{lex}}
 (lastLogTerm_V,lastLogIndex_V).
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal">L</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal" style="margin-right:0.02778em;">er</span><span class="mord"><span class="mord mathnormal">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">C</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal">L</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mord mathnormal">e</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.07153em;">C</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel"><span class="mrel">≥</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathrm mtight">lex</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal">L</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord mathnormal" style="margin-right:0.02778em;">er</span><span class="mord"><span class="mord mathnormal">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.22222em;">V</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal">L</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mord mathnormal">e</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.22222em;">V</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord">.</span></span></span></span></span></p>
-<p>其中 C 表示 candidate，V 表示投票者 voter，lex 表示先比较第一个字段、相同时再比较第二个字段的字典序。candidate 的日志至少与 voter 一样新，才满足日志方面的投票条件。这个条件还要与任期及是否已经投票等检查一起使用。</p>
 <table>
 <thead>
 <tr>
@@ -520,13 +492,13 @@
 </tbody>
 </table>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141545193.png" alt="日志新旧先比较末条任期，末条任期相同才比较长度（课件第 61 页）"></p>
-<p>Case A 中两份日志末任期都是 2，S1 更长，所以更新；Case B 中 S2 虽然短一条，末任期却为 3，比 S1 的 2 更新。图里的两组 S1、S2 分别独立比较，不能把不同组的日志混成同一次选举。</p>
-<p>表中的每个数字表示对应日志条目的创建任期。A 比 B 长，且末任期相同，所以 A 更新；C 虽然比 A 短，但末任期 3 大于 2，因此 C 更新。candidate 提高自己的竞选任期，不会改写已有日志的创建任期，<code>currentTerm</code> 与 <code>lastLogTerm</code> 是不同字段。</p>
 <blockquote>
 <p>Raft 是否选日志最长的节点？</p>
 <p>按末日志任期优先、末索引其次比较。末任期较高的短日志，可以比末任期较低的长日志更新。</p>
 </blockquote>
 <h3 id="状态保存">状态保存</h3>
+<p>currentTerm、votedFor 和 log 必须可靠保存，否则重启可能退回旧授权、重复投票或丢失历史。commitIndex 记录已知提交位置，基本协议中可重新获知；nextIndex、matchIndex 是 leader 根据复制状态维护的进度。</p>
+<p>lastApplied 要与应用状态的恢复对应。若应用状态已经持久化，却忘记哪些命令执行过，重启可能重复应用或重复外部副作用。因此，共识日志不自动提供所有业务的恰好一次效果。</p>
 <table>
 <thead>
 <tr>
@@ -573,30 +545,26 @@
 </tr>
 </tbody>
 </table>
-<p>这些状态保存位置不同，是因为恢复方式不同。任期、投票和日志一旦遗忘，可能直接破坏安全性；已知提交位置则可以通过后续消息重新获知。若应用状态本身已经持久化，还要让 <code>lastApplied</code> 等恢复信息与它对应，避免重启后把已执行操作再次作用于持久状态，或重复产生不能安全重放的外部效果。仅有共识日志，并不能自动获得任意业务操作的恰好一次语义。</p>
 <h2 id="Raft-复制">Raft 复制</h2>
-<p>一条日志包含位置 index、产生它的任期 term，以及命令。leader 发送新记录时，还附带前一项的 index 和 term。follower 先检查这个连接位置是否一致，再接续后面的记录。检查失败时，leader 向前寻找共同前缀，修复分叉的未提交后缀。</p>
 <h3 id="复制流程">复制流程</h3>
-<p>leader 收到客户端命令后，先在自己的日志末尾追加一个条目，再通过 <code>AppendEntries</code> 将它复制给 follower。每个条目包含索引、创建任期和命令：索引说明它应排在什么位置，任期说明它由哪一任 leader 创建，命令说明状态机之后要执行什么。</p>
-<p>对 leader 当前任期的新条目，在多数服务器可靠保存并满足提交规则后，可以推进 <code>commitIndex</code>。leader 按顺序应用已提交命令，取得结果后回复客户端，再将提交进度通知 follower。</p>
+<p>leader 收到命令，追加包含 index、创建 term 和 command 的条目，再发送 AppendEntries。follower 可靠保存并成功确认后，leader 更新复制进度。</p>
+<p>当前任期条目满足多数等提交条件时，推进 commitIndex，按顺序交给状态机，取得结果后回复，再通知 followers 提交位置。五节点多数包括 leader 自身，通常是 leader 加两个 follower。</p>
+<p>慢副本无需阻塞当前多数提交，leader 继续重试补齐它们。图中 3/3 是这次示例的响应数量，不能代替一般多数条件。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141544588.png" alt="新命令先追加和复制，确认提交后才执行并回复客户端（课件第 49 页）"></p>
-<p>编号 1 是客户端发来 xxx，编号 2 是 leader 向 follower 发送 AppendEntries，编号 3 是成功确认，编号 4 才向客户端回复并传播 commitIndex。左侧绿色下划线表示已提交的前缀。图示条目属于当前任期，因此可以按多数复制的规则确认；旧任期条目的限制稍后单独讨论。</p>
-<p>多数服务器包括 leader 自身。五节点系统通常需要 leader 加两个 follower，并非需要三个 follower。慢 follower 不必阻塞当前多数提交，leader 会继续重试补齐它们。</p>
 <h3 id="日志匹配">日志匹配</h3>
-<p>Raft 的日志匹配性质（Log Matching）规定：如果两个节点在相同索引处保存着相同任期的条目，那么这两个条目的命令相同，而且之前的所有条目也相同。因此，一个位置匹配，还能为它之前的整段前缀提供一致性依据。</p>
-<p>为维护这一性质，leader 发送 <code>AppendEntries</code> 时，还携带新内容前一条日志的索引 <code>prevLogIndex</code> 和任期 <code>prevLogTerm</code>。follower 先检查自己有没有这条前驱记录，以及任期是否相同。只有前驱匹配，才接受后续日志；如果连前驱都不匹配，就先拒绝，要求 leader 找到双方一致的位置。</p>
+<p>日志匹配性质要求：两个节点同一 index 的 term 相同，则该命令及其前面的全部条目都相同。每次追加先验证前驱，才能维持这个性质。</p>
+<p>AppendEntries 携带 prevLogIndex 与 prevLogTerm。图上 follower 的位置 4 为 term 2，匹配后可接位置 5；下图同位置为 term 1，必须拒绝，先寻找更早共同前缀。</p>
+<p>前缀一旦匹配，就可按归纳逐步延长，无需每次重新比较完整历史。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141544878.png" alt="AppendEntries 检查前驱索引和任期，匹配才接受后续条目（课件第 53 页）"></p>
-<p>上半图中，follower 的位置 4 与 leader 同为任期 2，可以接收位置 5 的 jmp。下半图中，同一位置却是任期 1 的 shl，前驱不匹配，因此拒绝请求。检查对象是新条目之前的边界；拒绝后，leader 才回退并寻找更早的共同前缀。</p>
-<p>每次追加都检查前驱，便能从已匹配的前缀继续延长共同日志。正确性证明按这一过程逐步归纳，因此不必在每条消息中重新比较整个历史。只检查前驱之所以足够，依赖的正是前面一直维护的日志匹配性质。</p>
 <h3 id="分叉修复">分叉修复</h3>
+<p>旧 leader 被隔离后可能追加 term 1 的 xxx，新多数侧已在 term 2 追加 shi、ret，因此未提交后缀分叉。旧主本地有条目，不表示它已被提交。</p>
+<p>leader 为每个 follower 保存 nextIndex。前驱检查失败，就向前移动发送位置，直到找到匹配前缀，再补齐后续。基本方案逐项回退，返回冲突任期可以一次跳过更多位置。</p>
+<p>例如 leader 为 1、1、2、3，follower 为 1、1、2、2、2，位置 3 匹配，从位置 4 起发生冲突，删除 follower 冲突后缀再接新记录。重试中已有匹配项不重复追加，无冲突新条目的心跳也不能机械截断尾部。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141544756.png" alt="旧主在分区中继续本地追加，新主形成另一段日志后缀（课件第 51 页）"></p>
-<p>红色分区线把旧 leader S1 与多数侧分开。S1 仍能收到客户端 A 的 xxx，于是在位置 3 追加任期 1 的条目；S2、S3 已进入任期 2，由 S3 接收 shi 和 ret。左侧日志因此有不同后缀，但旧主的本地追加没有获得多数确认，不能据此声称这些条目已经提交。</p>
-<p>leader 为每个 follower 维护一个 <code>nextIndex</code>，表示下次尝试从哪个位置开始发送。follower 拒绝前驱检查后，leader 就把发送位置往前移，重新寻找双方匹配的前缀；找到后，再补齐其后的日志。基础做法是每次回退一个位置，也可以让 follower 返回冲突任期等信息，一次跳过一段不匹配的日志。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141545022.png" alt="leader 逐步回退 nextIndex，找到共同前缀后重新补齐后缀（课件第 55 页）"></p>
-<p>右侧一连串往返表示 leader 从靠后的索引开始尝试，遭拒后把 nextIndex 从 10 向前移，直到找到双方认可的前驱。左侧日志中红色边框标出被修复的范围。图示采用逐项回退便于理解；利用冲突任期返回信息，可以减少寻找共同前缀所需的往返。</p>
-<p>例如 leader 的日志任期序列为 <code>1 1 2 3</code>，follower 为 <code>1 1 2 2 2</code>，这些数字表示各位置的创建任期。双方在位置 3 都是任期 2，前缀仍匹配。leader 以位置 3 为前驱，从位置 4 发送任期 3 的条目；follower 发现自己的位置 4 是任期 2，就删除从这里开始的冲突后缀，再接入 leader 的新条目。</p>
-<p>删除必须从真正冲突的条目开始。消息重试时，已经匹配的条目应保持原样，不能再追加一份；心跳如果没有携带与本地冲突的新条目，也不应机械地截断整个尾部。课件伪代码为了突出修复过程省略了这些判断，实现时仍需补全。</p>
 <h3 id="完整消息">完整消息</h3>
+<p>RequestVote 需要 term、candidateId、lastLogIndex、lastLogTerm，检查授权、投票及日志新旧。AppendEntries 需要 term、leaderId、前驱信息、entries 和 leaderCommit，检查任期、前缀、后缀与提交进度。</p>
+<p>leaderCommit 告诉 follower 已知提交边界，但 follower 不能推进到尚未匹配确认的范围之外。entries 为空的心跳也要按协议检查。课件早期为讲解省略字段的版本，不能直接作为完整实现。</p>
 <table>
 <thead>
 <tr>
@@ -618,11 +586,10 @@
 </tr>
 </tbody>
 </table>
-<p><code>leaderCommit</code> 告诉 follower，leader 已经知道日志提交到了哪里。follower 据此推进自己的提交位置，但不能越过本次已经匹配确认的日志范围，否则可能执行尚未确认属于共同历史的条目。心跳的 <code>entries</code> 可以为空，仍要检查任期，并按协议进行必要的一致性检查。</p>
-<p>这张表补全了课件分阶段引入的字段。尤其不能直接把课件早期仅检查任期和投票记录的 <code>RequestVote</code> 简化版本作为最终实现。</p>
 <h2 id="Raft-提交">Raft 提交</h2>
-<p>保存、提交和执行分别表示三件事。保存是节点已有这条日志，提交是协议保证未来有效 leader 会保留它，执行是状态机真正应用命令。读后面的反例时，先标出哪些记录只是保存，哪些已经满足提交条件，便不会把“某一刻在多数节点上出现”误当成所有情形下都已提交。</p>
 <h3 id="三种进度">三种进度</h3>
+<p>已追加表示本地有记录，未提交尾部仍可能被覆盖；已提交表示未来合法 leader 必须保留，可以顺序执行；已应用表示状态机已经执行并产生结果。</p>
+<p>一般有 lastApplied≤commitIndex≤lastLogIndex。不同副本知道的进度可以不同，一个已经存好条目的 follower 也可能还没收到提交通知。客户端超时仍需按请求身份查询原结果。</p>
 <table>
 <thead>
 <tr>
@@ -649,26 +616,20 @@
 </tr>
 </tbody>
 </table>
-<p>这三个进度通常满足 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi><mi>A</mi><mi>p</mi><mi>p</mi><mi>l</mi><mi>i</mi><mi>e</mi><mi>d</mi><mo>≤</mo><mi>c</mi><mi>o</mi><mi>m</mi><mi>m</mi><mi>i</mi><mi>t</mi><mi>I</mi><mi>n</mi><mi>d</mi><mi>e</mi><mi>x</mi><mo>≤</mo><mi>l</mi><mi>a</mi><mi>s</mi><mi>t</mi><mi>L</mi><mi>o</mi><mi>g</mi><mi>I</mi><mi>n</mi><mi>d</mi><mi>e</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">lastApplied\leq commitIndex\leq lastLogIndex</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal">A</span><span class="mord mathnormal" style="margin-right:0.01968em;">ppl</span><span class="mord mathnormal">i</span><span class="mord mathnormal">e</span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8304em;vertical-align:-0.136em;"></span><span class="mord mathnormal">co</span><span class="mord mathnormal">mmi</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">a</span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal">L</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span></span></span></span>：先有本地日志，确认提交后才能按顺序执行。各 follower 的进度可能不同，有的已经保存条目，却还没收到提交通知。客户端超时也无法区分“未提交”和“已提交但回复丢失”，因此还需要请求身份与结果去重。</p>
 <h3 id="提交条件">提交条件</h3>
-<p>对当前任期新建的条目，多数副本可靠保存后，leader 可以确认提交；对继承自旧任期的条目，还需要额外条件。标准 Raft 通过下面的统一规则推进提交位置：找到一个比当前 <code>commitIndex</code> 更大的索引 k，它已经复制到多数节点，而且 <code>log[k]</code> 创建于 leader 的当前任期。</p>
+<p>标准 Raft 用当前任期的条目推进提交：找到 k 大于原 commitIndex，已被多数可靠保存，且 log[k].term 等于 currentTerm。集合计数依据 matchIndex，包含 leader 自身。</p>
+<p>满足后，k 及它前面的连续日志一起提交。投票时的日志新旧限制与这条规则共同保证 Leader Completeness，即提交项存在于以后所有合法 leader 的日志中。</p>
+<p>继承的旧任期条目不能仅凭新收集到的多数计数独自推进提交，下面的反例说明原因。</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>k</mi><mo>&gt;</mo><mi>c</mi><mi>o</mi><mi>m</mi><mi>m</mi><mi>i</mi><mi>t</mi><mi>I</mi><mi>n</mi><mi>d</mi><mi>e</mi><mi>x</mi><mo separator="true">,</mo><mspace width="2em"/><mrow><mo fence="true">∣</mo><mo stretchy="false">{</mo><mi>s</mi><mo>∣</mo><mi>m</mi><mi>a</mi><mi>t</mi><mi>c</mi><mi>h</mi><mi>I</mi><mi>n</mi><mi>d</mi><mi>e</mi><mi>x</mi><mo stretchy="false">[</mo><mi>s</mi><mo stretchy="false">]</mo><mo>≥</mo><mi>k</mi><mo stretchy="false">}</mo><mo fence="true">∣</mo></mrow><mo>&gt;</mo><mfrac><mi>N</mi><mn>2</mn></mfrac><mo separator="true">,</mo><mspace width="2em"/><mi>l</mi><mi>o</mi><mi>g</mi><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo><mi mathvariant="normal">.</mi><mi>t</mi><mi>e</mi><mi>r</mi><mi>m</mi><mo>=</mo><mi>c</mi><mi>u</mi><mi>r</mi><mi>r</mi><mi>e</mi><mi>n</mi><mi>t</mi><mi>T</mi><mi>e</mi><mi>r</mi><mi>m</mi><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">k&gt;commitIndex,
 \qquad
 \left|\{s\mid matchIndex[s]\geq k\}\right|&gt;\frac{N}{2},
 \qquad
 log[k].term=currentTerm.
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7335em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">co</span><span class="mord mathnormal">mmi</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">∣</span><span class="mopen">{</span><span class="mord mathnormal">s</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord mathnormal">ma</span><span class="mord mathnormal">t</span><span class="mord mathnormal">c</span><span class="mord mathnormal">h</span><span class="mord mathnormal" style="margin-right:0.07847em;">I</span><span class="mord mathnormal">n</span><span class="mord mathnormal">d</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mopen">[</span><span class="mord mathnormal">s</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mclose">}</span><span class="mclose delimcenter" style="top:0em;">∣</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.0463em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mclose">]</span><span class="mord">.</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">er</span><span class="mord mathnormal">m</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">u</span><span class="mord mathnormal">rre</span><span class="mord mathnormal">n</span><span class="mord mathnormal" style="margin-right:0.13889em;">tT</span><span class="mord mathnormal" style="margin-right:0.02778em;">er</span><span class="mord mathnormal">m</span><span class="mord">.</span></span></span></span></span></p>
-<p>公式中的集合统计所有 <code>matchIndex</code> 至少达到 k 的节点，也就是已确认可靠保存到位置 k 的节点。计数包括 leader 自身，follower 的进度依据成功回复确认。满足三个条件后，将提交索引推进到 k，位置 k 及此前的整个连续前缀便一起提交。</p>
-<p>日志新旧的选举限制与这条提交规则共同保证领导者完整性（Leader Completeness）：一个条目一旦提交，以后所有更高任期的合法 leader 都包含它。已经提交的历史因此不会在换主时消失。<a target="_blank" rel="noopener" href="https://raft.github.io/raft.pdf">Raft 原文 §5.4</a>给出了证明及反例。</p>
 <h3 id="旧项反例">旧项反例</h3>
-<p>课件用五节点展示“旧任期条目补到多数派，仍不能直接提交”。表中的数字是条目任期，不是数据值。</p>
-<ol>
-<li>任期 2，S1 将位置 3 的条目 x 保存到 S1、S2，未达到三节点多数。</li>
-<li>S1 暂时不可达。S5 在任期 3 从 S3、S4、S5 获票当选，在自己的位置 3 及后续追加任期 3 的条目 y，但尚未让 y 达到多数。</li>
-<li>S5 暂时不可达，S1 恢复。S1 在任期 4 依靠 S1、S2、S3 当选；S3 的旧日志允许它投票给 S1。</li>
-<li>S1 将任期 2 的 x 补到 S3，并在自己尾部追加一个任期 4 的条目，但尚未把新条目复制到多数。</li>
-</ol>
-<p>此时可能出现：</p>
+<p>五节点中，term 2 的 S1 将位置 3 的 x 只保存到 S1、S2。S1 不可达后，S5 在 term 3 从 S3、S4、S5 获票，建立冲突 y，但也未复制到多数。之后 S5 不可达，S1 在 term 4 从 S1、S2、S3 获票。</p>
+<p>S1 将旧 x 补到 S3，现在 x 确实有三份；它本地又有 term 4 条目，但该新条目尚未达到多数。若 S1 再崩溃，S5 的末日志 term 3 比 S2、S3 的 term 2 新，仍可能在 term 5 获选，再覆盖位置 3。</p>
+<p>表格停在再次崩溃前，图中还画出最终覆盖。补复制不会把 x 的创建 term 从 2 改成 4，所以“旧项三份”还不足以排除不含它的更新候选者。</p>
 <table>
 <thead>
 <tr>
@@ -724,24 +685,22 @@ log[k].term=currentTerm.
 </tbody>
 </table>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141545357.png" alt="旧条目补到多数后，S5 仍可能在更高任期当选并覆盖它（课件第 64 页）"></p>
-<p>右侧按编号列出七个阶段，红色分区线说明哪些节点当时无法通信。上表停在 S1 再次崩溃之前，课件图左侧则是最后 S5 当选并覆盖后的结果，所以 S2、S3 的位置 3 已变为任期 3。沿两者对照可见，任期 2 的旧项曾到达多数，仍没有满足当前任期条目的提交条件。</p>
-<p>从表中数副本，x 确实已在 S1、S2、S3 三个节点上。但如果 S1 再崩溃，剩余节点并不知道它本地还保存着任期 4 的条目。S5 在任期 5 竞选时，自己的末日志任期为 3，比 S2、S3 的末日志任期 2 更新，仍可从它们获得选票。当选后，S5 用自己的日志修复其他副本，就会在位置 3 覆盖 x。</p>
-<p>S1 本地虽然有任期 4 的条目，但它尚未复制到多数，无法阻止上述选举。补齐 x 也没有把 x 的创建任期从 2 改为 4。这就是只数旧条目的副本数会出错的原因：即使旧项已经补到多数，仍可能存在日志更新、却不包含它的候选者。</p>
 <h3 id="前缀提交">前缀提交</h3>
-<p>若 S1 在崩溃前，进一步把位置 4 的任期 4 条目复制到多数派，情况就不同了。它满足“当前任期条目达到多数”的规则，可以提交位置 4；根据日志匹配性质，保存位置 4 的节点也保存着相同前缀，因此位置 3 的 x 随之提交。</p>
+<p>如果 S1 将 term 4 的位置 4 也复制到多数，就满足当前任期规则，可以提交到 4，位置 3 的 x 随相同前缀一起提交。</p>
+<p>此后竞选多数必然遇到保存 term 4 条目的节点，末 term 仍为 3 的 S5 无法获得足够票数。图中的绿色线因此覆盖新旧两项。</p>
+<p>leader 可以用正常命令，或用不改变业务状态的 no-op 来建立本任期提交。只发心跳没有创建这样的条目，不能替代这个过程。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141545518.png" alt="把本任期条目复制到多数后，它和此前旧条目一起提交（课件第 65 页）"></p>
-<p>这次 S1 把任期 4 的位置 4 也复制到 S2、S3，绿色下划线因此覆盖到位置 4，包含之前任期 2 的位置 3。S5 的末任期仍是 3，无法从保存任期 4 条目的节点获得足够选票。与上一图相比，变化来自新条目达到多数，而非单纯增加旧项的副本数。</p>
-<p>此时，以后任何竞选多数派都会遇到至少一个保存任期 4 条目的节点。S5 的末日志任期只有 3，这些节点不会投票给它，剩下的票又不足以形成多数，因此它无法按前面的过程当选并覆盖这段已提交前缀。</p>
-<p>leader 可以用本任期的正常业务命令推进提交，也可以在当选后追加一条 no-op。no-op 不改变业务状态，但它一旦作为本任期条目达到多数，就能连同继承的旧前缀一起确认。只发送心跳没有创建并复制这样的条目，不能替代这个步骤。</p>
 <blockquote>
 <p>Raft 五节点中有三个保存某个旧条目，就一定能直接提交吗？</p>
 <p>不能。旧任期条目不能仅靠多数计数直接推进提交；标准规则通过本任期条目达到多数，将此前的日志前缀一并提交。</p>
 </blockquote>
 <h3 id="读取边界">读取边界</h3>
-<p>补充说明：复制日志的写入安全性，不自动让任何本地读取都具有线性一致性。旧 leader 可能处于少数分区，仍能被客户端访问，但数据已经落后。</p>
-<p>线性一致读需要先确认自己仍有当前领导权，并让状态机追上读取所依赖的提交进度。可以通过多数派确认、ReadIndex 或满足相应条件的租约等方案处理，也可以把读请求按协议安排进日志。它们分别规定如何确认权限和读取位置，具体实现超出本次课件的主要范围。</p>
+<p>日志写入安全不表示任意本地读都线性一致。旧 leader 可能仍能被客户端访问，却已经失去有效授权并落后于新提交。</p>
+<p>读取需确认自己仍有权服务，并等本地应用到所需提交位置。可以采用多数确认、ReadIndex 或满足时间假设的租约等方案。日志复制与读取权限需要共同设计。</p>
 <h2 id="协议比较">协议比较</h2>
 <h3 id="协议对照">协议对照</h3>
+<p>Paxos 从一个位置的单值选择开始，再用多个实例组成日志；Raft 直接规定选举、日志复制和提交。两者都依赖可靠状态、参与集合交集及历史约束，不能仅靠多数表决口号解释。</p>
+<p>稳定 leader 降低正常路径竞争，故障处理则要恢复承诺或任期、保留已提交前缀，并继续补齐副本。实现时应逐项核对消息字段、持久化时刻、重试与应用进度，而不是只复现无故障时的箭头顺序。</p>
 <table>
 <thead>
 <tr>
@@ -783,56 +742,7 @@ log[k].term=currentTerm.
 </tr>
 </tbody>
 </table>
-<p>两者都通过共同日志支撑确定性状态机，也都无法让互不通信的两个分区同时独立确认冲突历史。</p>
-<h2 id="课件定位">课件定位</h2>
-<table>
-<thead>
-<tr>
-<th>内容</th>
-<th>课件页</th>
-<th>PDF 页</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>共识目标与基本角色</td>
-<td>3–10</td>
-<td>4–31</td>
-</tr>
-<tr>
-<td>两阶段及继承规则</td>
-<td>11–20</td>
-<td>32–63</td>
-</tr>
-<tr>
-<td>编号、故障与活性</td>
-<td>21–23</td>
-<td>64–66</td>
-</tr>
-<tr>
-<td>Multi-Paxos</td>
-<td>24–34</td>
-<td>67–126</td>
-</tr>
-<tr>
-<td>Raft 选举</td>
-<td>35–47</td>
-<td>127–151</td>
-</tr>
-<tr>
-<td>日志复制与修复</td>
-<td>48–56</td>
-<td>152–194</td>
-</tr>
-<tr>
-<td>提交条件及反例</td>
-<td>57–65</td>
-<td>195–233</td>
-</tr>
-</tbody>
-</table>
-<p>上一篇：<a href="/2026/10/29/SE3331_09/">分布式提交</a>。下一篇：<a href="/2026/10/29/SE3331_11/">Spanner</a>。</p>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/29/SE3331_10/">https://acannedfish.github.io/2026/10/29/SE3331_10/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Paxos/">Paxos</a><a class="post-meta__tags" href="/tags/Raft/">Raft</a><a class="post-meta__tags" href="/tags/%E5%85%B1%E8%AF%86/">共识</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/10/29/SE3331_09/" title="计算机系统工程-09：分布式提交"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-09：分布式提交</div></div></div></a><a class="pagination-related  no-desc" href="/2026/10/29/SE3331_11/" title="计算机系统工程-11：Spanner"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统工程-11：Spanner</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B1%E8%AF%86%E5%85%A5%E9%97%A8"><span class="toc-number">1.</span> <span class="toc-text">共识入门</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E8%AF%86%E7%9B%AE%E6%A0%87"><span class="toc-number">1.1.</span> <span class="toc-text">共识目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E6%95%B0%E4%BA%A4%E9%9B%86"><span class="toc-number">1.2.</span> <span class="toc-text">多数交集</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Paxos"><span class="toc-number">2.</span> <span class="toc-text">Paxos</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E5%80%BC%E5%85%B1%E8%AF%86"><span class="toc-number">2.1.</span> <span class="toc-text">单值共识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E8%A7%92%E8%89%B2"><span class="toc-number">2.2.</span> <span class="toc-text">协议角色</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E6%A1%88%E7%BC%96%E5%8F%B7"><span class="toc-number">2.3.</span> <span class="toc-text">提案编号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%81%E4%B9%85%E7%8A%B6%E6%80%81"><span class="toc-number">2.4.</span> <span class="toc-text">持久状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E9%98%B6%E6%AE%B5"><span class="toc-number">2.5.</span> <span class="toc-text">准备阶段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%A7%E6%89%BF%E6%97%A7%E5%80%BC"><span class="toc-number">2.6.</span> <span class="toc-text">继承旧值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%97%E9%98%B6%E6%AE%B5"><span class="toc-number">2.7.</span> <span class="toc-text">接受阶段</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%B3%E5%AE%9A%E7%9A%84%E5%BB%B6%E7%BB%AD"><span class="toc-number">3.</span> <span class="toc-text">决定的延续</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%8E%A8%E5%AF%BC"><span class="toc-number">3.1.</span> <span class="toc-text">安全推导</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E8%8A%82%E7%82%B9%E7%A4%BA%E4%BE%8B"><span class="toc-number">3.2.</span> <span class="toc-text">三节点示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90"><span class="toc-number">3.3.</span> <span class="toc-text">故障分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B4%BB%E6%80%A7%E6%9D%A1%E4%BB%B6"><span class="toc-number">3.4.</span> <span class="toc-text">活性条件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E6%88%90%E6%97%A5%E5%BF%97"><span class="toc-number">4.</span> <span class="toc-text">扩展成日志</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%89%A9%E5%B1%95"><span class="toc-number">4.1.</span> <span class="toc-text">日志扩展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%8D%E7%BD%AE%E7%AB%9E%E4%BA%89"><span class="toc-number">4.2.</span> <span class="toc-text">位置竞争</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%B3%E5%AE%9A%E4%B8%BB%E8%8A%82%E7%82%B9"><span class="toc-number">4.3.</span> <span class="toc-text">稳定主节点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Raft-%E9%80%89%E4%B8%BB"><span class="toc-number">5.</span> <span class="toc-text">Raft 选主</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E8%AF%86%E5%88%86%E8%A7%A3"><span class="toc-number">5.1.</span> <span class="toc-text">共识分解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E6%9C%9F"><span class="toc-number">5.2.</span> <span class="toc-text">任期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%89%E4%B8%BE%E6%B5%81%E7%A8%8B"><span class="toc-number">5.3.</span> <span class="toc-text">选举流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%89%E4%B8%BE%E8%B6%85%E6%97%B6"><span class="toc-number">5.4.</span> <span class="toc-text">选举超时</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%96%B0%E6%97%A7"><span class="toc-number">5.5.</span> <span class="toc-text">日志新旧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E4%BF%9D%E5%AD%98"><span class="toc-number">5.6.</span> <span class="toc-text">状态保存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Raft-%E5%A4%8D%E5%88%B6"><span class="toc-number">6.</span> <span class="toc-text">Raft 复制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E6%B5%81%E7%A8%8B"><span class="toc-number">6.1.</span> <span class="toc-text">复制流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%8C%B9%E9%85%8D"><span class="toc-number">6.2.</span> <span class="toc-text">日志匹配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%8F%89%E4%BF%AE%E5%A4%8D"><span class="toc-number">6.3.</span> <span class="toc-text">分叉修复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%B6%88%E6%81%AF"><span class="toc-number">6.4.</span> <span class="toc-text">完整消息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Raft-%E6%8F%90%E4%BA%A4"><span class="toc-number">7.</span> <span class="toc-text">Raft 提交</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E8%BF%9B%E5%BA%A6"><span class="toc-number">7.1.</span> <span class="toc-text">三种进度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E6%9D%A1%E4%BB%B6"><span class="toc-number">7.2.</span> <span class="toc-text">提交条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A7%E9%A1%B9%E5%8F%8D%E4%BE%8B"><span class="toc-number">7.3.</span> <span class="toc-text">旧项反例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%BC%80%E6%8F%90%E4%BA%A4"><span class="toc-number">7.4.</span> <span class="toc-text">前缀提交</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E8%BE%B9%E7%95%8C"><span class="toc-number">7.5.</span> <span class="toc-text">读取边界</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E6%AF%94%E8%BE%83"><span class="toc-number">8.</span> <span class="toc-text">协议比较</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E5%AF%B9%E7%85%A7"><span class="toc-number">8.1.</span> <span class="toc-text">协议对照</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BE%E4%BB%B6%E5%AE%9A%E4%BD%8D"><span class="toc-number">9.</span> <span class="toc-text">课件定位</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/29/SE3331_10/">https://acannedfish.github.io/2026/10/29/SE3331_10/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Paxos/">Paxos</a><a class="post-meta__tags" href="/tags/Raft/">Raft</a><a class="post-meta__tags" href="/tags/%E5%85%B1%E8%AF%86/">共识</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/10/29/SE3331_09/" title="计算机系统工程-09：两阶段提交与主备复制"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-09：两阶段提交与主备复制</div></div></div></a><a class="pagination-related  no-desc" href="/2026/10/29/SE3331_11/" title="计算机系统工程-11：Spanner 与 TrueTime"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统工程-11：Spanner 与 TrueTime</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B1%E8%AF%86%E5%85%A5%E9%97%A8"><span class="toc-number">1.</span> <span class="toc-text">共识入门</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E8%AF%86%E7%9B%AE%E6%A0%87"><span class="toc-number">1.1.</span> <span class="toc-text">共识目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E6%95%B0%E4%BA%A4%E9%9B%86"><span class="toc-number">1.2.</span> <span class="toc-text">多数交集</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Paxos"><span class="toc-number">2.</span> <span class="toc-text">Paxos</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E5%80%BC%E5%85%B1%E8%AF%86"><span class="toc-number">2.1.</span> <span class="toc-text">单值共识</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E8%A7%92%E8%89%B2"><span class="toc-number">2.2.</span> <span class="toc-text">协议角色</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E6%A1%88%E7%BC%96%E5%8F%B7"><span class="toc-number">2.3.</span> <span class="toc-text">提案编号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%81%E4%B9%85%E7%8A%B6%E6%80%81"><span class="toc-number">2.4.</span> <span class="toc-text">持久状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E9%98%B6%E6%AE%B5"><span class="toc-number">2.5.</span> <span class="toc-text">准备阶段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%A7%E6%89%BF%E6%97%A7%E5%80%BC"><span class="toc-number">2.6.</span> <span class="toc-text">继承旧值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E5%8F%97%E9%98%B6%E6%AE%B5"><span class="toc-number">2.7.</span> <span class="toc-text">接受阶段</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%B3%E5%AE%9A%E7%9A%84%E5%BB%B6%E7%BB%AD"><span class="toc-number">3.</span> <span class="toc-text">决定的延续</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%8E%A8%E5%AF%BC"><span class="toc-number">3.1.</span> <span class="toc-text">安全推导</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E8%8A%82%E7%82%B9%E7%A4%BA%E4%BE%8B"><span class="toc-number">3.2.</span> <span class="toc-text">三节点示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E5%88%86%E6%9E%90"><span class="toc-number">3.3.</span> <span class="toc-text">故障分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B4%BB%E6%80%A7%E6%9D%A1%E4%BB%B6"><span class="toc-number">3.4.</span> <span class="toc-text">活性条件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E6%88%90%E6%97%A5%E5%BF%97"><span class="toc-number">4.</span> <span class="toc-text">扩展成日志</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%89%A9%E5%B1%95"><span class="toc-number">4.1.</span> <span class="toc-text">日志扩展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%8D%E7%BD%AE%E7%AB%9E%E4%BA%89"><span class="toc-number">4.2.</span> <span class="toc-text">位置竞争</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%B3%E5%AE%9A%E4%B8%BB%E8%8A%82%E7%82%B9"><span class="toc-number">4.3.</span> <span class="toc-text">稳定主节点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Raft-%E9%80%89%E4%B8%BB"><span class="toc-number">5.</span> <span class="toc-text">Raft 选主</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E8%AF%86%E5%88%86%E8%A7%A3"><span class="toc-number">5.1.</span> <span class="toc-text">共识分解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E6%9C%9F"><span class="toc-number">5.2.</span> <span class="toc-text">任期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%89%E4%B8%BE%E6%B5%81%E7%A8%8B"><span class="toc-number">5.3.</span> <span class="toc-text">选举流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%89%E4%B8%BE%E8%B6%85%E6%97%B6"><span class="toc-number">5.4.</span> <span class="toc-text">选举超时</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%96%B0%E6%97%A7"><span class="toc-number">5.5.</span> <span class="toc-text">日志新旧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8A%B6%E6%80%81%E4%BF%9D%E5%AD%98"><span class="toc-number">5.6.</span> <span class="toc-text">状态保存</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Raft-%E5%A4%8D%E5%88%B6"><span class="toc-number">6.</span> <span class="toc-text">Raft 复制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E6%B5%81%E7%A8%8B"><span class="toc-number">6.1.</span> <span class="toc-text">复制流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%8C%B9%E9%85%8D"><span class="toc-number">6.2.</span> <span class="toc-text">日志匹配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%8F%89%E4%BF%AE%E5%A4%8D"><span class="toc-number">6.3.</span> <span class="toc-text">分叉修复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%B6%88%E6%81%AF"><span class="toc-number">6.4.</span> <span class="toc-text">完整消息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Raft-%E6%8F%90%E4%BA%A4"><span class="toc-number">7.</span> <span class="toc-text">Raft 提交</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E8%BF%9B%E5%BA%A6"><span class="toc-number">7.1.</span> <span class="toc-text">三种进度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E6%9D%A1%E4%BB%B6"><span class="toc-number">7.2.</span> <span class="toc-text">提交条件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A7%E9%A1%B9%E5%8F%8D%E4%BE%8B"><span class="toc-number">7.3.</span> <span class="toc-text">旧项反例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%BC%80%E6%8F%90%E4%BA%A4"><span class="toc-number">7.4.</span> <span class="toc-text">前缀提交</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E8%BE%B9%E7%95%8C"><span class="toc-number">7.5.</span> <span class="toc-text">读取边界</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E6%AF%94%E8%BE%83"><span class="toc-number">8.</span> <span class="toc-text">协议比较</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E5%AF%B9%E7%85%A7"><span class="toc-number">8.1.</span> <span class="toc-text">协议对照</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
   const showKatex = () => {
     document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
   }

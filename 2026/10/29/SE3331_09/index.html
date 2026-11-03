@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-09：分布式提交 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="跨机事务 问题背景 在单台机器上，日志负责在故障后恢复完整结果，并发控制负责协调同时执行的事务。这些机制共同保证一组操作能够作为整体生效。事务跨越多台机器后，每台机器仍可完成自己的局部事务，但各自独立提交，无法保证整笔业务也完整完成。 例如，银行按姓名分片，Alice 的账户保存在 A–M 分片，Zack 的账户保存在 N–Z 分片。一次发薪要向两人分别执行 deposit。如果程序依次调用两个分">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-09：两阶段提交与主备复制 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="跨机事务 问题背景 Alice 的账户在 A–M 分片，Zack 在 N–Z 分片。一次发薪要分别给两人入账。如果先让 Alice 所在服务器独立提交，再访问 Zack 时故障，整次发薪就只完成了一半。 每台机器都有本地事务，仍不能代替跨节点的共同决定。整笔业务需要所有参与者最终一起提交或一起中止。它们可以在不同物理时刻安装新值，但中间阶段要通过隔离规则保护，不能让读者把半笔结果当成最终状态。 性">
 <meta property="og:type" content="article">
-<meta property="og:title" content="计算机系统工程-09：分布式提交">
+<meta property="og:title" content="计算机系统工程-09：两阶段提交与主备复制">
 <meta property="og:url" content="https://acannedfish.github.io/2026/10/29/SE3331_09/index.html">
 <meta property="og:site_name" content="aCannedFish&#39;s Home">
-<meta property="og:description" content="跨机事务 问题背景 在单台机器上，日志负责在故障后恢复完整结果，并发控制负责协调同时执行的事务。这些机制共同保证一组操作能够作为整体生效。事务跨越多台机器后，每台机器仍可完成自己的局部事务，但各自独立提交，无法保证整笔业务也完整完成。 例如，银行按姓名分片，Alice 的账户保存在 A–M 分片，Zack 的账户保存在 N–Z 分片。一次发薪要向两人分别执行 deposit。如果程序依次调用两个分">
+<meta property="og:description" content="跨机事务 问题背景 Alice 的账户在 A–M 分片，Zack 在 N–Z 分片。一次发薪要分别给两人入账。如果先让 Alice 所在服务器独立提交，再访问 Zack 时故障，整次发薪就只完成了一半。 每台机器都有本地事务，仍不能代替跨节点的共同决定。整笔业务需要所有参与者最终一起提交或一起中止。它们可以在不同物理时刻安装新值，但中间阶段要通过隔离规则保护，不能让读者把半笔结果当成最终状态。 性">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://acannedfish.github.io/img/background11.png">
 <meta property="article:published_time" content="2026-10-29T06:02:28.000Z">
-<meta property="article:modified_time" content="2026-11-02T10:52:27.029Z">
+<meta property="article:modified_time" content="2026-11-02T11:42:59.477Z">
 <meta property="article:author" content="aCannedFish">
 <meta property="article:tag" content="两阶段提交">
 <meta property="article:tag" content="复制状态机">
@@ -16,11 +16,11 @@
 <meta name="twitter:image" content="https://acannedfish.github.io/img/background11.png"><script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "计算机系统工程-09：分布式提交",
+  "headline": "计算机系统工程-09：两阶段提交与主备复制",
   "url": "https://acannedfish.github.io/2026/10/29/SE3331_09/",
   "image": "https://acannedfish.github.io/img/background11.png",
   "datePublished": "2026-10-29T06:02:28.000Z",
-  "dateModified": "2026-11-02T10:52:27.029Z",
+  "dateModified": "2026-11-02T11:42:59.477Z",
   "author": [
     {
       "@type": "Person",
@@ -157,7 +157,7 @@
   },
   autoDarkmode: false
 }</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
-  title: '计算机系统工程-09：分布式提交',
+  title: '计算机系统工程-09：两阶段提交与主备复制',
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
@@ -177,12 +177,13 @@
   display: block !important;
 }
 </style>
-</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-09：分布式提交&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-09：分布式提交</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-29T06:02:28.000Z" title="发表于 2026-10-29 14:02:28">2026-10-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-02T10:52:27.029Z" title="更新于 2026-11-02 18:52:27">2026-11-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="跨机事务">跨机事务</h2>
+</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-09：两阶段提交与主备复制&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-09：两阶段提交与主备复制</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-29T06:02:28.000Z" title="发表于 2026-10-29 14:02:28">2026-10-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-02T11:42:59.477Z" title="更新于 2026-11-02 19:42:59">2026-11-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="跨机事务">跨机事务</h2>
 <h3 id="问题背景">问题背景</h3>
-<p>在单台机器上，日志负责在故障后恢复完整结果，并发控制负责协调同时执行的事务。这些机制共同保证一组操作能够作为整体生效。事务跨越多台机器后，每台机器仍可完成自己的局部事务，但各自独立提交，无法保证整笔业务也完整完成。</p>
-<p>例如，银行按姓名分片，Alice 的账户保存在 A–M 分片，Zack 的账户保存在 N–Z 分片。一次发薪要向两人分别执行 <code>deposit</code>。如果程序依次调用两个分片，Alice 已经入账，Zack 所在节点却突然崩溃，发薪就只完成了一半。两个分片的局部事务可能各自满足原子性，仍然没有保证整次发薪的原子性。跨分片下单中的“扣库存”和“建订单”也有相同问题。</p>
-<p>跨节点的原子提交要求所有参与者最终遵循同一个决定：整笔事务提交，或者整笔事务中止。各节点不必在同一个物理时刻把新值写入数据文件，后文将这种写入称为安装。但在安装尚未全部完成时，系统仍需控制读取和并发访问，避免把半笔事务当成最终结果交给应用。</p>
+<p>Alice 的账户在 A–M 分片，Zack 在 N–Z 分片。一次发薪要分别给两人入账。如果先让 Alice 所在服务器独立提交，再访问 Zack 时故障，整次发薪就只完成了一半。</p>
+<p>每台机器都有本地事务，仍不能代替跨节点的共同决定。整笔业务需要所有参与者最终一起提交或一起中止。它们可以在不同物理时刻安装新值，但中间阶段要通过隔离规则保护，不能让读者把半笔结果当成最终状态。</p>
 <h3 id="性质区分">性质区分</h3>
+<p>原子提交回答多项修改是否共同生效，隔离回答并发事务怎样互相影响，复制协议回答同一数据的副本怎样保持共同历史，持久性回答结果能承受哪些故障，可用性回答请求能否继续完成。</p>
+<p>2PC 主要协调跨节点原子提交。本地日志保留恢复材料，锁或验证保护并发读写，复制与读取规则再决定副本可见性。因此，采用 2PC 后仍需检查整体隔离和一致性，不能把名字当成全部保证。</p>
 <table>
 <thead>
 <tr>
@@ -219,11 +220,10 @@
 </tr>
 </tbody>
 </table>
-<p>两阶段提交（2PC）主要解决表中的跨节点原子提交问题。它协调各节点作出共同决定，本地日志负责保留恢复依据，并发控制则决定其他事务何时能读取或修改相关数据。因此，采用 2PC 后，仍需另外检查系统是否提供线性一致性或可串行化。</p>
 <h3 id="本地提交">本地提交</h3>
-<p>先回顾只使用重做日志（redo-only）的简化模型。事务计算出的新值先保存在内存中，暂不改动正式数据文件。提交时，将足以重做全部修改的完整日志可靠写入磁盘；日志保存成功后，即使数据文件尚未更新完，恢复程序也能根据日志补齐。因此，数据文件可以随后异步更新。</p>
+<p>先回顾 redo-only：事务在私有内存算出新值，完整日志可靠保存后才允许更新正式数据。图中 a=8、b=12 的日志已在磁盘，数据文件稍后才完成，即使这时重启也能重做。</p>
+<p>完整有效条目保存前可丢弃本次私有修改，保存后必须保留事务。恢复还需识别记录边界、检查完整性并正确处理重复回放。普通 write 返回可能仅表示进入缓存，不能直接当作持久提交。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141539915.png" alt="提交日志已保存时，重启后仍可重做尚未写入数据文件的修改（课件第 6 页）"></p>
-<p>图中 a=8、b=12 最初只在内存里，黄色圆柱表示磁盘记录。完整日志保存后才发生红叉所示故障，恢复程序仍能从日志把两项修改重放到银行文件。右侧数据文件变成完整的新状态，解释了为什么提交点可以早于数据文件更新完成。</p>
 <table>
 <thead>
 <tr>
@@ -245,13 +245,12 @@
 </tr>
 </tbody>
 </table>
-<p>表中的分界就是这个模型的提交点：跨过它以后，即使立刻崩溃，系统也有足够记录恢复完整结果。实现时还要检查日志是否完整、写入是否按要求刷入稳定存储，以及重复重放会不会再次产生修改；最后一项称为重放幂等性。普通文件写入返回成功，可能只表示内容进入了缓存，不能直接当成持久提交。</p>
 <h2 id="准备与决定">准备与决定</h2>
-<p>2PC 中的 YES 表示“我已准备好服从最终决定”。它还没有授权参与者独自提交。假设 Alice 所在分片答应了，Zack 所在分片却拒绝，协调者就应中止整次发薪。两个分片都答应后，协调者才记录 COMMIT，再让它们完成。因此，准备记录与最终决定必须分开保存。</p>
 <h3 id="两阶段提交">两阶段提交</h3>
-<p>两阶段提交（Two-Phase Commit，2PC）把节点分为协调者（coordinator）和参与者（participant，课件称 worker）。在发薪例子中，两个账户分片都是参与者，分别执行本地入账操作；协调者负责收集它们的准备结果，决定这次发薪最终提交还是中止。参与者除了执行局部事务，还必须保存故障后继续完成事务所需的记录。</p>
-<p>第一阶段是准备。协调者向每个参与者发送 <code>PREPARE</code>，询问它是否已经准备好执行最终决定。参与者检查本地操作，准备所需资源，并把 <code>PREPARED</code> 状态及更新信息持久保存，之后才能回复 <code>YES</code>。这意味着它作出了承诺：即使随后重启，也能继续处理这笔事务。无法满足准备条件时，回复 <code>NO</code>。</p>
-<p>第二阶段是决定。协调者只有收到全部参与者的 <code>YES</code>，才可以决定 <code>COMMIT</code>。如果有人回复 <code>NO</code>，就决定 <code>ABORT</code>；如果投票迟迟不齐，协调者也可以在尚未形成最终决定时选择中止。无论作出哪种决定，都应先可靠记录，再通知各参与者，保证故障恢复后仍能继续发送同一个结果。</p>
+<p>2PC 把职责分为协调者 coordinator 与参与者 participant。两个账户分片各执行局部工作，协调者收集它们的准备结果，统一决定整次发薪。</p>
+<p>准备阶段发送 PREPARE。参与者检查条件、保留必要资源，把 PREPARED 与恢复更新持久保存后，才能回答 YES；做不到则回答 NO。YES 是承诺能够执行最终决定，尚不是已经提交。</p>
+<p>决定阶段中，全部 YES 才允许 COMMIT。有人 NO，或投票未齐且尚未形成决定时，协调者可选择 ABORT。先可靠保存决定，再发送相同结果，参与者据此完成和清理。</p>
+<p>序列图从上往下，课件时序图从左往右，两者都要求 YES 之前有准备记录、COMMIT 通知之前有全局决定。图省略的局部操作、确认与回收仍需实现，消息携带同一事务 ID 才能处理重传。</p>
 <pre><code class="highlight mermaid">sequenceDiagram
     participant C as 协调者
     participant A as 参与者 A
@@ -266,24 +265,23 @@
     C-&gt;&gt;A: COMMIT(T)
     C-&gt;&gt;B: COMMIT(T)
     Note over A,B: 按决定完成事务并释放资源</code></pre>
-<p>沿图从上往下看，两条 <code>YES</code> 箭头之前，参与者已经保存准备记录；两条 <code>COMMIT</code> 箭头之前，协调者已经保存全局决定。这两处“先保存、后回复”的顺序，是故障恢复的依据。图中省略了先前的局部操作、最终确认和日志回收。所有消息还应携带事务身份，例如事务编号 T，使重复收到的消息仍然对应同一笔事务。</p>
 <blockquote>
 <p>所有参与者都投了 <code>YES</code>，是否已经完成提交？</p>
 <p>尚未。协调者仍需持久化全局决定，参与者再据此完成。参与者只看到自己的 <code>YES</code>，尤其无法推断其他人的投票。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141453765.png" alt="发薪事务在协调者和两个账户分片之间执行准备与提交（课件第 4 页）"></p>
-<p>课件将客户端、协调者和两个账户分片分别画成一条时间线，时间从左向右推进。左侧灰色区域是先前执行的局部入账操作；编号 2 才开始询问能否提交，编号 3 再通知最终结果。橙色提交点位于协调者线上，说明全局决定由协调者记录，各分片随后按它完成。</p>
 <h3 id="准备承诺">准备承诺</h3>
-<p>参与者进入 <code>PREPARED</code> 后，还不知道最终结果，但已经承诺自己能够执行协调者的决定。这一承诺必须跨越故障保留。因此，回复 <code>YES</code> 后，即使等了很久也不能仅凭自己的超时撤销事务：协调者可能已经决定提交，只是通知还没有到达。</p>
-<p>假设一个参与者先回复 <code>YES</code>，随后崩溃。若它恢复时仍按普通单机事务的规则，把所有“本地尚未提交”的日志直接丢弃，就可能与协调者的决定冲突：协调者已经记录 <code>COMMIT</code>，其他节点据此提交，这个节点却丢掉了修改。准备记录的作用，正是让恢复程序识别出这种不能自行中止的事务。</p>
+<p>参与者保存 PREPARED 后，知道自己已承诺配合，却还不知道大家最终决定什么。协调者可能已经提交，只是通知尚未到达，所以它不能等久了就自行撤销。</p>
+<p>反例中，参与者投 YES 后重启，若把没有本地 COMMIT 的日志全部清掉，就可能在协调者与另一方提交时自己中止。恢复必须识别 PREPARED，读回更新与事务身份，查询可靠决定后再行动。</p>
+<p>查到 COMMIT 就提交，查到 ABORT 就撤销，暂时查不到就保留未决。仅看到自己的 YES，也不能推断其他参与者都同意。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141540181.png" alt="缺少准备状态恢复时，一个分片中止而协调者和另一分片提交（课件第 8 页）"></p>
-<p>这是一条错误恢复路径。N–Z 分片回复同意后崩溃，重启时因为没有本地 COMMIT 就清掉 redo 日志；与此同时，协调者已经依据两份 YES 决定提交。图右侧的 COMMITTED 与 ABORTED 因而同时出现，说明参与者必须区分普通未提交事务和已经作出准备承诺的事务。</p>
-<p>因此，准备记录至少应保存事务身份、重建更新所需的信息，以及“已经准备但结果未定”的状态。恢复程序看到 <code>PREPARED</code> 时，需要查询可靠的全局决定：查到提交就继续提交，查到中止就执行中止；暂时查不到，就保留未决状态。</p>
 <blockquote>
 <p>参与者投了 <code>YES</code>，能否立刻提交？</p>
 <p>不能。其他参与者可能投 <code>NO</code>，协调者也可能在缺少其他投票时决定中止。<code>YES</code> 是履行共同决定的承诺，提交授权来自全局 <code>COMMIT</code>。</p>
 </blockquote>
 <h3 id="日志顺序">日志顺序</h3>
+<p>参与者先保存准备状态和更新再投 YES，协调者先保存全局决定再通知，参与者再按本地协议保存最终结果并释放资源。表格把这几种持久化职责分开。</p>
+<p>图中的全局提交点位于协调者 COMMIT 保存时刻。之后即使只通知到一个参与者，也不能改判中止。未收到者继续保护相关数据和恢复材料，等查询到决定后补齐。</p>
 <table>
 <thead>
 <tr>
@@ -311,17 +309,15 @@
 </tbody>
 </table>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141540336.png" alt="参与者先保存 PREPARED，协调者先保存 COMMIT，再发送依赖这些状态的消息（课件第 10 页）"></p>
-<p>沿黄色日志圆柱的位置检查消息顺序：参与者的 PREPARED 位于准备回复之前，协调者的 COMMIT 位于第二阶段通知之前。故障后，即使内存和执行进度丢失，这些记录仍能说明节点已经承诺什么、全局已经决定什么。图中的不同持久化位置承担不同职责。</p>
-<p>课件模型中的全局提交点是协调者将 <code>COMMIT</code> 决定持久化的时刻。它之前，协调者仍可能选择中止；它之后，恢复过程必须继续提交，不能因为某条通知丢失而改判。</p>
-<p>消息到达有先后，因此可能出现一个参与者已经完成提交，另一个仍处于 <code>PREPARED</code> 的情况。后者尚未得知决定，仍需按隔离规则保护相关数据，并保留恢复记录，不能提前释放所有约束，让其他事务把未完成状态当成最终状态。</p>
 <blockquote>
 <p>协调者记录了 <code>COMMIT</code>，只有一个参与者收到通知，此时能否改成 <code>ABORT</code>？</p>
 <p>不能。全局决定已持久化，恢复必须继续提交。其他参与者等待通知，不代表决定可以反转。</p>
 </blockquote>
 <h2 id="故障后恢复">故障后恢复</h2>
-<p>读故障图时，先找红叉前是否已经保存 COMMIT。保存之前，协调者还可以选择中止；保存之后，恢复必须继续提交。再看参与者是否保存了 PREPARED。已准备的参与者不能只因超时就撤销，因为另一台机器可能已经收到提交决定。</p>
 <h3 id="故障处理">故障处理</h3>
-<p>分析故障时，先定位全局决定是否已经持久化，再看每个节点保存了什么。</p>
+<p>先看故障前有没有有效全局决定，再看各节点留下什么记录。PREPARE 丢失可重传，尚未决定时也可中止；参与者已经准备后重启，需要从未决状态继续查询；COMMIT 丢失则由协调者按日志重发。</p>
+<p>协调者决定前崩溃，按课件协议恢复后可中止；决定 COMMIT 后崩溃，恢复必须继续通知提交。表中的情形都依赖“先保存、后发送”的顺序。</p>
+<p>图中 N–Z 分片在提交期间故障，重启后恢复 PREPARED，再用 tx? 查询。客户端没收到成功也不能判断一定失败，重试应保持原身份，避免再次发薪。</p>
 <table>
 <thead>
 <tr>
@@ -369,10 +365,10 @@
 </tbody>
 </table>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141540863.png" alt="参与者在提交阶段崩溃后，从 PREPARED 恢复并查询决定（课件第 13 页）"></p>
-<p>N–Z 分片已经保存 PREPARED，却在完成提交前遇到红叉。重启后，它先回到未决状态，再发送图右侧的 tx? 查询，协调者根据已保存的 COMMIT 返回提交决定。因此，恢复程序可以丢失原来的运行位置，但不能丢失准备承诺。</p>
-<p>客户端没有收到回复，只能说明它尚不知道结果。事务可能根本没有提交，也可能已经跨过提交点，只是成功回复丢失。重试时需要携带同一事务身份，让系统查询原结果或识别重复请求，避免把同一次发薪、转账执行两遍。</p>
 <h3 id="阻塞原因">阻塞原因</h3>
-<p>从参与者 P 的视角列出两种情况：</p>
+<p>P 只知道自己 PREPARED，却联系不到协调者。协调者可能在决定前崩溃，也可能已记录 COMMIT 但尚未通知 P。P 本地看到的记录一样，两种正确结果却不同。</p>
+<p>第一张图中没有决定，协调者恢复后中止；第二张图中 COMMIT 已保存，另一个参与者已提交，恢复必须继续提交。P 在收到新信息前无法区分它们。</p>
+<p>自行提交可能与 ABORT 冲突，自行中止可能与 COMMIT 冲突，所以传统 2PC 会阻塞。超时可以重发、查询或启动恢复，却不会凭空产生决定信息。其他节点若保存可靠决定，可以帮助恢复；都只有准备状态时仍可能等待。</p>
 <table>
 <thead>
 <tr>
@@ -394,88 +390,64 @@
 </tr>
 </tbody>
 </table>
-<p>P 手里的信息完全相同，正确动作却不同。这就是它必须等待新信息的原因。再等十秒、再等一分钟，都不会自动告诉它协调者磁盘上是哪种记录。后面两张图分别把这两种执行展开。</p>
-<p>设参与者 P 已持久保存 <code>PREPARED</code>，随后联系不上协调者。可能是协调者尚未保存决定就崩溃，恢复后应按课件规则中止；也可能是协调者已经保存 <code>COMMIT</code>，只在通知 P 之前崩溃，恢复后必须继续提交。两种情况下，P 本地看到的记录完全一样。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141541034.png" alt="协调者尚未保存决定便崩溃，准备完成的参与者等待其恢复（课件第 14 页）"></p>
-<p>图中协调者崩溃时标着 no decision logged，因此它恢复后可以按课件规则中止。但参与者在协调者重启前看不到这个事实，只能停在 blocked 区间。协调者的磁盘状态允许它恢复后决定中止，并不等于参与者可以凭超时提前作出同样判断。</p>
-<p>由于本地记录相同，P 无法据此判断发生了哪一种情况。自行提交，可能与全局中止相反；自行中止，又可能与全局提交相反。它只能继续寻找能够证明最终决定的信息，在此之前等待。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141541194.png" alt="协调者已保存 COMMIT 后崩溃，恢复必须继续提交（课件第 15 页）"></p>
-<p>与上一张图相比，红叉之前已经出现 COMMIT 日志，且 A–M 分片已经完成。协调者重启后从日志重发提交消息，N–Z 分片才结束等待。这两张图中，等待者都可能只知道自己已准备，但协调者应恢复出的最终结果不同，正好对应前面两种无法区分的情况。</p>
-<p>这种等待就是传统 2PC 的阻塞性。设置超时可以让节点重发消息、查询其他节点或启动恢复，但等待时间变长，并不会让 P 获得新的决定依据。如果其他节点保存着可靠的最终决定，就可以帮助它恢复；如果所有可联系到的节点都只知道“已准备”，事务仍可能停在这里。</p>
 <h3 id="隔离与回收">隔离与回收</h3>
-<p>跨节点的共同决定，还要与本地的锁、验证和日志回收配合。否则，即使所有节点最后选择了同一种结果，执行期间仍可能破坏隔离性或丢失恢复依据。</p>
-<p>采用严格两阶段锁时，参与者投出 <code>YES</code> 后，仍需保留必要的锁，尤其不能立即释放写锁。此时整笔事务尚未确定提交还是中止；过早解锁，会允许其他事务读取或覆盖这些未决修改。锁的释放需要与全局事务的最终结果配合。</p>
-<p>采用 OCC 时，也要把提交验证、冲突保护与全局决定连起来。一个节点投票前验证成功，只说明当时的读取依赖仍然有效。若投票后不再保护这些依赖，其他事务可能先修改数据，协调者后来却仍按原计算决定提交，得到不正确的结果。</p>
-<p>日志回收同样不能忽略未决事务。<code>PREPARED</code> 事务可能已经等待很久，但它还没有完成，准备日志仍可能是重建更新的唯一依据。建立检查点时，可以把这些状态一起保存，确认新的恢复依据完整后，再按恢复规则清理旧日志。</p>
+<p>投 YES 后，严格 2PL 的参与者仍需保留相应锁，尤其写锁，直到全局结果允许释放。否则其他事务可能使用或覆盖未决修改。</p>
+<p>OCC 同样要将验证与后续保护连接起来。投票时版本有效，若之后任别人修改，协调者再按旧计算提交仍会出错。</p>
+<p>PREPARED 日志等待再久也可能仍有用途。检查点要保留恢复这些承诺所需的信息，确认新材料有效后才能删除旧记录。</p>
 <h2 id="分区与可用">分区与可用</h2>
 <h3 id="网络分区">网络分区</h3>
-<p>网络分区是指部分节点之间无法通信，即使这些节点本身仍在运行。一个节点收不到对方消息时，通常无法准确区分“对方崩溃”和“对方仍运行，只是消息到不了”。因此，心跳超时只能触发故障怀疑，不能证明对方已经停止执行。</p>
-<p>课件用两个区域销售同一件库存解释冲突：两个区域都只看到库存为 1，又互相无法通信。若两边都独立确认购买，就可能卖出两件；若一边等待或暂停，便牺牲了这部分请求的可用性。</p>
-<p>复制提高了容错能力，同时引入新的问题：发生通信故障时，谁有权继续接收更新？已经确认的更新会不会在接管后消失？</p>
+<p>节点仍在运行，却无法与部分节点通信，就是网络分区。心跳超时因此只能怀疑对方失效，不能证明它停止了。</p>
+<p>两个区域都看到最后一件库存，各自无法同步时，若独立确认购买就可能卖出两件；让一侧等待，则这部分请求暂时不能完成。复制增加了数据来源，也需要规定分区中谁能继续确认更新，以及恢复后保留谁的历史。</p>
 <h3 id="CAP">CAP</h3>
-<p>CAP 讨论允许网络分区时，强一致性与可用性能否同时得到保证。C 通常指线性一致性：多个副本的操作应能解释为对同一个逻辑对象的访问，并遵守已完成操作与后续操作之间的实时顺序。A 要求非故障节点收到的操作最终得到符合接口语义的响应。P 则表示系统模型允许网络分区，协议不能一直假设节点之间能够正常通信。</p>
-<p>课件还从工程角度引入服务等级目标（Service Level Objective，SLO），例如规定请求应在某个延迟范围内完成。一个结果即使最终返回，超过用户能够接受的期限，也可能已经没有使用价值。形式化 CAP 讨论操作能否最终结束，SLO 进一步约束结束得是否足够及时，两者需要区分。</p>
+<p>CAP 的 C 通常指线性一致性，A 要求非故障节点收到的操作最终得到符合接口的响应，P 表示允许网络分区。图中美国已售出商品，欧洲尚未收到更新，立即确认可能超卖，等待则无法保证在持续分区中完成。</p>
+<p>工程 SLO 进一步规定完成期限，超过 deadline 的回复可能已无用。满足延迟目标的有效吞吐可称为 goodput。形式化的“最终完成”与工程上的“足够及时”需要分别检查。</p>
+<p>回复服务不可用不等于完成所需读写，“无法安全判断库存”也不等于业务售罄。课件把等待优先的方案称为 CP，完整 C 仍依赖隔离、复制和读取规则，2PC 本身直接解决的是共同提交。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141541381.png" alt="网络分区后立即销售可能超卖，等待确认则可能超过响应期限（课件第 22 页）"></p>
-<p>美国区域已经卖出最后一件商品，但复制消息被分区阻断，欧洲区域仍保留库存 1。欧洲买家随后下单时，图中分出两条路径：立即确认可能把同一件商品卖两次，等待同步又可能越过 deadline。这里的冲突由两侧缺少共同信息造成，缩短本地处理时间无法消除。</p>
-<p>不能通过对所有请求立刻回复“服务不可用”来声称保住了 CAP 的 A；这种回复没有完成原本的存储操作语义。业务上的“售罄”和系统“无法安全判断库存”也应区分。</p>
-<p>课件将当前方案概括为 CP，是为了强调分区时宁可等待也不破坏事务结果。严格分析时，2PC 的直接保证是原子提交；系统是否满足 CAP 中的 C，还取决于隔离、复制和读路径。<a target="_blank" rel="noopener" href="https://groups.csail.mit.edu/tds/papers/Gilbert/Brewer2.pdf">Gilbert 与 Lynch 的讨论</a>可用于核对这些性质的范围。</p>
 <h2 id="复制服务">复制服务</h2>
 <h3 id="复制顺序">复制顺序</h3>
-<p>把同一批请求广播给多个副本，仍可能得到不同结果。例如客户端 C1 发出 <code>x=1</code>，C2 发出 <code>x=2</code>。副本 S1 先收到 <code>x=2</code>、再收到 <code>x=1</code>，最终保存 1；副本 S2 以相反顺序处理，最终保存 2。两边都没有漏掉请求，差异来自执行顺序。</p>
+<p>同一组消息可能以不同顺序到达。图中一个副本先写 2 再写 1，另一个先写 1 再写 2，最后分别为 1、2，尽管都没漏命令。</p>
+<p>复制需要共同的命令顺序。事务协调者的 COMMIT、ABORT 又是不能随意反转的决定，不能先让不同副本各自发布冲突答案，再指望以后合并。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141541525.png" alt="两个副本收到相同写入，但接收顺序不同，最终保存不同值（课件第 26 页）"></p>
-<p>蓝色箭头表示 C1 的写 1，绿色箭头表示 C2 的写 2。S1 上绿色先到，S2 上蓝色先到，于是各自最后处理的写入不同。图中两侧都执行了两条命令，仍得到不同终值；复制需要协调的不仅是命令集合，还有命令顺序。</p>
-<p>即使最终能让副本收敛，也未必足以支撑事务协调者。协调者的 <code>COMMIT</code> 和 <code>ABORT</code> 关系到不可撤销的决定，不能允许各副本独立发布互相冲突的结果后再修补。</p>
 <h3 id="复制状态机">复制状态机</h3>
-<p>复制状态机（Replicated State Machine，RSM）把服务器描述为不断处理命令、更新状态的机器。只要各副本从相同状态开始，以相同顺序执行相同的确定性命令，就能得到相同结果。这里的确定性，是指相同的旧状态和输入总会产生相同的新状态。</p>
-<p>若状态转移函数为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>S</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><mi>F</mi><mo stretchy="false">(</mo><msub><mi>S</mi><mi>i</mi></msub><mo separator="true">,</mo><mi>o</mi><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">S_{i+1}=F(S_i,op_i)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8917em;vertical-align:-0.2083em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.05764em;">S</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0576em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">o</span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>，共同初态与共同输入序列就能推出共同状态。顺序不可省略：从 5 开始，先加 1 再乘 2 得到 12，先乘 2 再加 1 得到 11。</p>
+<p>状态机根据当前状态与输入产生下一状态，写作 S(i+1)=F(Si,opi)。相同初态、相同确定命令和相同顺序，就能逐步推出相同结果。</p>
+<p>图中三个副本都从 5 开始，先加 1 得 6，再乘 2 得 12；反过来先乘 2再加 1会得到 11。因此顺序是保证的一部分。</p>
+<p>随机数、当前时间与外部调用可能让相同代码产生不同结果，需要先确定并放入共同输入，或用其他受控机制。协议于是需要决定共同日志、提交时刻和恢复方式，已经提交的连续前缀必须在接管后保留。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141541659.png" alt="相同初态按相同顺序执行确定性命令，三个副本都从 5 变为 12（课件第 28 页）"></p>
-<p>三条服务器行都从 5 开始，先沿蓝色箭头执行加 1 得到 6，再沿绿色箭头执行乘 2 得到 12。上方客户端命令序列为所有副本提供相同输入。相同初态、相同命令和相同顺序一起成立，才能逐步推出最终状态相同。</p>
-<p>如果命令内部要生成随机数、读取当前时间或调用外部服务，相同代码也可能在不同副本上得到不同值。这些非确定性结果需要先确定，再作为日志等共同输入的一部分交给副本，或者通过其他受控方式执行。让每个副本各自取时间、生成随机数，会破坏前面的推导条件。</p>
-<p>这样，维护副本一致性的主要问题就变为：如何确定共同日志，何时可以提交，故障后又如何恢复。副本可以暂时少收到几条命令，但已经提交的日志前缀，也就是从日志开头到提交位置的连续部分，必须在后续接管中得到保留。</p>
 <h3 id="主备复制">主备复制</h3>
-<p>主备模型指定一个主节点（primary）接收请求并安排顺序，再把命令复制给备份节点（backup）。备份按这个顺序处理命令，主节点等到满足规定的复制确认条件后，才向客户端报告成功。这样，多客户端请求的顺序由同一个入口确定。</p>
-<p>如果只让 primary 本地执行并返回，之后它崩溃，backup 可能缺少已经确认的更新。若等待所有备份，又可能被一个慢节点拖住。因此，确认范围与接管范围必须共同设计。</p>
-<p>主节点还负责把非确定性输入变成共同输入。新备份加入时，需要先完成状态和日志同步，不能立刻作为拥有完整历史的可靠副本使用。</p>
+<p>primary 接收并排序请求，backup 按相同顺序保存或执行。主节点满足复制确认条件后才返回成功，否则主节点崩溃时备份可能缺少已确认修改。</p>
+<p>等待所有备份又会受慢节点影响，因此正常确认集合与故障接管集合需要共同设计。非确定性输入也由协议统一，新备份应先补齐状态和日志，再承担需要完整历史的职责。</p>
 <h3 id="故障检测">故障检测</h3>
-<p>最直接的自动接管方案是监控程序定期接收 primary 心跳，超时后指定 backup 接任。然而，primary 可能仍然活着，只是与监控程序断开。</p>
-<p>若旧 primary 继续服务，新 primary 也开始服务，系统出现双主。多个彼此独立的监控程序还可能分别指定不同 primary，加剧冲突。</p>
+<p>监控者收不到心跳便指定新主，可能与仍在服务的旧主冲突。图中 M1 还能联系 S1，M2 因分区看不见它，让 S2 接管，两个客户端分别写入，状态开始分叉。</p>
+<p>安全接管需要同时解决两件事：共同确定新主，阻止旧主继续确认冲突操作。谁先回复心跳不能决定全部问题，还要检查它是否拥有已确认历史。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141541825.png" alt="两个监控程序在网络分区中作出不同判断，导致双主写入（课件第 32 页）"></p>
-<p>M1 仍能收到 S1 的心跳，M2 却因为分区收不到，因而让 S2 接任。此后 C1 向仍自认主节点的 S1 写入 3，C2 向 S2 写入 2，右侧状态开始分叉。图中的心跳丢失只反映监控者的视角，不能证明 S1 已停止服务。</p>
-<p>问题包含两个部分：决定新主是谁，以及阻止旧主继续确认操作。只有第一个部分，无法保证接管安全。</p>
 <blockquote>
 <p>主节点心跳超时后，为什么不能直接让任意备份接任？</p>
 <p>旧主可能仍在服务，备份也可能缺少已确认更新。必须同时处理领导权隔离和历史恢复。</p>
 </blockquote>
 <h2 id="安全接管">安全接管</h2>
-<p>换主包含两个独立问题：旧主是否还能让更新生效，新主是否保留了已确认数据。只宣布一个新名字不能解决它们。任期或视图用于拒绝过期授权，副本记录用于恢复此前结果。后面的多数派交集让新旧参与集合至少共享一部分历史。</p>
 <h3 id="视图服务">视图服务</h3>
-<p>视图服务（View Server，VS）集中决定当前由谁服务。每一份配置称为一个视图，包含视图号、primary 和 backups；配置变化时，产生更高编号的新视图。客户端先查询 VS，缓存当前 primary 的地址，之后直接向它发送请求。</p>
-<p>例如，视图 1 指定 S1 为主、S2 为备；S1 被怀疑故障后，视图 2 指定 S2 为主。视图号帮助节点区分旧配置与新配置。</p>
+<p>视图服务 VS 给每份主备配置编号。视图记录 primary 与 backups，客户端查询后缓存主地址。配置改变产生更高视图号，节点用它区分新旧授权。</p>
+<p>图中 S1 失效后 S2 接主，S3 加入备份；S1 恢复先处于 idle，再按新配置加入。曾经当过主不代表恢复后仍有权限。</p>
+<p>集中决定视图可避免多个监控者独立指定，但旧主可能收不到通知，所以实际请求也必须检查授权。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141541972.png" alt="视图服务按编号维护主备配置，节点角色随故障和恢复发生变化（课件第 33 页）"></p>
-<p>最上方按时间列出四个视图，下面三行记录 S1、S2、S3 的角色。S1 故障后，S2 从 backup 变为 primary；S3 随后加入作为备份。S1 恢复时先处于 idle，不能因为曾当过主节点就自行恢复旧权限，而要依据后续视图重新加入。</p>
-<p>由一个 VS 决定配置，可以避免多个监控程序分别指定不同主节点。但新配置产生后，旧 primary 可能仍收不到通知。因此，处理实际读写请求时也要检查视图权限，不能只在管理配置时记录“已经换主”。</p>
 <h3 id="旧主隔离">旧主隔离</h3>
-<p>课件的两副本示例依赖以下规则：primary 必须获得 backup 对请求的确认；backup 只接受相同视图 primary 转发的请求；非 primary 拒绝客户端直接发来的服务请求。</p>
-<p>沿视图切换的过程看，S2 尚未得知视图 2 时，仍以视图 1 的 backup 身份确认 S1 的转发，但不会直接接受客户端发给新主的请求。S2 得知视图 2 后，才开始作为新主服务，同时拒绝 S1 携带视图 1 的转发。由于 S1 必须取得 S2 的确认才能完成请求，这时它就无法继续确认旧视图中的操作。</p>
+<p>两副本例子要求 primary 得到 backup 确认，backup 只接受同视图主的转发，非主拒绝客户端直接访问。</p>
+<p>S2 尚未接受新视图时，仍作为旧备份确认 S1，但不直接服务新主请求；接受新视图后，它开始服务，同时拒绝 S1 的旧视图转发。S1 可能仍自认主，却失去完成请求所需确认。</p>
+<p>图中客户端最初还找 S1，转发被 S2 拒绝后查询 VS，再改找 S2。读取也要检查权限，否则旧主可直接返回过期数据。租约或其他读取协调各有前提，多副本配置变化还要检查交集和状态交接。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141542125.png" alt="新主拒绝旧视图转发，使旧主无法再获得完成请求所需的确认（课件第 35 页）"></p>
-<p>客户端最初仍缓存 S1，便把请求交给旧主。S1 携带 view 1 转发时，已进入 view 2 的 S2 拒绝确认；客户端随后查询 VS，再把请求发给 S2。图中最终成功的绿色路径经过新视图，旧主的本地判断没有改变，也已经失去确认请求的能力。</p>
-<p>因此，切换生效的关键是 S2 接受新视图并开始拒绝旧视图。旧 S1 可能仍自认为主，但失去完成操作所需的确认能力。</p>
-<p>这里还要考虑读取。如果旧主无需任何确认就直接返回本地数据，仍可能在换主后返回过期结果。线性一致读通常需要确认自己仍有服务权限，或使用在有效期限内授予权限的租约等机制。租约也有相应的时间与失效条件。副本更多时，还要检查新旧配置各自向哪些节点收集确认，以及状态如何交接，保证切换期间不会同时确认冲突历史。</p>
 <h3 id="接管数据">接管数据</h3>
-<p>假设有 S1、S2、S3 三个副本，S1 为主。更新 <code>x=2</code> 复制到 S1、S2 后向客户端返回成功，S3 仍为 <code>x=1</code>。</p>
+<p>S1 将 x=2 保存到自己和 S2后回复成功，S3 仍只有 x=1。如果 S1 故障后直接让 S3 接管，后续读取会返回 1，丢失已确认效果。</p>
+<p>第二张图把原因画成 S2“未被询问”：它明明有新记录，恢复却只查旧 S3。因此，恢复调查集合必须与先前确认写入的集合相交，并按版本或日志规则识别要保留的历史。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141542429.png" alt="已确认写入只保存在 S1 和 S2，直接让旧副本 S3 接管会丢失结果（课件第 38 页）"></p>
-<p>左侧方框 1、2 表示依次追加的更新。S1 将写 2 复制给 S2 后回复 OK，但 S3 只保存了写 1。S1 故障后，若直接让 S3 接任并读取 x，右侧就返回 1。图中丢失的是已经向客户端确认的更新，不能用后台以后再同步来解释这次错误返回。</p>
-<p>S1 崩溃后，若 VS 仅因为 S3 还活着就让它直接接任，客户端下一次读取会得到 1，与先前确认成功的 <code>x=2</code> 不符。因此，选择接管者时不能只看谁先回复心跳，还要检查哪些节点保存了已确认的更新，并恢复这段日志历史。</p>
-<p>只问 S3 也无法知道 S2 保存着更新。写入时确认的集合与接管时调查的集合必须相交，使至少一个调查对象能提供相应记录。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261029141542583.png" alt="恢复调查只联系 S3，与先前保存写入的集合没有交集（课件第 39 页）"></p>
-<p>这张图进一步把问题定位到恢复调查范围：S2 明明保留着写 2，却被标为 not asked，只有落后的 S3 回复。要避免这一情况，应让每次恢复调查都至少接触一个保存过已确认写入的节点；下面的 quorum 条件就是把这种交集要求写成数量约束。</p>
 <h2 id="多数与交集">多数与交集</h2>
 <h3 id="法定集合">法定集合</h3>
-<p>为了保证读或恢复时能找到已完成写入的记录，可以规定每次操作必须联系足够数量的副本，这类集合称为法定集合（quorum）。设固定副本总数为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span>，写入在 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>w</mi></msub></mrow><annotation encoding="application/x-tex">Q_w</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 个副本保存后确认，读或恢复时调查 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>r</mi></msub></mrow><annotation encoding="application/x-tex">Q_r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 个副本。要让任意一次调查都与先前的写入集合相交，需要：</p>
+<p>quorum 是协议规定每次操作必须取得响应的集合。固定 N 个副本，写入确认 Qw 个、读取或恢复调查 Qr 个，若 Qr+Qw&gt;N，两集合不可能完全不重叠。</p>
+<p>五副本中，任意三写与任意三读至少共享一个。表中 4/2、2/4、5/1、3/3 分别调整读写代价，但交集只提供找到历史的机会。还要处理版本比较、并发写、未完成操作和成员变化，才能推出相应读取保证。</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>Q</mi><mi>r</mi></msub><mo>+</mo><msub><mi>Q</mi><mi>w</mi></msub><mo>&gt;</mo><mi>N</mi><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">Q_r+Q_w&gt;N.
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mord">.</span></span></span></span></span></p>
-<p>如果两个集合完全不重叠，它们的元素总数最多只有 N。因此，规定两者大小之和超过 N，就保证至少有一个副本既保存过写入，也参与本次读取或恢复。例如五副本中，写入任意三个、再调查任意三个，两组至少共享一个节点。</p>
-<p>找到交集节点后，还要能从回复中辨认哪份状态更新。课件先假设只有一个写入者，每次更新带有可比较的版本号或序号，再讨论不同的读写集合大小：</p>
 <table>
 <thead>
 <tr>
@@ -512,79 +484,22 @@
 </tr>
 </tbody>
 </table>
-<p>这些数字只说明集合交集。多个写入者、并发读写、未完成写入和成员变化还需要额外协议，不能从 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>r</mi></msub><mo>+</mo><msub><mi>Q</mi><mi>w</mi></msub><mo>&gt;</mo><mi>N</mi></mrow><annotation encoding="application/x-tex">Q_r+Q_w&gt;N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> 单独推出线性一致性。</p>
 <blockquote>
 <p>三副本中，写入 S1、S2 后确认；恢复只问 S3，为什么不安全？</p>
 <p>调查集合和写入集合没有交集，恢复者看不到已确认更新。调查任意两个副本可保证交集，但还需按正确日志规则恢复。</p>
 </blockquote>
 <h3 id="多数派">多数派</h3>
-<p>多数派大小为：</p>
+<p>多数派为 floor(N/2)+1，即超过一半。两个多数派必然相交。使用 2f+1 个副本，失效 f 个后还剩 f+1 个，只要可以通信并满足协议条件，仍能形成多数。</p>
+<p>计数包括 primary。三副本多数提交通常是主加至少一个备份，不能把“总副本数”与“备份数”混用。</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>Q</mi><mo>=</mo><mrow><mo fence="true">⌊</mo><mfrac><mi>N</mi><mn>2</mn></mfrac><mo fence="true">⌋</mo></mrow><mo>+</mo><mn>1.</mn></mrow><annotation encoding="application/x-tex">Q=\left\lfloor\frac{N}{2}\right\rfloor+1.
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">Q</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.4em;vertical-align:-0.95em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">⌊</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">⌋</span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1.</span></span></span></span></span></p>
-<p>多数派指超过总数一半的副本，任意两个多数派必然相交。使用 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mn>2</mn><mi>f</mi><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">N=2f+1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> 个副本时，多数派大小为 f+1；即使 f 个副本不可用，仍剩下 f+1 个。只要剩余副本能够通信，并满足其他协议条件，就仍有足够节点组成多数派。</p>
-<p>全文的 N、Q 都按包括 primary 在内的全部副本计算。例如三副本多数派写入，需要 primary 和至少一个 backup 可靠保存。若改用“备份数量”计数，必须相应调整公式，避免把主节点漏算或重复计数。</p>
 <h3 id="完整接管">完整接管</h3>
-<p>一个可恢复的主备系统，需要把正常写入与故障接管连起来：</p>
-<ol>
-<li>当前 primary 给请求安排顺序，并可靠复制到规定确认集合。</li>
-<li>达到确认条件后，才向客户端报告成功。</li>
-<li>故障后，管理机制形成新视图，并阻止旧主继续确认冲突操作。</li>
-<li>新主调查与旧写入集合相交的恢复集合，依据日志序号和协议恢复完整历史。</li>
-<li>新加入或落后的副本完成必要同步后，再承担相应职责。</li>
-</ol>
-<p>课件在单写者模型中，用“选取最新日志”说明恢复应寻找保存较完整历史的节点。但日志里存在一条记录，不等于这条记录已经对客户端确认提交。实际协议还需区分这两种状态，处理故障前未完成的操作，并保证接管后保留已经提交的共同前缀，以及配置切换本身的安全。</p>
+<p>正常写入先排序并复制到规定集合，确认后再回复。故障后形成新视图，阻止旧主确认冲突操作，再从与旧写集合相交的节点调查并恢复历史。落后或新副本补齐后再承担职责。</p>
+<p>日志中存在记录与记录已经提交是不同状态。恢复既要保留提交前缀，也要处理未完成尾部，配置切换本身同样需要安全条件。</p>
 <h3 id="后续问题">后续问题</h3>
-<p>如果 VS 自身崩溃，系统又可能无法选主。直接复制 VS，还会遇到多个副本如何对新视图达成共同决定的问题。下一篇的 Paxos 和 Raft 将讨论如何在部分节点故障时，仍然安全地确定一个值或一串日志。</p>
-<p>原子提交与共识由此可以分层组合：2PC 在不同事务参与者之间协调提交；复制协议让同一个逻辑参与者由多台机器共同承担，并维护一致状态。复制后，一台机器崩溃不一定使这个参与者完全失去服务能力，从而减少单机故障引起的阻塞；但参与者组之间长期断开，仍可能阻止事务推进。<a target="_blank" rel="noopener" href="https://lamport.azurewebsites.net/video/consensus-on-transaction-commit.pdf">Gray 与 Lamport，2006</a>进一步分析了事务提交与共识的关系。</p>
-<h2 id="课件定位">课件定位</h2>
-<table>
-<thead>
-<tr>
-<th>内容</th>
-<th>课件页</th>
-<th>PDF 页</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>多节点提交与本地恢复</td>
-<td>3–6</td>
-<td>4–24</td>
-</tr>
-<tr>
-<td>故障、准备日志与阻塞</td>
-<td>7–17</td>
-<td>26–80</td>
-</tr>
-<tr>
-<td>网络分区与 CAP</td>
-<td>18–24</td>
-<td>81–98</td>
-</tr>
-<tr>
-<td>复制状态机与主备</td>
-<td>25–32</td>
-<td>99–137</td>
-</tr>
-<tr>
-<td>视图及旧主隔离</td>
-<td>33–36</td>
-<td>138–170</td>
-</tr>
-<tr>
-<td>接管与 quorum</td>
-<td>37–41</td>
-<td>171–195</td>
-</tr>
-<tr>
-<td>视图服务的复制</td>
-<td>42</td>
-<td>196</td>
-</tr>
-</tbody>
-</table>
-<p>下一篇：<a href="/2026/10/29/SE3331_10/">复制共识</a>。</p>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/29/SE3331_09/">https://acannedfish.github.io/2026/10/29/SE3331_09/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4/">两阶段提交</a><a class="post-meta__tags" href="/tags/%E5%A4%8D%E5%88%B6%E7%8A%B6%E6%80%81%E6%9C%BA/">复制状态机</a><a class="post-meta__tags" href="/tags/%E4%B8%BB%E5%A4%87%E5%A4%8D%E5%88%B6/">主备复制</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/10/16/SE3331_08/" title="计算机系统工程-08：事务机制"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-08：事务机制</div></div></div></a><a class="pagination-related  no-desc" href="/2026/10/29/SE3331_10/" title="计算机系统工程-10：复制共识"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统工程-10：复制共识</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%A8%E6%9C%BA%E4%BA%8B%E5%8A%A1"><span class="toc-number">1.</span> <span class="toc-text">跨机事务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E8%83%8C%E6%99%AF"><span class="toc-number">1.1.</span> <span class="toc-text">问题背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%A7%E8%B4%A8%E5%8C%BA%E5%88%86"><span class="toc-number">1.2.</span> <span class="toc-text">性质区分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%8F%90%E4%BA%A4"><span class="toc-number">1.3.</span> <span class="toc-text">本地提交</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E4%B8%8E%E5%86%B3%E5%AE%9A"><span class="toc-number">2.</span> <span class="toc-text">准备与决定</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="toc-number">2.1.</span> <span class="toc-text">两阶段提交</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E6%89%BF%E8%AF%BA"><span class="toc-number">2.2.</span> <span class="toc-text">准备承诺</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E9%A1%BA%E5%BA%8F"><span class="toc-number">2.3.</span> <span class="toc-text">日志顺序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E5%90%8E%E6%81%A2%E5%A4%8D"><span class="toc-number">3.</span> <span class="toc-text">故障后恢复</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86"><span class="toc-number">3.1.</span> <span class="toc-text">故障处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0"><span class="toc-number">3.2.</span> <span class="toc-text">阻塞原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%94%E7%A6%BB%E4%B8%8E%E5%9B%9E%E6%94%B6"><span class="toc-number">3.3.</span> <span class="toc-text">隔离与回收</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%8C%BA%E4%B8%8E%E5%8F%AF%E7%94%A8"><span class="toc-number">4.</span> <span class="toc-text">分区与可用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E5%88%86%E5%8C%BA"><span class="toc-number">4.1.</span> <span class="toc-text">网络分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CAP"><span class="toc-number">4.2.</span> <span class="toc-text">CAP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E6%9C%8D%E5%8A%A1"><span class="toc-number">5.</span> <span class="toc-text">复制服务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E9%A1%BA%E5%BA%8F"><span class="toc-number">5.1.</span> <span class="toc-text">复制顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="toc-number">5.2.</span> <span class="toc-text">复制状态机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E5%A4%87%E5%A4%8D%E5%88%B6"><span class="toc-number">5.3.</span> <span class="toc-text">主备复制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E6%A3%80%E6%B5%8B"><span class="toc-number">5.4.</span> <span class="toc-text">故障检测</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%8E%A5%E7%AE%A1"><span class="toc-number">6.</span> <span class="toc-text">安全接管</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%86%E5%9B%BE%E6%9C%8D%E5%8A%A1"><span class="toc-number">6.1.</span> <span class="toc-text">视图服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A7%E4%B8%BB%E9%9A%94%E7%A6%BB"><span class="toc-number">6.2.</span> <span class="toc-text">旧主隔离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E7%AE%A1%E6%95%B0%E6%8D%AE"><span class="toc-number">6.3.</span> <span class="toc-text">接管数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E6%95%B0%E4%B8%8E%E4%BA%A4%E9%9B%86"><span class="toc-number">7.</span> <span class="toc-text">多数与交集</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%95%E5%AE%9A%E9%9B%86%E5%90%88"><span class="toc-number">7.1.</span> <span class="toc-text">法定集合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E6%95%B0%E6%B4%BE"><span class="toc-number">7.2.</span> <span class="toc-text">多数派</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%8E%A5%E7%AE%A1"><span class="toc-number">7.3.</span> <span class="toc-text">完整接管</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E7%BB%AD%E9%97%AE%E9%A2%98"><span class="toc-number">7.4.</span> <span class="toc-text">后续问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%BE%E4%BB%B6%E5%AE%9A%E4%BD%8D"><span class="toc-number">8.</span> <span class="toc-text">课件定位</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+<p>VS 失效会使选主停止，复制 VS 又需要各副本对同一次配置给出共同决定。这正是下一篇 Paxos、Raft 要解决的问题。</p>
+<p>可以让 2PC 协调不同逻辑参与者，每个参与者内部由复制协议维护状态。一台物理机失效不再必然等于整个参与者失效，但参与组之间长期无法通信时，事务仍可能无法推进。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/29/SE3331_09/">https://acannedfish.github.io/2026/10/29/SE3331_09/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4/">两阶段提交</a><a class="post-meta__tags" href="/tags/%E5%A4%8D%E5%88%B6%E7%8A%B6%E6%80%81%E6%9C%BA/">复制状态机</a><a class="post-meta__tags" href="/tags/%E4%B8%BB%E5%A4%87%E5%A4%8D%E5%88%B6/">主备复制</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/10/16/SE3331_08/" title="计算机系统工程-08：OCC、HTM 与 MVCC"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-08：OCC、HTM 与 MVCC</div></div></div></a><a class="pagination-related  no-desc" href="/2026/10/29/SE3331_10/" title="计算机系统工程-10：Paxos 与 Raft"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统工程-10：Paxos 与 Raft</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%A8%E6%9C%BA%E4%BA%8B%E5%8A%A1"><span class="toc-number">1.</span> <span class="toc-text">跨机事务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E8%83%8C%E6%99%AF"><span class="toc-number">1.1.</span> <span class="toc-text">问题背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%A7%E8%B4%A8%E5%8C%BA%E5%88%86"><span class="toc-number">1.2.</span> <span class="toc-text">性质区分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%8F%90%E4%BA%A4"><span class="toc-number">1.3.</span> <span class="toc-text">本地提交</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E4%B8%8E%E5%86%B3%E5%AE%9A"><span class="toc-number">2.</span> <span class="toc-text">准备与决定</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="toc-number">2.1.</span> <span class="toc-text">两阶段提交</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E6%89%BF%E8%AF%BA"><span class="toc-number">2.2.</span> <span class="toc-text">准备承诺</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E9%A1%BA%E5%BA%8F"><span class="toc-number">2.3.</span> <span class="toc-text">日志顺序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E5%90%8E%E6%81%A2%E5%A4%8D"><span class="toc-number">3.</span> <span class="toc-text">故障后恢复</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86"><span class="toc-number">3.1.</span> <span class="toc-text">故障处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%BB%E5%A1%9E%E5%8E%9F%E5%9B%A0"><span class="toc-number">3.2.</span> <span class="toc-text">阻塞原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%94%E7%A6%BB%E4%B8%8E%E5%9B%9E%E6%94%B6"><span class="toc-number">3.3.</span> <span class="toc-text">隔离与回收</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%8C%BA%E4%B8%8E%E5%8F%AF%E7%94%A8"><span class="toc-number">4.</span> <span class="toc-text">分区与可用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E5%88%86%E5%8C%BA"><span class="toc-number">4.1.</span> <span class="toc-text">网络分区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CAP"><span class="toc-number">4.2.</span> <span class="toc-text">CAP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E6%9C%8D%E5%8A%A1"><span class="toc-number">5.</span> <span class="toc-text">复制服务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E9%A1%BA%E5%BA%8F"><span class="toc-number">5.1.</span> <span class="toc-text">复制顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="toc-number">5.2.</span> <span class="toc-text">复制状态机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E5%A4%87%E5%A4%8D%E5%88%B6"><span class="toc-number">5.3.</span> <span class="toc-text">主备复制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%85%E9%9A%9C%E6%A3%80%E6%B5%8B"><span class="toc-number">5.4.</span> <span class="toc-text">故障检测</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%8E%A5%E7%AE%A1"><span class="toc-number">6.</span> <span class="toc-text">安全接管</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%86%E5%9B%BE%E6%9C%8D%E5%8A%A1"><span class="toc-number">6.1.</span> <span class="toc-text">视图服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A7%E4%B8%BB%E9%9A%94%E7%A6%BB"><span class="toc-number">6.2.</span> <span class="toc-text">旧主隔离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E7%AE%A1%E6%95%B0%E6%8D%AE"><span class="toc-number">6.3.</span> <span class="toc-text">接管数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%9A%E6%95%B0%E4%B8%8E%E4%BA%A4%E9%9B%86"><span class="toc-number">7.</span> <span class="toc-text">多数与交集</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%95%E5%AE%9A%E9%9B%86%E5%90%88"><span class="toc-number">7.1.</span> <span class="toc-text">法定集合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E6%95%B0%E6%B4%BE"><span class="toc-number">7.2.</span> <span class="toc-text">多数派</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E6%8E%A5%E7%AE%A1"><span class="toc-number">7.3.</span> <span class="toc-text">完整接管</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8E%E7%BB%AD%E9%97%AE%E9%A2%98"><span class="toc-number">7.4.</span> <span class="toc-text">后续问题</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
   const showKatex = () => {
     document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
   }

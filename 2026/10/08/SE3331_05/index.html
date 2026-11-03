@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-05：并发一致性 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="理解状态 并发读写 多个用户同时读写同一份数据时，“数据是什么”之外还会出现一个问题：每次读取应该看到哪一次更新？将数据复制到多台机器后，更新需要经过网络传播，各副本可能暂时处在不同阶段。消息延迟、节点故障和本地缓存都会影响可见结果，因此系统需要明确约定操作顺序，以及读取在这些顺序下允许返回的内容。 例如，两台手机各保存一份聊天记录。一台先发文件、再发引用，另一台可能先收到引用。两个人也可能各自看">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-05：一致性模型与逻辑时钟 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="理解状态 并发读写 两个用户同时修改数据，系统需要规定每次读取能看到什么。有多个副本时，更新还要经过网络，消息迟到、节点失效和缓存都会改变观察结果。 聊天中，Alice 先发文件再发引用，Bob 却可能先收到引用。接龙中，两个人各看到 17 项，都把自己放在第 18 位。判断这些情况是否错误，要先写清操作与业务要求，再选择一致性模型。 读写基础 状态是程序当前保存的数据，例如 [你好] 是一条消息">
 <meta property="og:type" content="article">
-<meta property="og:title" content="计算机系统工程-05：并发一致性">
+<meta property="og:title" content="计算机系统工程-05：一致性模型与逻辑时钟">
 <meta property="og:url" content="https://acannedfish.github.io/2026/10/08/SE3331_05/index.html">
 <meta property="og:site_name" content="aCannedFish&#39;s Home">
-<meta property="og:description" content="理解状态 并发读写 多个用户同时读写同一份数据时，“数据是什么”之外还会出现一个问题：每次读取应该看到哪一次更新？将数据复制到多台机器后，更新需要经过网络传播，各副本可能暂时处在不同阶段。消息延迟、节点故障和本地缓存都会影响可见结果，因此系统需要明确约定操作顺序，以及读取在这些顺序下允许返回的内容。 例如，两台手机各保存一份聊天记录。一台先发文件、再发引用，另一台可能先收到引用。两个人也可能各自看">
+<meta property="og:description" content="理解状态 并发读写 两个用户同时修改数据，系统需要规定每次读取能看到什么。有多个副本时，更新还要经过网络，消息迟到、节点失效和缓存都会改变观察结果。 聊天中，Alice 先发文件再发引用，Bob 却可能先收到引用。接龙中，两个人各看到 17 项，都把自己放在第 18 位。判断这些情况是否错误，要先写清操作与业务要求，再选择一致性模型。 读写基础 状态是程序当前保存的数据，例如 [你好] 是一条消息">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://acannedfish.github.io/img/background11.png">
 <meta property="article:published_time" content="2026-10-08T05:28:00.000Z">
-<meta property="article:modified_time" content="2026-11-02T10:52:27.027Z">
+<meta property="article:modified_time" content="2026-11-02T11:42:59.474Z">
 <meta property="article:author" content="aCannedFish">
 <meta property="article:tag" content="分布式系统">
 <meta property="article:tag" content="一致性">
@@ -16,11 +16,11 @@
 <meta name="twitter:image" content="https://acannedfish.github.io/img/background11.png"><script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "计算机系统工程-05：并发一致性",
+  "headline": "计算机系统工程-05：一致性模型与逻辑时钟",
   "url": "https://acannedfish.github.io/2026/10/08/SE3331_05/",
   "image": "https://acannedfish.github.io/img/background11.png",
   "datePublished": "2026-10-08T05:28:00.000Z",
-  "dateModified": "2026-11-02T10:52:27.027Z",
+  "dateModified": "2026-11-02T11:42:59.474Z",
   "author": [
     {
       "@type": "Person",
@@ -157,7 +157,7 @@
   },
   autoDarkmode: false
 }</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
-  title: '计算机系统工程-05：并发一致性',
+  title: '计算机系统工程-05：一致性模型与逻辑时钟',
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
@@ -177,58 +177,47 @@
   display: block !important;
 }
 </style>
-</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-05：并发一致性&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-05：并发一致性</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-08T05:28:00.000Z" title="发表于 2026-10-08 13:28:00">2026-10-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-02T10:52:27.027Z" title="更新于 2026-11-02 18:52:27">2026-11-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="理解状态">理解状态</h2>
+</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-05：一致性模型与逻辑时钟&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-05：一致性模型与逻辑时钟</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-08T05:28:00.000Z" title="发表于 2026-10-08 13:28:00">2026-10-08</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-02T11:42:59.474Z" title="更新于 2026-11-02 19:42:59">2026-11-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="理解状态">理解状态</h2>
 <h3 id="并发读写">并发读写</h3>
-<p>多个用户同时读写同一份数据时，“数据是什么”之外还会出现一个问题：每次读取应该看到哪一次更新？将数据复制到多台机器后，更新需要经过网络传播，各副本可能暂时处在不同阶段。消息延迟、节点故障和本地缓存都会影响可见结果，因此系统需要明确约定操作顺序，以及读取在这些顺序下允许返回的内容。</p>
-<p>例如，两台手机各保存一份聊天记录。一台先发文件、再发引用，另一台可能先收到引用。两个人也可能各自看到接龙已有 17 人，同时把自己加在第 18 位。要解释这些结果，需要先了解读写、副本和消息传递，再讨论系统怎样安排顺序。</p>
-<p>文件句柄、3FS 元数据与 native I/O 见<a href="/2026/09/29/SE3331_04/">分布式存储</a>。下面从文件读取结果引出一致性，再用聊天记录逐步说明模型。</p>
+<p>两个用户同时修改数据，系统需要规定每次读取能看到什么。有多个副本时，更新还要经过网络，消息迟到、节点失效和缓存都会改变观察结果。</p>
+<p>聊天中，Alice 先发文件再发引用，Bob 却可能先收到引用。接龙中，两个人各看到 17 项，都把自己放在第 18 位。判断这些情况是否错误，要先写清操作与业务要求，再选择一致性模型。</p>
 <h3 id="读写基础">读写基础</h3>
-<p>分析一致性前，可以先把应用简化为状态及其读写操作。状态就是程序当前保存的数据，例如聊天列表 <code>[你好]</code> 表示已有一条消息，<code>[你好,谢谢]</code> 表示已有两条。<code>Write</code> 或 <code>Update</code> 改变状态，<code>Read</code> 返回状态中的内容。这样便可以暂时略去界面和网络实现，直接检查哪些操作导致了哪些结果。</p>
-<p>状态机用“当前状态与操作决定下一状态”描述执行。例如列表先追加 X、再追加 Y，得到 <code>[X,Y]</code>。读取可以保持状态不变，但返回值取决于它在这些更新之间的位置：第一次追加后读取得到 <code>[X]</code>，两次追加后读取得到 <code>[X,Y]</code>。</p>
-<p>副本是同一份数据在另一位置保存的拷贝。手机、平板和服务器都可以保存聊天记录。缓存通常用于加快访问，副本还可以用于故障后继续服务；两者都需要处理内容更新。</p>
-<p>程序的一次运行实例称为进程。进程可以依次执行多次操作，也可以与其他进程共同访问数据。客户端是发出请求的一方，服务器是接收请求、处理数据并返回结果的一方。一台电脑上可以同时运行多个客户端或服务器进程。</p>
-<p>串行执行是做完一个操作后，再做下一个。并发执行时，多个操作的运行时间有重叠。例如 Alice 的消息还在等待回复，Bob 就已经发送了另一条消息。网络和服务器处理可能让这些操作以不同顺序完成。</p>
-<p>内存保存正在使用的数据，程序可以快速访问；磁盘、SSD 等设备用于长期保存。断电后要保留的数据需要写入相应的稳定存储。下面每次提到“写入完成”，都要结合当时规定的确认条件理解。</p>
+<p>状态是程序当前保存的数据，例如 <code>[你好]</code> 是一条消息的列表。Update 改变状态，Read 读取状态。状态机用“原状态加一次操作得到新状态”描述执行：先追加 X 再追加 Y，列表成为 <code>[X,Y]</code>。</p>
+<p>副本是同一数据在另一位置的拷贝，缓存用于加快部分访问，二者都要处理更新。客户端发请求，服务器执行并回复；一个进程中可以运行多条线程，一台机器也能运行多个进程。</p>
+<p>串行表示一个操作结束后才执行下一个，并发表示执行区间重叠。断电后保留的内容还需进入稳定存储。因此，图中的“写入完成”应按该例的确认条件理解。</p>
 <h3 id="图示读法">图示读法</h3>
-<p>阅读后面的时序图时，先找到参与者和时间方向。每条横线或竖线代表客户端、服务器或某个副本，时间沿 <code>time</code> 标注的方向推进。箭头起点表示发送，终点表示接收，两者之间可能存在网络等待。沿时间顺序记录每个副本收到的更新，再判断读取时该副本有哪些内容，就能逐步还原图中的结果。</p>
-<p><code>ACK</code> 是确认回复，<code>Done</code> 表示这次调用已按协议完成。<code>RPC</code> 是远程过程调用，客户端把函数参数发给服务器，由服务器执行并返回结果。<code>RTT</code> 是一次网络往返的时间，即请求发出后等到回复返回所用的网络时间。</p>
-<p>图中的 <code>x=1</code>、<code>f=v1</code> 或 <code>[你好]</code> 都表示某一时刻的数据状态。沿时间方向逐步看每个箭头，再更新各条线上的状态，就能判断一次读取会得到什么。</p>
+<p>每条时间线表示一个参与者，沿 time 箭头向前看。请求、回复和同步消息的箭头从发送指向接收，两端之间有传输时间。ACK 是确认，Done 表示调用按协议完成，RTT 表示一次网络往返。</p>
+<p>读图时先记下各节点初始值，再按箭头到达顺序更新各自状态。遇到 Read，就检查该节点此刻能看到哪些更新。不要因为另一条线上已经写完，就直接把它当成所有节点都已经收到。</p>
 <h3 id="文件读取">文件读取</h3>
-<p>NFS 的 close-to-open 用法中，写入方关闭前，另一客户端可能仍读到旧版本；关闭后的写回与重新打开时的缓存检查见<a href="/2026/09/29/SE3331_04/#%E7%BC%93%E5%AD%98%E6%9B%B4%E6%96%B0">缓存更新</a>。</p>
-<p>GFS 的 primary 可以统一成功写入的顺序，但一次报告失败的写入仍可能已经修改部分副本。此时，副本虽然遵守同一个排序协议，当前保存的内容却可能不同。下面从这种状态下的读取说明一致性问题；具体写入流程见<a href="/2026/09/29/SE3331_04/#%E5%86%99%E5%85%A5%E6%96%87%E4%BB%B6">写入文件</a>。</p>
+<p>NFS 的 close-to-open 在关闭写回和重新打开验证时协调缓存，长期同时打开的读者可能仍持有旧内容。GFS 即使统一成功写入的次序，一次失败写入也可能只改变部分副本。</p>
+<p>图中初始都是 A，写 B 只在节点 1、2 完成，节点 3 仍为 A。两个客户端分别读取不同副本，便可能先读 B、后读 A。系统还需要规定哪些副本可读、失败修改是否可见，以及何时等待或修复。排序规则与读取可见性需要配合。</p>
 <blockquote>
 <p>GFS 已统一写入顺序，若某次写入只在部分副本完成并报告失败，两个客户端随后从不同副本读取，会得到什么？写入顺序与读取可见性各需要什么规则？</p>
 <p>解答：</p>
 <p>图中初始都为 A，写 B 只在节点 1、2 完成，节点 3 保留 A。客户端 1 可读到 B，随后客户端 2 从节点 3 读到 A。统一写入顺序规定副本怎样执行修改；读取规则还要明确失败或未确认修改是否可见、哪些副本可读。若要求统一的已确认读取状态，需要额外确认、验证或修复等待。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140039367.png" alt="失败写入只到达部分副本，两个客户端读到不同值"></p>
-<p>GFS 客户端通常从某个合适的副本直接读取，常会选择网络距离近的副本。失败写入可能留下部分修改，因此统一成功写入的顺序后，还需要规定失败期间允许怎样读取。一致性模型用来规定这些情况下允许返回的结果。</p>
 <h3 id="聊天记录">聊天记录</h3>
-<p>聊天记录可以简化为一组有顺序的列表项。追加操作把新项放到末尾，<code>[file,ref]</code> 表示文件项在前、引用项在后。引用保存目标消息的标识，程序根据这个标识查找原消息及附件。因此，引用与普通文字有一项额外依赖：如果目标消息尚未到达当前设备，即使引用本身已经收到，也还不能显示完整的目标内容。</p>
-<p>聊天记录可以表示成一个列表，每项可以是文字或文件。更新操作 <code>Update(msg/file)</code> 向列表加入内容，读取操作 <code>Read(history)</code> 返回已有记录。</p>
+<p>把聊天表示为有序列表，文字、文件和引用都是列表项。引用保存目标消息 ID，只有取得目标，才能显示相应内容。</p>
+<p>图中 Alice 先产生 Chap_01.pdf，再产生“是这个文件吗”的引用。文件传输较慢，引用先到 Bob，便暂时找不到目标。创建顺序、网络到达顺序和界面显示顺序是三件事，应用可以按依赖暂存引用，等目标可见后再显示。</p>
+<p>截图本身也可能受目标删除、权限或附件失败影响。这里固定“文件先创建、引用先到达”的执行，用它分析消息依赖。</p>
 <blockquote>
 <p>Alice 先发文件，再发引用它的消息，Bob 却先看到引用并提示“引用内容不存在”。哪些发送、同步和显示顺序可能产生这个结果？</p>
 <p>解答：</p>
 <p>Alice 本地产生文件，再产生引用，顺序为 file、ref。文件同步先启动，但传输较慢，引用先到服务器和 Bob；若按到达顺序立即显示，就先出现 ref，此时找不到目标。文件后来到达才补齐内容。要保留引用依赖，可记录目标消息 ID，并等目标可见后再展示引用。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140039368.png" alt="Alice 先发文件再发引用，Bob 先收到引用后收到文件"></p>
-<p>图中的文件是 <code>Chap_01.pdf</code>，“是这个文件吗？”这条消息保存了指向它的引用。</p>
-<p>这里要分清三件事：用户创建更新的顺序、网络传递更新的顺序，以及设备显示更新的顺序。例子中 Alice 看到“文件、引用”，Bob 一度看到“引用、文件”。系统的一致性规则要说明这种情况是否允许，以及后来怎样处理。</p>
-<p>这里用一个简化的传播过程解释这种可观察结果。实际“引用内容不存在”还可能与目标删除、权限或附件获取失败有关，需要记录消息与附件状态才能定位原因。分析一致性时，先明确假定哪些操作已发生、哪些消息已经到达，再检查允许的观察。</p>
 <h2 id="复制历史">复制历史</h2>
-<p>先从最容易理解的实现开始：所有消息交给一个服务器追加，所有读取也向它请求。接着把历史复制到手机，让手机离线也能读写。第二步省去了部分等待，却产生了新的问题：两台设备可能暂时缺少不同的消息，收到同一批消息时也可能按不同顺序排列。</p>
 <h3 id="集中保存">集中保存</h3>
-<p>可以先从集中保存的实现分析顺序：服务器持有一份用于回答请求的列表，更新函数修改列表后再返回确认，读取函数则在已确定的执行位置取得内容。例如，追加 A、追加 B、读取依次执行，读取得到 <code>[A,B]</code>。服务器内部即使使用多个线程，也需要同步访问这份列表，保证单次追加和读取符合接口规则。</p>
-<p>先考虑一种简单实现：一台服务器保存完整聊天列表，所有更新和读取都通过 RPC。</p>
+<p>先用一台服务器保存完整聊天列表，所有追加和读取都通过 RPC。服务器按确定顺序处理列表，更新完成后回复 ACK，读取返回对应位置的列表内容。</p>
+<p>如果同一用户等上次 ACK 再发下一条，文件必定先加入，引用才会发送。其他用户重叠的请求则按服务器安排执行。服务端内部多线程也要保护列表操作。</p>
+<p>这种实现容易理解，但每次访问要等待网络，完整历史越长传输越多，离线设备无法取得未保留的历史，服务器失效也会阻断访问。图中历史量增加四倍，在相同带宽的简化条件下，读取时间从 t 增到约 4t。分页、增量读取和本地副本可以减少这部分成本。</p>
 <blockquote>
 <p>由一台服务器统一追加消息，并让用户等待上次 ACK 后再发下一次请求，是否能保留这个用户的操作顺序？两项条件分别起什么作用？</p>
 <p>解答：</p>
 <p>在给定条件下，可以保留同一用户的顺序。服务器把上一条更新加入列表后才返回 ACK，用户收到它才发下一条，所以文件已加入后才可能发出引用。统一安排追加让读取取得同一份列表。重叠的其他用户请求则按服务器规定的合法顺序处理。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140039369.png" alt="服务器逐次追加文件和引用，再返回聊天记录"></p>
-<p>服务器收到 <code>Update(file)</code> 后追加文件，返回 ACK；用户收到回复后再发送 <code>Update(ref file)</code>，服务器继续追加引用。随后读取就得到 <code>[file,ref]</code>。</p>
-<p>这个例子的顺序成立需要两个条件：服务器统一安排追加顺序；每个用户收到上次调用的回复后再发下一次调用。服务器还应协调并发线程，保证每次追加和读取符合列表的操作规则。</p>
-<p>这种实现有四项成本：</p>
 <table>
 <thead>
 <tr>
@@ -256,69 +245,54 @@
 </tbody>
 </table>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140039370.png" alt="同一种完整历史读取，聊天记录增长后要传更多内容"></p>
-<p>图中后一次历史量约为前一次的四倍，在相同带宽等简化条件下，传输时间由 t 增长到约 4t。按页加载、增量读取和本地缓存可以减少每次读取的数据量。</p>
 <h3 id="本地副本">本地副本</h3>
-<p>为了在离线或网络较慢时继续使用，应用可以先将新消息写入当前设备，再向服务器和其他设备传播。当前设备已经拥有消息内容，可以立即显示；其他设备则要等消息到达后才能显示。此时，“本地已经保存”“发送已经完成”“对方已经收到”对应不同阶段，界面需要分别记录，避免用户把本地显示理解为远端已经确认。</p>
-<p>让手机、另一台设备和服务器各保存一份聊天列表，可以在设备上读取已有内容，也可以先保存自己刚发的消息。</p>
+<p>设备先保存新消息，再向服务器和其他设备传播，可以立即显示本地内容，离线也能查看已有历史。图中服务器失效后，一个设备加入“谢谢”，另一个仍只能读取原有“你好”。</p>
+<p>界面需要分别记录本地保存、已发送和对方收到。SQLite 或本地日志可以一起保存消息 ID、内容、发送状态与待同步记录，进程退出后再继续发送。显示成功与远端可靠保存不是同一阶段。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140039371.png" alt="服务器失效后，两台设备仍能处理各自的本地记录"></p>
-<p>图中三个副本最初都有 <code>[你好]</code>。服务器失效后，副本 1 在本地加入“谢谢”，副本 3 仍能读到“你好”。设备恢复联系后再同步缺少的更新。</p>
-<p>本地读写减少了等待：写入可以先完成本地处理，读取直接使用已保存的历史。离线时也能查看已有记录和暂存新消息。消息是否已经送达他人、是否已在远端保存，需要另外记录状态。</p>
-<p>本地保存可以通过 SQLite 等本地数据库或日志实现，把消息 ID、内容、发送状态和待同步记录一起保存。进程退出或设备重启后，再从这些记录继续发送。界面上的“已显示”可以先于远端确认，应用需要按自己的语义标记当前阶段。</p>
 <h3 id="更新确认">更新确认</h3>
-<p>写入何时算完成，由协议规定的确认条件决定。例如，协议可以要求本机与服务器都保存记录后再回复成功，第三台设备稍后补齐；也可以要求全部副本确认。前者允许部分副本暂时缺少更新，后者需要把每个参与者的等待都计入请求。讨论性能和故障保证时，必须先说明 ACK 具体确认了什么。</p>
-<p>只修改本地副本后，其他副本暂时还保留旧状态。系统需要传播更新，并规定在什么条件下向调用方报告完成。</p>
+<p>一次写入在哪个时刻返回，由确认条件决定。要求全部副本 ACK，就要等待最慢副本，失联者可能使写入超时；要求指定部分确认，则可在它们完成后返回，其他副本以后补齐。</p>
+<p>两张图分别展示这两种等待范围。协议还必须说明成功代表哪些节点已保存、哪些读取可能仍返回旧值，以及怎样恢复缺少的更新。只给出确认数量，不能自动确定全部读取语义。</p>
 <blockquote>
 <p>只更新本地副本后，各设备会处于什么状态？一次写入要等多少个副本确认才返回？全部确认和部分确认分别影响哪些等待与故障情况？</p>
 <p>解答：</p>
 <p>只改本地时，一个副本已有新内容，其他副本仍保留旧内容。确认数量由协议规定：全部确认要等最慢的一方，失联节点会阻塞或使请求超时；部分确认在指定参与者完成后返回，其他节点后台补齐。成功回复所表示的保存和可见性程度，也必须与这些确认条件一起定义。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140039372.png" alt="写入等待全部副本确认，完成时间受最慢副本影响"></p>
-<p>第一种做法要求每个副本都返回 ACK。所有副本完成后，调用方再收到成功回复。等待时间取决于最慢的一方；某个节点或链路失效时，写入可能一直等待或超时。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140040229.png" alt="部分副本确认后回复，未收到更新的副本稍后补齐"></p>
-<p>第二种做法先联系若干副本，例如本地设备和服务器，满足确认条件后返回。暂时失联的副本在后台补齐更新。</p>
-<p>确认条件决定了这次成功所提供的保存与可见性保证。需要说明哪些节点已保存更新、哪些读取可能仍返回旧内容，以及后续如何补齐数据。</p>
 <h3 id="周期同步">周期同步</h3>
-<p>同步用于交换各设备缺少的更新。设备保存上次同步位置或已知更新 ID 后，可以只请求新增记录，减少重复传输。新消息通知、网络恢复和定时检查都可以触发这一过程；一次交互也可以带回多条消息，再按标识去重并合并到本地列表。因此，本地读写的完成与其他设备取得更新可以发生在不同时间。</p>
-<p>读取本地副本时，返回的是这台设备已经收到的内容。其他设备刚产生的消息可能还在传输中。</p>
+<p>同步让设备取得缺少的记录。可以保存上次同步位置或已知 ID，只交换增量，再去重合并。定时检查、新消息通知或网络恢复都可以触发同步。</p>
+<p>图中离线设备只有“你好”，恢复后取得“谢谢”“再见”，列表才完整。每 10 s 检查是一个触发周期示例，实际可见时间还包括联网、传输与处理。Apple Push Notification 等推送可以提醒设备获取内容，消息和附件仍需另行传输。</p>
+<p>一次同步可批量取得多条更新。离线太久时，需要服务器保留的日志或有效快照作为补齐来源。</p>
 <blockquote>
 <p>读本地副本可以立即取得哪些消息？其他设备刚产生的更新何时能读到？周期同步与推送通知怎样补齐缺少的内容？</p>
 <p>解答：</p>
 <p>本地读取返回该设备已经收到的记录。新消息在传播完成前可能尚不可见，联网后通过同步补齐。周期检查定时交换缺少的更新，推送通知提醒设备有新内容并触发获取。图中的 10 s 是一次同步触发示例，实际可见时间还包含网络恢复、传输和处理等待。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140040230.png" alt="离线设备恢复网络后，通过同步取得“谢谢”和“再见”"></p>
-<p>图中副本 1 先后产生“谢谢”和“再见”，副本 3 暂时失联，只能读取 <code>[你好]</code>。网络恢复后，同步带来两条更新，列表变成 <code>[你好,谢谢,再见]</code>。</p>
-<p>可以每 10 秒通过心跳检查并同步，也可以使用 Apple Push Notification 等推送服务通知设备有新消息，再批量取得更新。同步间隔会影响更新多久可见；网络断开时，设备等待恢复后再继续交换记录。</p>
-<p>推送通知可以触发一次增量获取，消息正文与附件还要按协议取得。一次同步可以合并多条更新，降低逐条往返的成本；重试重复带来的记录则按稳定 ID 检查。离线时间较长时，可以从服务器保留的日志或有效快照补齐状态。</p>
 <h3 id="到达顺序">到达顺序</h3>
-<p>收到相同的一组更新，还不意味着得到相同的列表。如果各设备都把消息按到达顺序追加到末尾，网络延迟造成的先后差异就会直接进入列表。下面的图用文件与引用说明：需要同时处理“是否都已收到”和“收到后怎样排列”两个问题。</p>
+<p>若每次收到消息就追加到尾部，同一组消息可以形成不同列表。Alice 本地先有 file 再有 ref，服务器却先收到 ref，后来追加 file，就得到 <code>[ref,file]</code>。</p>
+<p>最终都收到并不等于排列相同。系统还要保存更新身份、依赖与排序依据，让各节点按共同规则生成结果。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140040231.png" alt="文件同步延迟，引用先到达服务器和读取设备"></p>
-<p>副本 1 先加入文件，再加入引用，本地为 <code>[file,ref]</code>。文件的同步先启动，但传输延迟；引用先到副本 2。副本 3 从服务器同步时也先收到引用，因此出现“引用内容不存在”。文件最后到达，按到达顺序追加就得到 <code>[ref,file]</code>。</p>
-<p>两条更新最终都到了，显示顺序还需要由共同规则确定。系统要保存更新标识、依赖和排序信息，才能在不同到达顺序下得到约定的结果。</p>
 <h3 id="合并更新">合并更新</h3>
-<p>合并更新时，需要区分“同一记录的重复传输”和“内容相同的新记录”。例如，<code>R1:#8</code> 表示 R1 创建的第八条更新，重试沿用这个 ID，接收方即使收到三次也只加入一次；另一条内容相同但 ID 为 <code>R1:#9</code> 的消息，则仍可作为独立记录保留。稳定标识解决去重问题，不同更新的排列顺序还要由共同规则决定。</p>
-<p>两台设备也可能从同一份历史开始，各自加入不同消息。</p>
+<p>合并需要保留不同设备的新记录，同时识别同一记录的重传。例如 R1:#8 重传三次仍只加入一次，内容相同但 ID 为 R1:#9 的消息则是另一条记录。</p>
+<p>图中两个副本分别在 <code>[你好,谢谢]</code> 后加入“好的”和“收到”。各自先保留本地消息，再追加远端消息，会得到相反次序。要最终统一，一方已经显示的位置就可能调整。普通聊天可接受待确认和重排，按名次发奖的业务则需要明确何时确认名次。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140040232.png" alt="两台设备分别加入“好的”和“收到”，同步时要合并两条更新"></p>
-<p>开始时都有 <code>[你好,谢谢]</code>。副本 1 加入“好的”，副本 3 加入“收到”。两份列表各自包含新更新，同步需要保留这两条消息。</p>
-<p>若把收到的新消息追加在已有内容之后，副本 1 会得到 <code>[你好,谢谢,好的,收到]</code>，副本 3 会得到 <code>[你好,谢谢,收到,好的]</code>。去重只能解决同一更新出现多次的问题，排列顺序还需要统一。</p>
 <blockquote>
 <p>副本 1 先显示“好的”，副本 3 先显示“收到”。合并后若统一排列，能同时保留两边已经显示的顺序吗？应用要怎样处理消息移动？</p>
 <p>解答：</p>
 <p>统一后选“收到、好的”时，副本 1 原先显示的“好的”会向后移；选“好的、收到”时，副本 3 的显示会调整。因此，两边各自优先的临时观察需要由共同规则重新解释。聊天可标记待同步并合并更新；涉及业务名次时，应等确认或明确处理冲突。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140040233.png" alt="合并后统一顺序时，某个设备已经显示的消息可能移动"></p>
-<p>图中最终选定“收到、好的”，副本 1 原先显示的“好的”向后移动。若选定“好的、收到”，副本 3 的已有顺序就会变化。应用需要决定能否接受同步后的重新排列；聊天和按名次发奖的接龙可能有不同要求。</p>
 <h2 id="约定结果">约定结果</h2>
 <h3 id="一致性模型">一致性模型</h3>
-<p>一致性模型把前面的实现细节归纳成对外可检查的约定。例如，<code>x</code> 初始为 1，一次更新将它改为 2，随后另一个进程读取：这次读取能否返回 1，什么条件下必须返回 2，是否需要等待同步？模型需要给出相应规则，使应用开发者能够根据调用的确认与返回结果安排后续操作。</p>
+<p>一致性模型用允许的操作顺序和返回值描述服务。例如 x 从 1 改为 2，写入确认后再读能否返回 1，应由接口明确，应用才能决定下一步是否需要等待。</p>
+<p>模型适用于副本、缓存和多核或多机读写。数值不同本身不表示违反一致性，较早读 1、较晚读 2 可能完全合法。判断要结合调用顺序、确认条件和所选模型。</p>
+<p>应用还可能要求余额守恒、引用目标存在、报名名次稳定。系统的读取保证与这些业务条件需要一起检查。下表列出最终、因果、顺序、线性与严格一致性的约束，性能取决于实现怎样完成相应协调。</p>
 <blockquote>
 <p>应用怎样通过一致性模型判断读取结果，而无需了解每条同步消息？应先确定哪些业务要求，再选择可实现的保证？</p>
 <p>解答：</p>
 <p>一致性模型规定允许的操作顺序和读取结果，开发者据此判断已确认更新是否应可见、引用是否需等待目标，以及是否允许临时旧值。选择前应确定离线操作、名次变化和冲突处理等业务要求，再检查实现的同步、排序和恢复机制能否提供相应保证。</p>
 </blockquote>
-<p>一致性模型规定更新的可见性和操作的顺序，也就是每次读取可以返回哪些结果。它适用于数据副本、缓存、多核或多机并发，以及故障恢复中的读写。</p>
-<p>观察到不同数值，需要结合操作历史判断。例如 x 从 1 改到 2，较早读取返回 1、较晚读取返回 2，本来就可以符合规则。若写入已确认后另一读取仍返回 1，是否允许取决于所选模型及确认条件。</p>
-<p>这份约定也划分了应用和存储系统的职责。假设报名程序需要“确认成功后，任何后续查询都包含这次报名”，它就应选择提供相应保证的读取接口。若接口允许旧值，程序需要定义等待、重试和待确认状态。数据是否有复制、缓存或并发访问，都是检查这些条件的线索。</p>
-<p>检查一段历史时，可以记录操作的发起、返回、输入与结果，寻找符合对象规则的解释。业务还可以有额外条件：转账保持总额、引用指向存在的目标、名次按确认规则分配。这些条件需要与一致性模型共同满足。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140040234.png" alt="最终、因果、顺序、线性和严格一致性"></p>
 <table>
 <thead>
@@ -350,101 +324,70 @@
 </tr>
 </tbody>
 </table>
-<p>模型对结果的要求越多，实现就需要满足更多协调条件。图中的性能和容错箭头概括了常见设计选择，实际速度还取决于算法、负载、网络和硬件。具有相同一致性保证的系统也可以采用不同架构。</p>
-<p>选择模型时，先写清楚应用要求：消息是否允许延迟出现，引用是否要等目标内容到齐，接龙的名次是否允许同步后变化。再判断实现提供的保证能否满足这些要求。</p>
 <h3 id="最终一致性">最终一致性</h3>
-<p>最终一致性关注更新传播后的收敛结果。所谓收敛，是指各副本取得相关更新，并按共同规则处理后，内容和约定的排列变得相同。例如，<code>x</code> 最初都是 1，R1 写入 2 后，R2 在更新到达前仍可能读到 1；更新到达后，R2 也变为 2。若没有后续修改，且所需更新最终送达，相关副本就持续保留相同结果。传播期间暂时读到不同值，符合这一模型。</p>
+<p>最终一致性要求更新停止、所需更新最终送达并按共同规则处理后，各副本收敛。传播期间，一个节点已经是 2，另一个仍读到 1，可以符合这个模型。</p>
+<p>聊天设备可以先保存本地更新，再持续传播。接收方按稳定 ID 去重，合并记录，并用共同规则生成列表。图中的 0 RTT 只表示本地完成无需先等网络往返，本地可靠保存仍有相应成本。</p>
+<p>操作可交换时，合并较简单：加 1 和加 2 各应用一次，无论顺序都加 3。列表追加 X、Y 则产生不同排列，需要额外顺序规则。CRDT 研究可合并状态与可交换操作的形式化条件。断网期间本地仍可工作，跨设备更新需要等通信恢复。</p>
 <blockquote>
 <p>聊天应用怎样在设备能继续读写已有状态的同时，让多台设备最终取得相同历史？最终收敛需要哪些传播和故障恢复条件？</p>
 <p>解答：</p>
 <p>设备先保存自己的更新并读取已有状态，后台持续传播记录，接收方按 ID 去重并按共同规则合并。更新记录需能在故障后恢复，相关副本重新通信后继续补齐。写入停止、更新最终送达、各副本从一致的基础状态按相同规则处理后，历史收敛为相同结果。</p>
 </blockquote>
-<p>聊天例子的两个目标是：设备能继续读取已有内容、保存新消息；恢复通信后，各设备最终得到相同历史。</p>
-<p>最终一致性要求，在更新停止、相关副本恢复通信并持续传播更新后，读取最终返回相同状态。同时，持有相同更新集合的副本，需要按共同规则产生相同结果。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041022.png" alt="先完成本地写入，再通过服务器或设备间同步传播"></p>
-<p>图中本地 <code>Update(file)</code> 标为 0 RTT，表示这一步完成前可以省去网络往返。随后同步通过服务器转发，也可以在设备之间进行。本地持久化所需的磁盘操作仍按保存要求执行。</p>
-<p>一种实现流程是：</p>
-<ol>
-<li>为每条更新分配稳定标识，保存内容和排序信息。</li>
-<li>写入本地记录，向用户显示处理结果。</li>
-<li>后台向其他副本传播，失败后继续重试。</li>
-<li>接收方按标识去重，合并收到的更新。</li>
-<li>按共同规则计算列表状态。</li>
-</ol>
-<p>至少一次 RPC 可能把同一条更新发送多次，稳定标识用于避免重复追加。长期断开的副本要在重新连接后补齐记录，持续同步是最终收敛的前提。网络长期中断时，单个副本可以继续提供本地操作，跨设备的新内容则等待通信恢复。</p>
-<p>统一日志顺序是聊天列表的一种收敛方法。其他数据也可以使用共同的合并规则。例如一个计数器分别收到“加 1”和“加 2”，假设每项更新恰好应用一次，两种执行次序都得到 3；列表追加 X、Y 则会产生不同排列，需要进一步规定顺序。</p>
-<p>最终一致性关注相应条件下的收敛，具体传播速度、数据保留与离线操作由实现确定。可交换操作和可合并状态也是实现方向，相关形式化方法见 <a target="_blank" rel="noopener" href="https://www.lri.fr/~mbl/ENS/CSCW/2021/papers/CRDT-study11.pdf">CRDT 研究报告</a>。</p>
 <h2 id="排列更新">排列更新</h2>
 <h3 id="日志排序">日志排序</h3>
-<p>一种实现列表收敛的方法，是先保存更新日志，再按共同顺序重放。日志逐条记录 <code>追加X</code>、<code>追加Y</code> 等操作；重放则从一个已知状态出发，依次执行这些记录。例如，空列表先追加 X、再追加 Y，得到 <code>[X,Y]</code>。只要初始状态、操作内容和执行顺序相同，结果就相同。日志还需要保留稳定 ID，避免重复传输使同一操作执行多次。</p>
-<p>两个设备分别产生 X 和 Y，本地开始时为 <code>[X]</code>、<code>[Y]</code>。同步后，若只按到达顺序追加，就会得到 <code>[X,Y]</code> 和 <code>[Y,X]</code>。</p>
+<p>日志保存更新的 ID、内容与顺序依据。两设备各自先有 X、Y，交换后按同一确定规则排成 X、Y，再从相同初始状态重放，就都得到 <code>[X,Y]</code>。</p>
+<p>收敛依赖三项条件：取得相同更新集合，采用相同排序，确定操作在相同初态上产生相同结果。ID 用于去重，时间标签沿用创建时的值，接收节点自己的当前时钟则另外推进。</p>
+<p>实际可以用检查点和增量计算减少重复重放，但仍需维持同一结果。</p>
 <blockquote>
 <p>R1 先保存 X，R2 先保存 Y，交换后分别得到 X、Y 与 Y、X。怎样用确定的日志排序和重放，让相同更新集合产生相同列表？</p>
 <p>解答：</p>
 <p>保存完整更新记录与稳定 ID，交换缺少的记录并去重；双方对相同集合使用同一唯一排序规则，从共同初始状态或检查点重放。例如双方都约定 X 在 Y 前，重放后都得到 <code>[X,Y]</code>。到达顺序可以不同，计算结果由相同日志顺序确定。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041023.png" alt="把两份到达顺序不同的日志排序后，再生成相同列表"></p>
-<p>一种便于分析的实现是：保存所有更新日志，对相同更新集合使用相同的排序规则，从共同初始状态重新执行更新。两台机器把日志都排成 X、Y，重新执行后就都得到 <code>[X,Y]</code>。</p>
-<p>这里需要三个条件：各副本最终取得相同更新；排序规则确定；相同初始状态和相同操作顺序产生相同结果。实际系统可以用检查点和增量计算减少重放工作，同时保留这些条件。</p>
-<p>操作标识还用于去重。同步与重放期间，更新保留创建时的标识和时间戳，接收方单独维护自己的当前时钟。</p>
 <h4 id="迟到更新">迟到更新</h4>
-<p>假设当前日志有 <code>〈1,X〉</code>、<code>〈3,Z〉</code>，列表显示 <code>[X,Z]</code>，后来收到 <code>〈2,Y〉</code>。共同规则规定键 2 在键 3 前，完整列表就要变成 <code>[X,Y,Z]</code>；直接在末尾追加 Y 会得到另一种顺序。</p>
-<p>因此，可以重新排序并从已知状态重放，也可以采用能正确处理插入的增量结构。建立检查点后，还要明确它覆盖哪些更新；迟到更新若属于更早位置，需要保留足够的信息处理，才能继续满足合并规则。</p>
-<p>重放使用已经记录的内容和决策。例如消息带着创建时的 ID、正文和排序标签，所有副本按同样规则处理它们。重放期间若重新生成随机标识、当前时间或其他不同值，也可能让结果变化。</p>
+<p>当前日志为〈1,X〉、〈3,Z〉，后来到达〈2,Y〉，正确排序是 X、Y、Z。直接追加成 X、Z、Y 会违反共同规则。</p>
+<p>可以重新排序重放，也可用支持中间插入的结构。检查点需要说明覆盖哪些更新，迟到的早期记录可能要求保留额外历史。重放必须使用已记录的 ID、正文和决策，若重新生成随机值或当前时间，不同副本可能再次分叉。</p>
 <h3 id="时间排序">时间排序</h3>
-<p>要让各副本按相同顺序重放，需要为更新建立确定的排序键。时间戳记录事件的时间信息，排序键可以由时间戳与其他字段共同组成。复合键通常按字典序比较，即先比较第一项，相等时再比较下一项：<code>〈10,R2〉</code> 排在 <code>〈11,R1〉</code> 前，因为 10 小于 11；<code>〈10,R1〉</code> 与 <code>〈10,R2〉</code> 第一项相同，才继续比较节点编号。</p>
-<p>最直接的排序键是本机时间，例如 <code>getTimeOfDay()</code>。但不同更新可能取得相同读数。</p>
+<p>物理时间可以作为排序键，但两条更新可能取得相同读数。图中 X、Y 都是 1755419200.123，单按时间比较留下并列，各副本可能继续保持自己的先后。</p>
+<p>复合键按字典序比较：先比时间，相同时比 node ID，再比节点内 sequence。这样，同一时刻来自不同节点或同一节点的多条更新也能区分。重启代次和序号复用还需保证身份唯一。</p>
+<p>也可以把 node ID 放在首位，得到确定顺序，但会将同节点的消息聚在一起。确定顺序只解决排序一致，是否保留依赖还需另外检查。</p>
 <blockquote>
 <p>两个更新的 <code>getTimeOfDay()</code> 都是 1755419200.123，仅用 T 排序能确定二者先后吗？怎样增加字段，避免两边继续保留不同的并列顺序？</p>
 <p>解答：</p>
 <p>两个相同的 T 留下并列，仅按 T 排序时，双方可能保留各自原有的 X、Y 或 Y、X。可以按 <code>〈T,node ID,sequence〉</code> 依次比较：时间相同后比节点编号，再用节点内序号区分同节点的更新。若 R1 编号小于 R2，两条给定记录都排为 X、Y。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041024.png" alt="X、Y 的时间都为 1755419200.123，按时间排序仍留下并列"></p>
-<p>图中 X、Y 都带 <code>1755419200.123</code>。副本 1 原先按 X、Y 保存，副本 2 原先按 Y、X 保存。仅按这个时间值排序时，两个相等键可以继续保留不同的原始顺序。</p>
-<p>全序要求任意两个不同更新都能确定谁排在前面。可以用复合键，并按字典序比较：</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>K</mi><mo stretchy="false">(</mo><mi>e</mi><mo stretchy="false">)</mo><mo>=</mo><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">(</mo><mi>e</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mrow><mi mathvariant="normal">n</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">d</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">_</mi><mi mathvariant="normal">i</mi><mi mathvariant="normal">d</mi></mrow><mo stretchy="false">(</mo><mi>e</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mrow><mi mathvariant="normal">s</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">q</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">e</mi></mrow><mo stretchy="false">(</mo><mi>e</mi><mo stretchy="false">)</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">K(e)=(T(e),\mathrm{node\_id}(e),\mathrm{sequence}(e))
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">K</span><span class="mopen">(</span><span class="mord mathnormal">e</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mopen">(</span><span class="mord mathnormal">e</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">node_id</span></span><span class="mopen">(</span><span class="mord mathnormal">e</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathrm">sequence</span></span><span class="mopen">(</span><span class="mord mathnormal">e</span><span class="mclose">))</span></span></span></span></span></p>
-<p>先比较时间，再比较节点编号，仍相同时比较节点内序号。节点内序号用于区分同一设备在同一时刻产生的多个更新。</p>
-<p>本地物理时钟的分辨率有限，连续两次读取可以得到同一数值，校时也可能改变读数。递增序号帮助识别不同更新；重启后的运行代次与已有记录还需要按身份规则管理，避免把新更新与旧更新混在一起。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041025.png" alt="时间相同后按节点编号排列，两份日志得到相同顺序"></p>
-<p>图中的两个更新分别来自 R1、R2，用 <code>〈T,node ID〉</code> 已能区分。假设 R1 的编号较小，X 就排在 Y 前面，两台设备都得到 X、Y。</p>
-<p>也可以采用 <code>〈node ID,T,sequence〉</code>，先按节点编号排序。这同样能给出确定顺序，但会把同一节点的更新排在一起。排序规则还需要符合消息之间的依赖关系。</p>
 <h3 id="时钟偏差">时钟偏差</h3>
-<p>物理时间排序还面临时钟偏差。各设备通过本地振荡器的周期计数估计时间，频率差异和温度变化等因素会使读数逐渐偏离，校时也可能调整数值。因此，两个节点的时间戳即使能够比较大小，也未必准确反映跨节点事件的实际先后。</p>
-<p>操作系统把选定计时源的计数按换算参数转换为时间单位，并可以通过 NTP 等协议校准。不同机器仍有残余偏差，排序时需要考虑这些误差及消息依赖。Linux 的计时源与换算机制见<a target="_blank" rel="noopener" href="https://docs.kernel.org/timers/timekeeping.html">内核时间文档</a>。</p>
+<p>各机器按本地计时源估计时间，振荡频率、温度和校准会影响读数。操作系统用换算参数把计数转换成时间，NTP 等服务帮助校准，仍有残余误差。</p>
+<p>图中 R1 的文件时间为 1755419200.123，R2 收到后再创建引用，本机却读到较小的 1755419199.987。按时间排序，两边可能一致地把引用放在文件前。节点编号只能打破并列，不能修正这种依赖倒置。</p>
 <blockquote>
 <p>按 <code>〈T,node ID〉</code> 排序后，各副本能否仍得到 <code>[ref(file_a),file_a]</code>？给节点加唯一编号能解决哪些问题，文件与引用的依赖又需要怎样保留？</p>
 <p>解答：</p>
 <p>仍可能出现该结果。图中 file_a 的时间为 1755419200.123，引用在另一节点上取得更小的 1755419199.987，按时间优先就把引用排在前面。节点编号解决时间并列，依赖需要逻辑时钟等关系记录；传播途中还要在目标消息未到齐时暂存引用，待依赖可见后显示。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041026.png" alt="引用在文件之后创建，本机时间却让引用排在文件前面"></p>
-<p>图中 R1 创建 <code>file_a</code>，时间为 <code>1755419200.123</code>。文件同步到 R2 后，R2 已经看到了它，再创建引用，自己的时间却为 <code>1755419199.987</code>。</p>
-<p>按 <code>〈T,node ID〉</code> 排序时，引用的时间数值更小，结果成了 <code>[ref,file_a]</code>。两台机器可以得到完全相同的列表，但这个顺序把引用放到了目标文件前面。</p>
-<p>文件创建、收到文件、创建引用之间存在依赖。排序键需要记录这种关系，设备的独立时钟读数只提供本机的时间信息。</p>
 <h2 id="记录因果">记录因果</h2>
-<p>Alice 发出文件，Bob 收到文件后才创建引用，这条消息传递链已经说明文件在引用之前。即使 Bob 的时钟读数更小，也不能把引用解释为先发生。逻辑时钟为这类依赖编号；后面的向量时钟进一步记录不同节点的进度，用来识别哪些事件之间没有这样的先后关系。</p>
 <h3 id="因果关系">因果关系</h3>
-<p>除了比较独立时钟，还可以直接记录事件之间的依赖。事件是需要分析的一次动作，例如创建文件、接收消息或创建引用。如果后一个动作使用了前一个动作带来的信息，两者就存在可追踪的先后关系。在时序图上，沿进程执行方向和消息箭头连接出一条向前的路径，便能确定这种关系。</p>
+<p>事件是一次创建、发送、接收或其他要分析的动作。若同一进程先做 X 再做 Y，或 X 发送的消息在 Y 接收，就建立先后。这个关系还具有传递性：X→Z、Z→Y，就有 X→Y，称为 happens-before。</p>
+<p>图中文件 X 传到另一节点后，才产生引用 Z，随后又发“看完了”Y，因此 X→Z→Y。显示这些依赖时，应先有目标，再显示依赖它的更新。</p>
+<p>两个事件若两个方向都没有这种路径，就称为并发。它们在真实时间上可以相隔很久，并发在这里表示缺少因果先后关系。</p>
 <blockquote>
 <p>一个节点收到文件后再创建引用，消息传递怎样建立文件到引用的先后关系？能否利用这些依赖来调整各节点的事件时间戳？</p>
 <p>解答：</p>
 <p>创建文件先于发送它，发送先于对方接收，接收又先于创建引用，所以形成文件到引用的因果路径。接收带 T′ 的消息时，用 <code>T=max(T,T′)+1</code> 推进本地时钟，创建引用再递增。文件为 10、接收后为 11、引用为 12，就保留了这条先后关系。</p>
 </blockquote>
-<p>用 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">X\to Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span> 表示 X 先发生，并且 Y 可以受到 X 的影响。这种关系称为 happens-before，由三条规则定义：</p>
-<ol>
-<li>同一进程中，按程序顺序先执行 X、再执行 Y，则 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">X\to Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span>。</li>
-<li>一条消息的发送先于该消息的接收。</li>
-<li>若 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Z</mi></mrow><annotation encoding="application/x-tex">X\to Z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">Z</span></span></span></span> 且 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Z</mi><mo>→</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">Z\to Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">Z</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span>，则 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">X\to Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span>。</li>
-</ol>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041027.png" alt="创建文件、创建引用和“看完了”之间的因果关系"></p>
-<p>图中 X 是 R1 创建文件。文件消息到达 R2 后，R2 创建引用 Z，随后发出“看完了”Y。消息传递给出 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Z</mi></mrow><annotation encoding="application/x-tex">X\to Z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">Z</span></span></span></span>，R2 的本地顺序给出 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Z</mi><mo>→</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">Z\to Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">Z</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span>，合起来得到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">X\to Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span>。</p>
-<p>因此，展示引用前应先有文件，展示“看完了”前应先有引用。若两个事件之间找不到这样的程序顺序或消息依赖，它们在这个关系中称为并发事件。并发描述的是缺少因果先后关系，两事件在物理时间上也可能隔着一段时间。</p>
 <h3 id="逻辑时钟">逻辑时钟</h3>
-<p>Lamport 逻辑时钟用整数编号记录这些先后约束，无需把编号解释为现实中的秒数。每发生一个需要计数的事件，本地计数器就向前推进；接收消息时，先用 <code>max(a,b)</code> 取本地计数与消息计数中的较大值，再加一，使接收事件排在双方已有进度之后。下面公式中的 <code>⇒</code> 表示“推出”：左边的因果关系成立，右边的编号大小关系就必须成立。</p>
-<p>Lamport 时钟为事件分配递增的整数时间戳。它的目标是：</p>
+<p>Lamport 时钟用一个整数 T 编号。每次本地事件先加一，发送时携带事件编号；接收带 T′ 的消息时，取两者最大值再加一。</p>
+<p>这样，同一进程后续事件编号更大，接收事件也比发送事件编号大。沿因果路径连接，便得到 X→Y 时 L(X)&lt;L(Y)。本地 T=20 收到 10 后变为 21，收到 30 则变为 31。</p>
+<p>图中 R1 文件标签为〈10,R1〉，R2 原计数 9，接收后变 11，再创建引用得 12。文件记录仍保留原标签 10，只有 R2 当前时钟变为 11，新引用才用 12。</p>
+<p>时间戳规定排序，不会替代缺失内容。引用 12 先到、文件 10 未到时，仍需按目标 ID 等待或获取文件。持续交付确定全序还要知道是否有更早消息在路上，这需要额外确认与同步规则。</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Y</mi><mspace width="1em"/><mo>⟹</mo><mspace width="1em"/><mi>L</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo><mo>&lt;</mo><mi>L</mi><mo stretchy="false">(</mo><mi>Y</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">X\to Y\quad\Longrightarrow\quad L(X)&lt;L(Y)
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7073em;vertical-align:-0.024em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">⟹</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mclose">)</span></span></span></span></span></p>
-<p>每个进程保存计数器 T。创建一个事件并将它发出可以合为一次逻辑事件；后续重传继续携带原事件的时间戳。按事件递增的常见写法如下：</p>
 <table>
 <thead>
 <tr>
@@ -467,20 +410,7 @@
 </tr>
 </tbody>
 </table>
-<p>同一进程的每次事件获得更大的时间戳。收到消息后，当前时钟也大于发送方的时间戳，所以后续事件保留消息带来的先后关系。</p>
-<p>取最大值保留了两边已经知道的进度。例如当前 T 为 20，收到时间戳 10，接收事件取得 21；收到时间戳 30，则取得 31。这样本地后续事件继续前进，同时也排在收到消息的发送事件之后。</p>
-<p>计数器需要满足两项要求：一个进程的后续事件取得更大的计数；接收消息的事件取得比发送事件更大的计数。上表的取最大值、再加一同时满足这两项要求。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041843.png" alt="R2 收到时间戳 10 后推进到 11，随后引用取得 12"></p>
-<p>沿图中的消息传递过程计算：</p>
-<ol>
-<li>R1 创建文件，时间戳为 <code>〈10,R1〉</code>。</li>
-<li>R2 的当前计数为 9，收到文件后推进为 <code>max(9,10)+1=11</code>。</li>
-<li>R2 创建引用，再推进为 12，引用时间戳为 <code>〈12,R2〉</code>。</li>
-<li>两台设备按时间戳排序，文件 10 排在引用 12 前面。</li>
-</ol>
-<p>逻辑计数器按事件推进，也可以在本地计时推进的基础上做消息调整；需要保持上述时钟条件。节点编号和节点内序号可以补齐排序键，区分并发事件产生的相同计数。</p>
-<p>排序记录用于重建列表。要在传播途中也满足因果可见性，接收方还需要检查依赖：引用先到、文件未到时，先暂存引用，等文件内容到齐后再展示。</p>
-<p>文件更新原来的标签为 <code>〈10,R1〉</code>，收到它的事件令 R2 当前时钟变为 11；保存文件更新时仍沿用原标签。R2 创建引用取得 12，这条新更新才使用 <code>〈12,R2〉</code>。同一更新在各副本中的身份与标签因此保持一致。</p>
 <blockquote>
 <p>引用消息带有时间戳 12，依赖的文件带有时间戳 10，但引用先到达。仅知道 10 比 12 小，能否立即显示完整引用？还缺什么？</p>
 <p>解答：</p>
@@ -488,7 +418,8 @@
 <p>若要持续交付一个确定的全序，还需要判断是否有更早更新尚在路上。日志排序与完整更新集合可以用于最终重建，传播中的交付时机则由额外同步、确认与依赖规则决定。</p>
 </blockquote>
 <h3 id="时钟判断">时钟判断</h3>
-<p>逻辑时钟只保证因果先后能够体现在编号上，不能将这个结论反向使用。编号 3 和 7 分别来自两个节点时，处理事件较多的节点可能较早取得 7，另一个节点后来才取得 3。若要判断实际先后，还需要消息发送、接收等记录。例如，一个节点收到事件消息后才创建下一事件，这条路径才提供了因果依据。</p>
+<p>L(X)&lt;L(Y) 不能反推 X→Y。两个不通信的节点可以分别取得 3、7，编号大的事件甚至可能在现实时间上更早发生，因为它所在节点此前处理过更多事件。</p>
+<p>若另外知道节点 2 在事件 2 前收到事件 1 的消息，才有发送、接收和后续事件组成的因果路径。下列判断题分别检查仅有编号与已知消息关系的差别。</p>
 <blockquote>
 <p>节点 1 的事件时间戳为 3，节点 2 的事件时间戳为 7。图中的 TS 表示事件时间戳，记为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo stretchy="false">(</mo><mi>e</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">L(e)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mopen">(</span><span class="mord mathnormal">e</span><span class="mclose">)</span></span></span></span>。判断下面三项，并说明理由。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008160633745.png" alt="三个逻辑时钟判断场景"></p>
@@ -504,7 +435,6 @@
 <li>对。题目补充了事件 1 的消息在事件 2 前已到达，发送、接收、后续事件形成因果路径，所以事件 1 实际更早。</li>
 </ol>
 </blockquote>
-<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo><mo>&lt;</mo><mi>L</mi><mo stretchy="false">(</mo><mi>Y</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">L(X)&lt;L(Y)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mclose">)</span></span></span></span> 时，可能有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">X\to Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span>，也可能是两个并发事件恰好获得了大小不同的计数。要判断哪种情况，需要知道消息依赖，或使用记录更多信息的时钟。</p>
 <blockquote>
 <p>两个互不通信的节点分别产生事件 e1、e2，逻辑时间为 3、7。e1 在实际时间上更早、更晚或与 e2 同时发生，三种情况能否出现？</p>
 <p>解答：</p>
@@ -513,8 +443,8 @@
 </blockquote>
 <h2 id="识别并发">识别并发</h2>
 <h3 id="接龙名次">接龙名次</h3>
-<p>接龙将列表位置用于分配名次，因此临时排序会影响业务结果。两份副本当前都只有 17 项时，两名用户各自追加，都会先在本地看到第 18 位。应用需要明确这个位置是否已经确认：可以先保存报名请求，等系统分配共同序号后公布名次，也可以识别并发报名，再按规则处理冲突。</p>
-<p>聊天列表最终重新排列，用户通常还能继续阅读。接龙若规定“第一个报名的人获得奖金”，名次变化就会影响实际结果。</p>
+<p>两台设备都保存 17 项，各自在本地追加，都会先显示第 18 位。同步可以决定最终第 18、19 位，却可能改变已经显示的位置。</p>
+<p>用〈Lamport 时间,node ID〉可以确定展示次序，但独立报名的先后可能由节点编号决定。按名次发奖时，应把临时位置标为待确认，或识别并发后按业务仲裁。若需要保留“二者没有因果先后”这一事实，就不能只依赖强行排出的全序。</p>
 <blockquote>
 <p>两份接龙到第 17 位相同，两个人都在本地追加自己，会不会同时显示为第 18 位？若按名次发奖，应选择临时排序、报告冲突还是等待确认？</p>
 <p>解答：</p>
@@ -522,35 +452,23 @@
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041844.png" alt="两台设备的列表到第 17 位相同，各自在本地加入第 18 位"></p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041845.png" alt="并发报名可以按共同规则排序，也可以报告冲突"></p>
-<p>给并发事件加上 <code>〈Lamport 时间,node ID〉</code> 能决定展示顺序。奖金规则若按这个顺序执行，结果可能由节点编号等排序规则决定。若需要识别“这两次报名缺少因果先后”，时间戳就需要保留不可比较的情况。</p>
 <h3 id="全序和偏序">全序和偏序</h3>
-<p>全序与偏序的区别，在于是否要求每一对不同事件都能比较先后。例如，已经规定 <code>A在B前，B在C前</code>，三个更新便排成 A、B、C 的全序；如果只知道 A、B 都在 C 前，则可以暂时保留 A 与 B 不可比较的关系。这种偏序记录已有约束，应用之后再决定如何处理 A、B 之间的并发。</p>
+<p>全序要求任意两个不同元素都能比较。例如 A 在 B 前、B 在 C 前，得到 A、B、C。偏序允许不确定某些对之间的先后：只知道 A、B 都在 C 前时，可以保留 A 与 B 不可比较。</p>
+<p>因果关系属于偏序。两个事件可能 X→Y、Y→X，或 X∥Y。第三种结果向应用提供并发信息，可以据此合并、重试或仲裁。之后再加确定规则排列表，与一开始就把独立事件误当成已有先后不同。</p>
 <blockquote>
 <p>两个报名缺少因果先后关系时，强行规定一个全序与保留不可比较的关系，分别向应用提供什么信息？</p>
 <p>解答：</p>
 <p>全序给所有不同事件一个确定位置，能直接决定列表排列，但独立报名的顺序可能由节点编号等规则决定。偏序保留已经知道的因果先后，并将缺少关系的事件标为不可比较。应用于是知道这里存在并发，可按业务规则合并、重试或仲裁。</p>
 </blockquote>
-<p>全序可以对任意两个不同元素确定先后。<code>〈逻辑时间,node ID,sequence〉</code> 就能让所有更新排成一条确定序列。</p>
-<p>因果关系是偏序。对两个事件，允许三种结果：</p>
-<ul>
-<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">X\to Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span>：X 先于 Y。</li>
-<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Y</mi><mo>→</mo><mi>X</mi></mrow><annotation encoding="application/x-tex">Y\to X</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span></span></span></span>：Y 先于 X。</li>
-<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>∥</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">X\parallel Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∥</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span>：二者并发，缺少因果先后关系。</li>
-</ul>
-<p>应用可以利用第三种结果报告冲突。先完整记录偏序，再由业务决定怎样处理并发更新，能保留更多信息。</p>
 <h3 id="向量时钟">向量时钟</h3>
-<p>先按“我已经知道哪些事件”解释向量。两个节点时，第一项记录 R1 的进度，第二项记录 R2 的进度。X=[1,0] 表示知道 R1 的第一个事件，却还不知道 R2 的新事件；Y=[0,1] 则相反。</p>
-<p>X 的第一项更大，Y 的第二项更大，因此没有谁包含对方的全部已知历史。它们是并发事件。若后来得到 Z=[3,1]，Z 的每项都不小于 Y，至少一项更大，就能把 Y 排在 Z 前。下面的比较公式是在把这个逐项判断写准确。</p>
-<p>要区分因果先后与并发，需要比单个整数保留更多历史。向量时钟为参与计数的每个节点保存一个分量，事件创建时记录整组数值，表示它当时已经知道的各节点进度。例如，<code>[3,1]</code> 表示已知 R1 到第 3 个事件、R2 到第 1 个事件。比较时逐项检查这些进度，而同一更新传播到其他副本后仍沿用原 ID 和创建向量；下面比较的对象是不同事件。</p>
-<p>向量时钟为每个节点保留一个分量。两个节点时，第一项记录已知的 R1 事件计数，第二项记录已知的 R2 事件计数。R1、R2 都从 <code>[0,0]</code> 开始；R1 的事件推进第一项，R2 的事件推进第二项。收到其他节点的消息后，也会更新相应分量。</p>
+<p>向量为每个参与节点保存一个分量，表示已知的事件进度。两个节点时，[3,1] 表示知道 R1 到第 3 个事件、R2 到第 1 个事件。创建记录时保存向量，传播副本继续使用同一 ID 和创建向量。</p>
+<p>图中 X=[1,0]、Y=[0,1]，两者各有一项更大，互不包含对方历史，因此并发。比较 X&lt;Y 时，要求 X 每项不大于 Y，并至少一项严格更小。公式中的 ∀ 表示每一项，∃ 表示至少一项，∧ 表示两条件同时成立。</p>
+<p>例如 [0,1]&lt;[3,1]、[2,1]&lt;[3,1]。比较的是不同事件的向量，不能把同一记录的两份拷贝当作两个并发事件。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041846.png" alt="R1 的 X 为 [1,0]，R2 的 Y 为 [0,1]，两个事件并发"></p>
-<p>R1 创建 X，得到 <code>[1,0]</code>；R2 独立创建 Y，得到 <code>[0,1]</code>。第一项中 X 较大，第二项中 Y 较大，所以两向量不可比较。它们分别记录了自己看到的事件，没有记录对方的新事件。</p>
-<p>公式中的 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo stretchy="false">(</mo><mi>X</mi><msub><mo stretchy="false">)</mo><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">V(X)_k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 表示事件 X 的向量在第 k 项的数值；<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∀</mi><mi>k</mi></mrow><annotation encoding="application/x-tex">\forall k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord">∀</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span></span></span></span> 表示每一项都满足条件；<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∃</mi><mi>j</mi></mrow><annotation encoding="application/x-tex">\exists j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord">∃</span><span class="mord mathnormal" style="margin-right:0.05724em;">j</span></span></span></span> 表示至少存在一项；<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∧</mo></mrow><annotation encoding="application/x-tex">\land</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5556em;"></span><span class="mord">∧</span></span></span></span> 表示两个条件同时成立。向量先后关系写为：</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>V</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo><mo>&lt;</mo><mi>V</mi><mo stretchy="false">(</mo><mi>Y</mi><mo stretchy="false">)</mo><mspace width="1em"/><mo>⟺</mo><mspace width="1em"/><mrow><mo fence="true">(</mo><mi mathvariant="normal">∀</mi><mi>k</mi><mo separator="true">,</mo><mtext> </mtext><mi>V</mi><mo stretchy="false">(</mo><mi>X</mi><msub><mo stretchy="false">)</mo><mi>k</mi></msub><mo>≤</mo><mi>V</mi><mo stretchy="false">(</mo><mi>Y</mi><msub><mo stretchy="false">)</mo><mi>k</mi></msub><mo fence="true">)</mo></mrow><mo>∧</mo><mrow><mo fence="true">(</mo><mi mathvariant="normal">∃</mi><mi>j</mi><mo separator="true">,</mo><mtext> </mtext><mi>V</mi><mo stretchy="false">(</mo><mi>X</mi><msub><mo stretchy="false">)</mo><mi>j</mi></msub><mo>&lt;</mo><mi>V</mi><mo stretchy="false">(</mo><mi>Y</mi><msub><mo stretchy="false">)</mo><mi>j</mi></msub><mo fence="true">)</mo></mrow></mrow><annotation encoding="application/x-tex">V(X)&lt;V(Y)\quad\Longleftrightarrow\quad
 \left(\forall k,\ V(X)_k\leq V(Y)_k\right)
 \land
 \left(\exists j,\ V(X)_j&lt;V(Y)_j\right)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mclose">)</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">⟺</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">(</span><span class="mord">∀</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mpunct">,</span><span class="mspace"> </span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose delimcenter" style="top:0em;">)</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">∧</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">(</span><span class="mord">∃</span><span class="mord mathnormal" style="margin-right:0.05724em;">j</span><span class="mpunct">,</span><span class="mspace"> </span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mclose delimcenter" style="top:0em;">)</span></span></span></span></span></span></p>
-<p>也就是 X 的每个分量都小于等于 Y，且至少一项更小。若两个方向都无法满足这个条件，两个事件并发。</p>
 <table>
 <thead>
 <tr>
@@ -574,13 +492,13 @@
 </tbody>
 </table>
 <h3 id="向量更新">向量更新</h3>
-<p>向量更新需要区分“事件记录上的创建向量”和“节点当前向量”。下面分别对创建与接收事件计数：创建更新时，推进自己的分量，把新向量写入记录；之后同步或重传这条记录，保留它原来的向量。接收方将收到的进度逐项并入当前向量，再推进自己的分量，记录本次接收。节点继续处理新事件时，也不会改写旧记录的创建标签。</p>
-<p>接收方在自己的第 i 个分量上计数，逐项合并和推进可以写为：</p>
+<p>创建本地事件时，只增加自己的分量并保存新向量。接收消息时，先逐项取最大值，将消息带来的历史合入当前状态，再增加自己的分量记录接收事件。</p>
+<p>R1 创建 X 得 [1,0]，R2 独立创建 Y 得 [0,1]。R1 收到 Y，合并为 [1,1]，计入接收后为 [2,1]，再创建 ref(Y) 得 [3,1]。Y 的 [0,1] 小于 [3,1]，因此 Y 先于引用。</p>
+<p>向量长度随节点数增长，存储与传输成本也增加。它记录依赖和冲突，不负责替应用决定冲突结果。</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>V</mi><mi>i</mi></msub><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo><mo>←</mo><mi>max</mi><mo>⁡</mo><mo stretchy="false">(</mo><msub><mi>V</mi><mi>i</mi></msub><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo><mo separator="true">,</mo><msub><mi>V</mi><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">g</mi></mrow></msub><mo stretchy="false">[</mo><mi>k</mi><mo stretchy="false">]</mo><mo stretchy="false">)</mo><mspace width="1em"/><mtext>对每个 </mtext><mi>k</mi></mrow><annotation encoding="application/x-tex">V_i[k]\leftarrow\max(V_i[k],V_{\mathrm{msg}}[k])\quad\text{对每个 }k
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.2222em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">←</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0361em;vertical-align:-0.2861em;"></span><span class="mop">max</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.2222em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mclose">]</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.2222em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathrm mtight" style="margin-right:0.01389em;">msg</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2861em;"><span></span></span></span></span></span></span><span class="mopen">[</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mclose">])</span><span class="mspace" style="margin-right:1em;"></span><span class="mord text"><span class="mord cjk_fallback">对每个</span><span class="mord"> </span></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span></span></span></span></span></p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>V</mi><mi>i</mi></msub><mo stretchy="false">[</mo><mi>i</mi><mo stretchy="false">]</mo><mo>←</mo><msub><mi>V</mi><mi>i</mi></msub><mo stretchy="false">[</mo><mi>i</mi><mo stretchy="false">]</mo><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">V_i[i]\leftarrow V_i[i]+1
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.2222em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">[</span><span class="mord mathnormal">i</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">←</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.22222em;">V</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.2222em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">[</span><span class="mord mathnormal">i</span><span class="mclose">]</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span></span></p>
-<p>逐项最大值把收到消息所包含的历史合进来；增加自己的分量记录本次接收事件。</p>
 <blockquote>
 <p>R1、R2 从 <code>[0,0]</code> 开始，R1 创建 X 得到 <code>[1,0]</code>，R2 创建 Y 得到 <code>[0,1]</code>。R1 随后收到 Y，再创建 <code>ref(Y)</code>。</p>
 <ol>
@@ -596,61 +514,46 @@
 </ol>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041847.png" alt="R1 合并 Y 的 [0,1]，再创建引用，得到 [3,1]"></p>
-<p>向量长度随节点数增加，系统需要保存和传递更多信息。它适合识别更新之间的依赖和冲突，冲突发生后仍由应用选择合并、重试或其他处理规则。</p>
-<p>这里的“并发”表示两次事件缺少已记录的因果先后。两次报名可以在实际时间上相隔一秒，但两边互相没有收到消息，向量仍可能不可比较。向量时钟能够识别这种关系，奖项如何分配则由报名规则决定。</p>
 <h4 id="版本冲突">版本冲突</h4>
-<p>Dynamo 为同一个键的数据版本保存向量时钟。读取发现两个版本互不覆盖时，会把这些分支及版本信息交给应用处理；应用提交合并结果时，带上已经读取的版本上下文。<a target="_blank" rel="noopener" href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf">Dynamo 原论文，第 4.4 节</a></p>
-<p>例如购物车最初为空，两个节点都读到这个版本。R1 加入苹果，版本为 <code>[1,0]</code>；R2 独立加入牛奶，版本为 <code>[0,1]</code>。两向量不可比较，表明两个版本各包含对方尚未看到的修改。应用可以保留两项商品，再提交一个同时包含两个分支历史的新版本。删除商品等操作还要规定具体的合并规则。</p>
+<p>Dynamo 为同一键的版本保存向量上下文。两个版本互不包含时，读取可以返回分支，让应用合并，再提交包含双方历史的新版本。</p>
+<p>购物车的两个节点从空车出发，一个加苹果得 [1,0]，另一个加牛奶得 [0,1]。只保留一边会丢另一项，应用可按规则保留两者。删除、改数量等操作仍要明确含义，向量本身不会替应用算出商品清单。</p>
+<p>完整向量若每项 8 B，1000 节点需要约 8000 B，尚未计标识和协议头。稀疏表示可以减少记录，但截断历史会影响判断，需要结合冲突识别要求选择。</p>
 <blockquote>
 <p>购物车的两个并发版本分别为“苹果”和“牛奶”，向量是 <code>[1,0]</code>、<code>[0,1]</code>。只保留第一个版本会丢失什么？向量时钟能直接决定合并后的商品吗？</p>
 <p>解答：</p>
 <p>只保留第一个版本会丢失加入牛奶的更新。两个向量互不覆盖，系统可以识别存在分支并保留两份结果。合并后的商品由应用规则决定；在本例中可以同时保留苹果和牛奶，再提交包含两个分支历史的新版本。</p>
 </blockquote>
-<p>向量中的节点通常是参与记录版本的节点。按本节的完整向量模型，每项使用 8 字节时，1000 个节点就需要约 8000 字节，还没计算节点标识与协议开销。实际系统可以采用稀疏记录等方式，但删去历史分量会影响依赖判断的准确性。选择时钟时，需要一起考虑冲突识别需求和保存历史的成本。</p>
 <h2 id="统一观察">统一观察</h2>
-<p>先把数据想成一个普通变量 x。合法的串行执行中，读取返回它前面最近一次写入的值。分布式实现可以把 x 保存成多个副本，但需要检查这些副本返回的结果能否放进同一个合法顺序。顺序一致性与线性一致性的区别，在于还要求这个顺序保留哪些时间关系。</p>
 <h3 id="串行观察">串行观察</h3>
-<p>更强的一致性模型通常要求多个物理副本对外表现为一个逻辑对象。逻辑对象包含一份数据及其操作规则，例如列表的追加和读取。即使底层有三个副本，只要所有调用及其返回值都能用对同一份列表的操作来解释，应用就可以依据这套规则推理。检查时，需要列出完整操作历史，再寻找能够共同解释结果的合法顺序。</p>
-<p>接龙还有另一种处理办法：先由系统确认操作顺序，用户读取确认后的名次。</p>
+<p>多个副本可以对外表现为一个逻辑对象。验证时列出全部调用与返回值，尝试排成对同一对象依次操作的顺序。列表追加应在尾部增加项，寄存器读取应返回这个顺序中最近的写入。</p>
+<p>找到合法顺序后，还要检查它保留哪些时间约束：进程自己的程序顺序、完成到后续发起的实时顺序，或者更强的全局发起顺序。下面分别讨论这些要求。</p>
 <blockquote>
 <p>多个物理副本对外表现为一个逻辑对象，需要让哪些操作和结果对应到共同的串行执行？仅有共同顺序时，还要说明哪些时间约束？</p>
 <p>解答：</p>
 <p>需要找到一个共同的合法串行顺序，解释所有调用与返回结果。例如列表追加把项放到末尾，读取返回该位置之前加入的内容。还要声明保留哪些时间关系：顺序一致性保留每个进程的程序顺序，线性一致性还保留完成到后续发起的实时关系，严格顺序则要求全局实际发起顺序。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140041848.png" alt="多个副本上的并发操作，在逻辑上对应一份列表的串行操作"></p>
-<p>底层仍可以有多个物理副本。对外提供的结果可以解释为对一个逻辑对象依次执行操作：先写一次，再写一次，最后读取。</p>
-<p>每种数据结构都有自己的操作规则。列表追加应把新项放在末尾，寄存器读取应返回对应顺序中最近一次写入的值。判断一致性时，需要找出一个符合这些规则的共同顺序，再检查这个顺序满足哪些时间约束。</p>
 <h3 id="严格顺序">严格顺序</h3>
-<p>讨论时间顺序时，需要区分一次调用的几个时刻：客户端发起、服务器接收、服务器执行和客户端收到回复。发起发生在客户端，到达发生在服务器，中间经过网络等待。两条请求的传输延迟不同，较早发起的请求完全可能较晚到达；因此，按到达顺序执行与按全局发起时间执行有不同含义。</p>
-<p>严格一致性要求按全局实际发起时间安排操作。接龙中，发起时间可以理解为用户按下按钮的时刻。若 Alice 更早按下，理想顺序就把 Alice 放在 Bob 前面。</p>
-<p>即使使用单台服务器，请求到达顺序也可能变化：Alice 先发 A，网络延迟较大；Bob 后发 B，B 却先到服务器。</p>
+<p>一次调用有客户端发起、服务器接收、执行与客户端收到回复几个时刻。网络延迟不同，会让较早发出的 A 比较晚发出的 B 更迟到达。</p>
+<p>若要求按全局真实发起时间执行，服务器即使收到精确时间戳，也要知道是否还有更早请求在路上。图中 B=7 已到，A=5 仍未到，服务器应该等多久？消息延迟没有已知上界、还可能丢失时，仅凭现有消息无法确定。实际协议因此通常围绕可观察的调用完成关系建立保证。</p>
 <blockquote>
 <p>Alice 发起 A 的实际时间更早，Bob 的 B 却先到服务器。怎样知道应先处理 A？即使携带精确时间戳，B 的时间为 7、A 为 5，服务器应等待多久、等待多少条更早请求？</p>
 <p>解答：</p>
 <p>客户端各自的时间存在偏差时，时间戳不足以可靠恢复全局发起顺序。即使时钟精确，B=7 先到后仍可能有 A=5 在路上。在消息延迟无已知上界、消息可能丢失的模型中，服务器无法确定等待上限或更早请求数量；额外的同步与延迟条件需要另行规定。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140042725.png" alt="A 的时间为 5、B 为 7，B 先到时服务器要等待更早请求"></p>
-<p>给请求附上本机时间会遇到时钟偏差。假设时钟已精确同步，服务器收到时间戳 7 的 B 后，还要确认是否有更早的请求正在路上。图中 A 的时间戳为 5，服务器等待它才能按 5、7 执行。</p>
-<p>在消息延迟没有已知上界、消息还可能丢失的环境中，服务器难以确定要等待多久，以及是否还有更早请求。实际系统通常通过请求完成和后续发起的关系来规定顺序。</p>
 <h3 id="线性一致性">线性一致性</h3>
-<p>在时间线上，先把每次调用画成一段，从发起延伸到返回。两段完全分开时，前一段已经结束，后一段才开始，线性一致性要求保留这个先后。两段重叠时，仅凭发起先后无法决定谁先生效，需要寻找一个符合读写结果的顺序。</p>
-<p>例如只有一次把 x 从 1 改成 2 的写入。写入完成后才开始的读必须返回 2。与写入重叠的读可以返回 1 或 2，但整个历史仍需由同一个合法顺序解释，不能对每次读取各选一套互相矛盾的顺序。</p>
-<p>线性一致性用调用区间界定需要保留的实时关系。一次操作从发起到返回构成一个区间，例如 <code>Write(x,2)</code> 从 10:00:00 到 10:00:01。若 <code>Read(x)</code> 在 10:00:02 才发起，写入已经完成；期间没有其他写入时，读取应返回 2。两个调用区间重叠时，则可以按对象规则选择合法的生效顺序。</p>
-<p>线性一致性，英文为 linearizability，要求所有操作可解释为一个合法串行顺序，并保留实时的先后关系：</p>
+<p>每次操作从发起到返回构成调用区间。线性一致性要求在每个区间内选择一个生效点，使全部操作形成合法顺序，并保留已经完成操作到后来发起操作的先后。</p>
+<p>写 x=2 已经返回，之后才开始读，中间无其他写入时必须读到 2。写与读区间重叠，则可以按结果解释为读在写前或写后。一个操作的生效点可以早于回复到达，客户端收到成功只是取得完成的证据。</p>
+<p>图中 A、B 重叠，服务器先处理 B 再处理 A，随后读返回 [B,A]。不同设备之间也受同一实时约束，不能用各自独立的排列解释互相矛盾的结果。</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">return</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>A</mi><mo stretchy="false">)</mo><mo>&lt;</mo><mi mathvariant="normal">invoke</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>B</mi><mo stretchy="false">)</mo><mspace width="1em"/><mo>⟹</mo><mspace width="1em"/><mi>A</mi><mtext> 在串行顺序中先于 </mtext><mi>B</mi></mrow><annotation encoding="application/x-tex">\operatorname{return}(A)&lt;\operatorname{invoke}(B)
 \quad\Longrightarrow\quad A\text{ 在串行顺序中先于 }B</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop"><span class="mord mathrm">return</span></span><span class="mopen">(</span><span class="mord mathnormal">A</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop"><span class="mord mathrm">invoke</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span><span class="mclose">)</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">⟹</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">A</span><span class="mord text"><span class="mord"> </span><span class="mord cjk_fallback">在串行顺序中先于</span><span class="mord"> </span></span><span class="mord mathnormal" style="margin-right:0.05017em;">B</span></span></span></span></span></p>
-<p><code>invoke</code> 是发起调用，<code>return</code> 是返回结果。如果 A 已返回，随后才发起 B，B 的结果就需要符合 A 已生效后的对象状态。</p>
-<p>另一种等价理解是：每次操作在发起和返回之间存在一个生效时刻，称为线性化点。把操作按这些点排列，可以解释所有读取结果。</p>
 <blockquote>
 <p>集中服务器实际按什么顺序处理重叠请求？B 已完成后才发起的读取必须包含什么？为什么完成到后续发起的关系可以作为线性一致性的判断条件？</p>
 <p>解答：</p>
 <p>图中 B 先到服务器，示例处理顺序为 B、A，列表变为 <code>[B,A]</code>。B 已完成后才发起的读必须保留 B 的加入；图中 A 也已完成，所以返回 <code>[B,A]</code>。完成说明操作已经生效，后来发起的调用区间在它之后，合法线性化顺序就必须保留这项实时关系。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140042726.png" alt="B 更新完成后才发起读取，读取结果必须包含 B"></p>
-<p>图中 A、B 的调用区间重叠，服务器先收到 B，依次处理 B、A，得到 <code>[B,A]</code>。读取在 B 完成后发起，需要看到 B；图中读取也发生在 A 完成后，因此返回 <code>[B,A]</code>。</p>
-<p>两次调用重叠时，线性一致性允许按对象规则选择其中一个先执行。两次调用分开时，已经完成的操作排在后来发起的操作之前。报名应用可以按系统确认的序号发奖，并在确认前显示“处理中”。<a target="_blank" rel="noopener" href="https://cs.brown.edu/~mph/HerlihyW90/p463-herlihy.pdf">线性一致性原论文</a></p>
-<p>判断“完成”时，图上的客户端返回事件很重要。服务器可能已经修改数据，回复仍在网络中传输，客户端此时还无法凭返回结果确认执行进度。线性化点可以早于返回；客户端收到成功回复后，才取得这次调用已经完成的直接证据。</p>
-<p>实时约束也适用于不同设备。A 收到写入成功的回复后，B 才发起读取，线性一致性就要求这次读取位于该写入之后。协议需要提供这个保证，应用可以通过消息通知来确认两次调用确实具有这样的先后。</p>
 <blockquote>
 <p>初始 x=1。A 写入 x=2，服务器执行后，回复在网络中停留了一秒。B 在这一秒内发起读取。另一次读取则在 A 收到成功回复后才发起，两次读取分别允许返回什么？</p>
 <p>解答：</p>
@@ -658,53 +561,38 @@
 <p>第二次读取在写入完成后发起，必须排在写入之后并返回 2。这一条件跨客户端成立。判断时使用调用和返回的历史，服务器内部执行时刻可以帮助理解实现。</p>
 </blockquote>
 <h3 id="主副本">主副本</h3>
-<p>primary-backup 将一个对象的排序职责交给主副本 primary，由 backup 保存对应副本。请求即使从不同入口进入，也先送到 primary，由它确定位置，并按协议等待复制完成。故障恢复时，新主需要取得已确认的写入记录，再继续安排后续操作，才能维持同一份对象历史。</p>
-<p>一种实现线性一致性的方法，是对每个对象指定一个 primary，统一安排读写顺序，其他副本按这个顺序执行。</p>
+<p>一种实现方式是为每个对象指定 primary，统一排序读写，backup 按序保存。请求可以从不同入口进入，但最终交给这个对象的 primary。</p>
+<p>图中 P0 排序更新，转发给 P1，等相应确认后再完成自己的提交并向客户端返回 Done。发到 P1 的写也转交 P0。读取需要按规定取得已确认状态。</p>
+<p>不同对象可以由不同 primary 负责。列表 A、B、C 分别由 P0、P1、P2 排序，便能分担不同列表的请求。线性一致性可按独立对象组合，但跨对象共同修改还需事务。单个热点列表仍可能限制一台主节点。</p>
+<p>切换主节点需要保留已确认记录，并让旧任期授权失效。超时只能触发怀疑，不能靠“选新节点加一个序号”自动完成全部安全条件。</p>
 <blockquote>
 <p>各副本先本地写入并立即返回，再于同步时重新排列，能否让所有已完成操作保留线性一致性的顺序？primary-backup 方法怎样安排读写与确认？</p>
 <p>解答：</p>
 <p>这种做法一般无法保证线性一致性：一个节点已确认的写入，另一节点还可能读旧值，事后重排也改变不了已返回的结果。primary-backup 对每个对象统一安排操作，给写入排序，备份按序应用并确认，满足条件后才返回完成；读取按相应顺序取得已确认状态。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140042727.png" alt="写请求先到 primary，再传给 backup，其他入口也把请求转交 primary"></p>
-<p>图中 P0 是 primary，P1 是 backup。初始 <code>x</code> 为旧值，写入 <code>x=1</code> 时：</p>
-<ol>
-<li>请求到达 P0，由 P0 安排位置。</li>
-<li>P0 把更新转发给 P1。</li>
-<li>P1 写入本地副本并返回 ACK。</li>
-<li>P0 按协议完成自己的写入，确认这次操作完成。</li>
-<li>P0 向调用方返回 Done。</li>
-</ol>
-<p>发到 P1 的 <code>Write(x,2)</code> 也被转交 P0。读取同样经过统一安排。在这个逐次处理请求的实现中，后续读取在相应写入确认后返回，从而看到正确的已完成状态。</p>
-<p>统一排序可以按对象分工，不同对象由不同 primary 负责。任期标识一段主节点授权，选出新主后需要更新相应任期。故障恢复要取得已确认的操作记录，再安排后续读写；旧任期的节点恢复连接后也按授权规则处理请求。</p>
-<p>“一个负责排序的节点”是本例中每个对象的职责安排。三个聊天列表 A、B、C 可以都保存三份副本，分别由 P0、P1、P2 负责排序。访问 A 的请求交给 P0，访问 B 的请求交给 P1，这样不同列表的请求能够分散处理。线性一致性具有可组合性：每个独立对象都满足线性一致性，组合后的单对象操作历史也满足线性一致性。<a target="_blank" rel="noopener" href="https://cs.brown.edu/~mph/HerlihyW90/p463-herlihy.pdf">原论文，第 3.1 节</a></p>
-<p>若所有访问集中在列表 A，P0 仍会成为热点。增加其他列表的负责节点，对这个热点的帮助有限。跨列表一起修改的业务还需要定义事务，例如同时删掉旧群记录并加入新群；每个列表各自正确的读写接口，并没有定义这组修改的共同提交过程。</p>
-<p>故障切换也要处理“旧主只是暂时失联”的情况。P1 被选为新主后，P0 可能恢复连接；协议需要让旧授权失效，并确定哪些操作已经确认，才能继续同一份对象历史。Raft、Paxos 等协议用于协调这类决定。单凭超时和一个递增序号，还不足以完成安全切换。</p>
 <h3 id="写入序号">写入序号</h3>
-<p>主副本确定的顺序需要随消息传给备份，通常通过递增序号表示。例如，<code>〈seq=1,value=1〉</code> 是第一条更新，<code>〈seq=2,value=2〉</code> 是第二条更新；seq 记录位置，value 记录内容，即使两者数值碰巧相同，含义也不同。接收方维护 <code>next_seq</code>，按期待的序号执行，完成 1 后才继续执行 2。</p>
-<p>primary 发出两次更新，也要让所有副本按它规定的顺序应用。</p>
+<p>主副本给更新分配序号，备份便能按这个顺序处理，而不是按网络到达顺序。seq 表示位置，value 表示内容，即使都是 1、2 也不能混为一项。</p>
+<p>图中写 2 先到备份，直接执行后再写 1 会使最终值变成 1，与主副本不同。带序号后，备份将 seq=2 暂存，等 seq=1 完成才继续。next_seq 记录下一项，缺项补传、重复项检查已处理状态。</p>
 <blockquote>
 <p>primary 安排先写 1、再写 2，backup 却先收到写 2。仅按到达顺序执行会得到什么结果？附上 seq=1、seq=2 后，backup 应怎样等待与应用？</p>
 <p>解答：</p>
 <p>只按到达顺序，primary 最终为 2，backup 可能为 1。序号把原顺序带给接收方：先到的 seq=2 暂存，seq=1 执行完再应用 2；缺失与重复消息按协议补传和去重。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140042728.png" alt="primary 按 1、2 写入，backup 若按消息到达顺序写就得到 2、1"></p>
-<p>P0 先安排 <code>Write(x,1)</code>，再安排 <code>Write(x,2)</code>。P1 若先收到第二条消息，并直接执行，就会先写 2、再写 1。最终 P0 为 2，P1 为 1。</p>
-<p>为每个更新分配递增序号，可以明确记录 primary 的顺序。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140042729.png" alt="序号 2 先到时暂存，序号 1 完成后再依次应用"></p>
-<p>P0 为两条更新分配 <code>seq=1</code>、<code>seq=2</code>。P1 收到 2 时，先放进等待区；收到并执行 1 后，再执行 2，最终两边都是 2。</p>
-<p>可以用 <code>next_seq</code> 记录下一条应执行的序号。序号较大时等待前面的更新，重复消息按序号和请求标识检查处理记录，缺失消息通过重传补齐。顺序由序号保存，网络到达时间只影响等待多久。</p>
 <h3 id="复制成本">复制成本</h3>
-<p>前面的 primary-backup 用统一排序和副本确认换取相应读写保证，也在请求路径中增加了转发和等待。写入要经过 primary，再等待所需 backup 的回复；读取也需要符合已确认顺序。因此，主副本的处理能力、网络往返和确认参与者的状态都会影响性能。</p>
+<p>统一排序增加转发与确认等待。要求全部备份确认时，最慢或失联备份会阻碍写入，排在该写入后面的读取也可能等待。</p>
+<p>主节点失效后，要选出有效的新负责者并恢复历史。若希望部分节点失效时继续工作，还需改变参与确认的条件或配置，同时保持安全。消息数量和等待长度由这些协议条件共同决定。</p>
 <blockquote>
 <p>要求 primary 排序、全部 backup 确认时，多出哪些等待？primary 失效或某个 backup 失联，分别会影响哪些操作？</p>
 <p>解答：</p>
 <p>写入多出转发与等待备份确认的时间，要求全部确认时由最慢备份影响完成时间。primary 失效会使统一读写入口暂停，需要确定新主并恢复已确认记录；backup 失联会阻塞要求全确认的写入。若读也排在这个未完成写入之后，它会被连带等待。</p>
 </blockquote>
-<p>primary 失效后，其他节点需要确认新的负责者；若写入要求全部 backup 确认，一个 backup 失联也会阻塞写入。这套简化实现需要等待故障节点恢复，或通过额外协议重新确定参与写入的节点。</p>
-<p>要在部分节点失效后继续工作，需要选出负责排序的节点，恢复已确认的记录，并重新确定哪些副本能够参加确认。参与节点数和确认条件决定了需要交换多少消息、等待多少回复。</p>
 <h3 id="顺序一致性">顺序一致性</h3>
-<p>顺序一致性保留每个进程自己的程序顺序。例如，进程 A 先写 2、再读取，解释结果的共同串行顺序也必须将这次写排在这次读之前；不同进程之间则无需额外保留所有完成到发起的实时关系。下面特意让两次读取属于不同进程，检查同一段历史能否按这项较弱的时间要求解释。</p>
-<p>让读取直接使用本地副本，可以减少一次向 primary 请求数据的等待。下面检查这种读法会返回什么结果。</p>
+<p>顺序一致性要求一个共同的合法串行顺序，并保留每个进程的程序顺序。它不额外要求所有跨进程的“前一调用结束、后一调用开始”都按实时顺序排列。</p>
+<p>图中写请求与两次读取分别属于不同进程。P1 先读到新值 2，之后 P0 仍读到 1。这违反线性一致性，却可以按“P0 读 1、写 2、P1 读 2”解释为顺序一致的结果。</p>
+<p>若两次读属于同一进程，先读 2 再读 1，就不能交换它们来解释，因为程序顺序必须保留。因此，随意读本地副本也不能自动保证顺序一致性，需要会话或进度规则配合。备份若经过协调，确认已提交位置并追上它，也可以提供线性读取。</p>
 <blockquote>
 <p>初始 x=1，写请求与两次读取分别由不同进程发起。P1 收到写 2 并读到 2，这次读完成后，P0 的读者才开始读取，却仍返回 1。</p>
 <ol>
@@ -720,10 +608,6 @@
 </ol>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140042730.png" alt="P1 已读到 2，随后 P0 的本地读取仍返回 1"></p>
-<p>初始 <code>x=1</code>。P0 发出 <code>Write(x,2)</code>，P1 先执行更新，返回给 P0 的 ACK 还在路上。P1 的读者读到 2；这个读取完成后，P0 上的另一个读者发起读取，本地仍为 1，返回 1。</p>
-<p>图中的 P0、P1 表示所在节点，每个节点可以运行多个调用进程。下面将写请求和两次读取分别看作三个进程的操作，检查它们能否形成共同的串行顺序。</p>
-<p>若这段历史满足线性一致性，读到 2 说明写 2 已经生效。后一次读取又发生在第一次读取完成后，中间没有其他写入，因此也应返回 2。图中的实际结果违反了这项实时顺序要求。</p>
-<p>顺序一致性要求存在共同的合法串行顺序，并保留每个进程自己的程序顺序。两个读取属于不同进程时，可以尝试以下顺序：</p>
 <table>
 <thead>
 <tr>
@@ -746,31 +630,25 @@
 </tr>
 </tbody>
 </table>
-<p>这个顺序能解释两次读取的数值。它把两个不同进程的读取排列为旧值在前、新值在后。线性一致性还要保留实际的“第一次读取完成、第二次读取发起”关系，所以对同一段历史提出了更多要求。</p>
-<p>实现顺序一致性时，还需要检查每个进程的完整调用序列。例如，一个进程先写入、再读取，或连续执行两次读取，都要在共同串行顺序中保留它们的程序顺序。系统应按这个条件安排会话与副本读取。</p>
-<p>仅允许从任意本地副本读，并不能保证上述条件。例如同一进程先在 P1 读到 2，随后改去尚未更新的 P0 读到 1，中间没有其他写入。程序顺序要求先保留读 2、再保留读 1；单对象历史又要求写 2 排在读 2 前面，读 1 排在写 2 前面，两项要求形成循环。实现可以让读取等待相应更新进度，或使用满足进程顺序的会话规则。</p>
 <blockquote>
 <p>只有一次把 x 从 1 改为 2 的写入。同一个进程连续两次读取，先得到 2、后得到 1。能否用“读 1、写 2、读 2”解释为顺序一致性？</p>
 <p>解答：</p>
 <p>这个排列颠倒了该进程的两次读取，违反程序顺序。保留读 2 在读 1 前面时，又找不到符合这两次数值的合法寄存器顺序。因此这段历史违反顺序一致性。前面图中的两次读取属于不同进程，才能使用给出的排列。</p>
 </blockquote>
-<p>备用副本也可以在额外协调后提供线性一致性读取，例如先确定读取需要达到的已提交进度，再等本地应用到该位置，协议还要确认负责者的授权。上述反例针对直接返回本地状态的读法。实际服务应按其读取接口承诺的保证使用；<a target="_blank" rel="noopener" href="https://etcd.io/docs/v3.6/learning/api_guarantees/">etcd 的 API 保证</a>也区分需要协调的线性读取和可能返回旧值的本地读取。</p>
 <h4 id="内存顺序">内存顺序</h4>
-<p>多核程序也需要考虑读写的可见顺序。一个核把值写入自己的写缓冲区后，另一个核可能尚未看到它；编译器和处理器也会在允许范围内调整独立访问的顺序。内存屏障（memory barrier，或 fence）为屏障两侧的指定访问建立顺序约束，程序通常结合原子操作、锁和配对的同步操作使用它。<a target="_blank" rel="noopener" href="https://docs.kernel.org/core-api/wrappers/memory-barriers.html">Linux 内存屏障文档</a></p>
-<p>例如一个线程先准备消息内容，再发布“消息已准备好”的标志。读取线程需要按配套规则读取标志与内容，使“看到标志后使用内容”具有相应保证。不同屏障提供不同范围的约束，需要依据语言与硬件模型选择。</p>
-<p>顺序一致性和 TSO（Total Store Order）有不同规则。TSO 允许某些较早写入仍留在缓冲区时，执行后面的读取。因此，硬件提供的模型、编程语言的原子操作规则和应用需要的顺序，要分别核对。<a target="_blank" rel="noopener" href="https://docs.kernel.org/dev-tools/lkmm/docs/explanation.html">Linux 内存模型说明</a></p>
+<p>多核也有可见性问题。一个核的写还在缓冲，另一个核可能尚未看到，编译器和处理器也可按允许规则调整访问。锁、原子操作和内存屏障为指定访问建立顺序。</p>
+<p>例如，写线程先准备内容再发布“已就绪”标记，读线程需要配套同步，才能在看到标记后正确使用内容。TSO 与顺序一致性并不相同，TSO 允许某些先前写仍在缓冲时执行后续读取。程序需要同时遵守语言与硬件模型。</p>
 <h2 id="选择保证">选择保证</h2>
 <h3 id="模型选择">模型选择</h3>
+<p>图中的雷达图概括设计倾向，不是带有单位的实验结果。最终一致性的本地操作减少协调，应用需要处理迟到、重排与冲突；线性一致性便于按一个对象的串行行为推理，实现需要完成排序与确认。</p>
+<p>聊天可以先显示本地消息，按状态标记并在后台补齐，引用仍需目标可见。按名次发奖则应等待确认或处理并发仲裁。分析具体应用时，先写出状态与操作，再列依赖和允许结果，最后检查协议是否满足它们。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261008140043551.png" alt="两类设计在扩展、性能、容错、一致性和编程难度上的特点"></p>
 <blockquote>
 <p>最终一致性适合每一种应用吗？普通聊天与按名次发奖的接龙，需要怎样规定临时结果、冲突和最终确认？</p>
 <p>解答：</p>
 <p>最终一致性适合可以接受临时缺少消息、之后同步合并的用法。聊天可以先显示本地记录并标记发送状态，引用还需等待目标消息可见。按名次发奖的接龙应先确认名次，或检测并处理并发报名，再按奖项规则结算；直接把未确认的本地位置作为最终结果，会使名次在同步后变化。</p>
 </blockquote>
-<p>图中的雷达图用于概括设计倾向，轴上没有测量单位和实验数值。最终一致性的本地操作减少了协调等待，应用要处理延迟可见、顺序调整和冲突。线性一致性让程序按对象的串行规则判断结果，实现则需要安排确认、排序和故障恢复。</p>
-<p>聊天记录可以先显示本地消息，后台持续同步，并保留引用依赖。按名次发奖的接龙需要明确确认顺序，或在并发时报告冲突。存储文件、修改目录、递增计数等操作，也要结合各自的业务规则选择保证。</p>
-<p>分析一个并发系统时，可以依次检查四件事：数据状态是什么，操作怎样修改或读取状态，事件之间有哪些依赖，以及读取结果要保留哪种先后关系。时钟帮助记录事件关系，读写和同步协议负责实现一致性要求。</p>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/08/SE3331_05/">https://acannedfish.github.io/2026/10/08/SE3331_05/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a><a class="post-meta__tags" href="/tags/%E4%B8%80%E8%87%B4%E6%80%A7/">一致性</a><a class="post-meta__tags" href="/tags/%E9%80%BB%E8%BE%91%E6%97%B6%E9%92%9F/">逻辑时钟</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/09/29/SE3331_04/" title="计算机系统工程-04：分布式存储"><img class="cover" src="/img/background8.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-04：分布式存储</div></div></div></a><a class="pagination-related  no-desc" href="/2026/10/10/SE3331_06/" title="计算机系统工程-06：故障原子性"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统工程-06：故障原子性</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/09/24/SE3331_03/" title="计算机系统工程-03：远程调用"><img class="cover" src="/img/background4.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-03：远程调用</div></div></div></a><a class="pagination-related no-desc" href="/2026/09/29/SE3331_04/" title="计算机系统工程-04：分布式存储"><img class="cover" src="/img/background8.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-29</div><div class="info-item-2">计算机系统工程-04：分布式存储</div></div></div></a><a class="pagination-related no-desc" href="/2026/09/24/SE3331_01/" title="计算机系统工程-01：系统扩展"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-01：系统扩展</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%90%86%E8%A7%A3%E7%8A%B6%E6%80%81"><span class="toc-number">1.</span> <span class="toc-text">理解状态</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99"><span class="toc-number">1.1.</span> <span class="toc-text">并发读写</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%86%99%E5%9F%BA%E7%A1%80"><span class="toc-number">1.2.</span> <span class="toc-text">读写基础</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BE%E7%A4%BA%E8%AF%BB%E6%B3%95"><span class="toc-number">1.3.</span> <span class="toc-text">图示读法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96"><span class="toc-number">1.4.</span> <span class="toc-text">文件读取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%81%8A%E5%A4%A9%E8%AE%B0%E5%BD%95"><span class="toc-number">1.5.</span> <span class="toc-text">聊天记录</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E5%8E%86%E5%8F%B2"><span class="toc-number">2.</span> <span class="toc-text">复制历史</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E4%B8%AD%E4%BF%9D%E5%AD%98"><span class="toc-number">2.1.</span> <span class="toc-text">集中保存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E5%89%AF%E6%9C%AC"><span class="toc-number">2.2.</span> <span class="toc-text">本地副本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E7%A1%AE%E8%AE%A4"><span class="toc-number">2.3.</span> <span class="toc-text">更新确认</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%91%A8%E6%9C%9F%E5%90%8C%E6%AD%A5"><span class="toc-number">2.4.</span> <span class="toc-text">周期同步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%B0%E8%BE%BE%E9%A1%BA%E5%BA%8F"><span class="toc-number">2.5.</span> <span class="toc-text">到达顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E6%9B%B4%E6%96%B0"><span class="toc-number">2.6.</span> <span class="toc-text">合并更新</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%A6%E5%AE%9A%E7%BB%93%E6%9E%9C"><span class="toc-number">3.</span> <span class="toc-text">约定结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E6%A8%A1%E5%9E%8B"><span class="toc-number">3.1.</span> <span class="toc-text">一致性模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">3.2.</span> <span class="toc-text">最终一致性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%92%E5%88%97%E6%9B%B4%E6%96%B0"><span class="toc-number">4.</span> <span class="toc-text">排列更新</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%8E%92%E5%BA%8F"><span class="toc-number">4.1.</span> <span class="toc-text">日志排序</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9F%E5%88%B0%E6%9B%B4%E6%96%B0"><span class="toc-number">4.1.1.</span> <span class="toc-text">迟到更新</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E6%8E%92%E5%BA%8F"><span class="toc-number">4.2.</span> <span class="toc-text">时间排序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%92%9F%E5%81%8F%E5%B7%AE"><span class="toc-number">4.3.</span> <span class="toc-text">时钟偏差</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B0%E5%BD%95%E5%9B%A0%E6%9E%9C"><span class="toc-number">5.</span> <span class="toc-text">记录因果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%A0%E6%9E%9C%E5%85%B3%E7%B3%BB"><span class="toc-number">5.1.</span> <span class="toc-text">因果关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E6%97%B6%E9%92%9F"><span class="toc-number">5.2.</span> <span class="toc-text">逻辑时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%92%9F%E5%88%A4%E6%96%AD"><span class="toc-number">5.3.</span> <span class="toc-text">时钟判断</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%86%E5%88%AB%E5%B9%B6%E5%8F%91"><span class="toc-number">6.</span> <span class="toc-text">识别并发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E9%BE%99%E5%90%8D%E6%AC%A1"><span class="toc-number">6.1.</span> <span class="toc-text">接龙名次</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E5%BA%8F%E5%92%8C%E5%81%8F%E5%BA%8F"><span class="toc-number">6.2.</span> <span class="toc-text">全序和偏序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E6%97%B6%E9%92%9F"><span class="toc-number">6.3.</span> <span class="toc-text">向量时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E6%9B%B4%E6%96%B0"><span class="toc-number">6.4.</span> <span class="toc-text">向量更新</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%86%B2%E7%AA%81"><span class="toc-number">6.4.1.</span> <span class="toc-text">版本冲突</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%9F%E4%B8%80%E8%A7%82%E5%AF%9F"><span class="toc-number">7.</span> <span class="toc-text">统一观察</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%B2%E8%A1%8C%E8%A7%82%E5%AF%9F"><span class="toc-number">7.1.</span> <span class="toc-text">串行观察</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A5%E6%A0%BC%E9%A1%BA%E5%BA%8F"><span class="toc-number">7.2.</span> <span class="toc-text">严格顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">7.3.</span> <span class="toc-text">线性一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E5%89%AF%E6%9C%AC"><span class="toc-number">7.4.</span> <span class="toc-text">主副本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E5%85%A5%E5%BA%8F%E5%8F%B7"><span class="toc-number">7.5.</span> <span class="toc-text">写入序号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E6%88%90%E6%9C%AC"><span class="toc-number">7.6.</span> <span class="toc-text">复制成本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">7.7.</span> <span class="toc-text">顺序一致性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E9%A1%BA%E5%BA%8F"><span class="toc-number">7.7.1.</span> <span class="toc-text">内存顺序</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%89%E6%8B%A9%E4%BF%9D%E8%AF%81"><span class="toc-number">8.</span> <span class="toc-text">选择保证</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9"><span class="toc-number">8.1.</span> <span class="toc-text">模型选择</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/08/SE3331_05/">https://acannedfish.github.io/2026/10/08/SE3331_05/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">分布式系统</a><a class="post-meta__tags" href="/tags/%E4%B8%80%E8%87%B4%E6%80%A7/">一致性</a><a class="post-meta__tags" href="/tags/%E9%80%BB%E8%BE%91%E6%97%B6%E9%92%9F/">逻辑时钟</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/09/29/SE3331_04/" title="计算机系统工程-04：NFS、GFS 与 3FS"><img class="cover" src="/img/background8.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-04：NFS、GFS 与 3FS</div></div></div></a><a class="pagination-related  no-desc" href="/2026/10/10/SE3331_06/" title="计算机系统工程-06：事务日志与故障恢复"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统工程-06：事务日志与故障恢复</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/09/24/SE3331_03/" title="计算机系统工程-03：RPC"><img class="cover" src="/img/background4.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-03：RPC</div></div></div></a><a class="pagination-related no-desc" href="/2026/09/24/SE3331_01/" title="计算机系统工程-01：系统扩展"><img class="cover" src="/img/background11.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-24</div><div class="info-item-2">计算机系统工程-01：系统扩展</div></div></div></a><a class="pagination-related no-desc" href="/2026/09/29/SE3331_04/" title="计算机系统工程-04：NFS、GFS 与 3FS"><img class="cover" src="/img/background8.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-29</div><div class="info-item-2">计算机系统工程-04：NFS、GFS 与 3FS</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%90%86%E8%A7%A3%E7%8A%B6%E6%80%81"><span class="toc-number">1.</span> <span class="toc-text">理解状态</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E8%AF%BB%E5%86%99"><span class="toc-number">1.1.</span> <span class="toc-text">并发读写</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%86%99%E5%9F%BA%E7%A1%80"><span class="toc-number">1.2.</span> <span class="toc-text">读写基础</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BE%E7%A4%BA%E8%AF%BB%E6%B3%95"><span class="toc-number">1.3.</span> <span class="toc-text">图示读法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96"><span class="toc-number">1.4.</span> <span class="toc-text">文件读取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%81%8A%E5%A4%A9%E8%AE%B0%E5%BD%95"><span class="toc-number">1.5.</span> <span class="toc-text">聊天记录</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E5%8E%86%E5%8F%B2"><span class="toc-number">2.</span> <span class="toc-text">复制历史</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E4%B8%AD%E4%BF%9D%E5%AD%98"><span class="toc-number">2.1.</span> <span class="toc-text">集中保存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E5%89%AF%E6%9C%AC"><span class="toc-number">2.2.</span> <span class="toc-text">本地副本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9B%B4%E6%96%B0%E7%A1%AE%E8%AE%A4"><span class="toc-number">2.3.</span> <span class="toc-text">更新确认</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%91%A8%E6%9C%9F%E5%90%8C%E6%AD%A5"><span class="toc-number">2.4.</span> <span class="toc-text">周期同步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%B0%E8%BE%BE%E9%A1%BA%E5%BA%8F"><span class="toc-number">2.5.</span> <span class="toc-text">到达顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E6%9B%B4%E6%96%B0"><span class="toc-number">2.6.</span> <span class="toc-text">合并更新</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%A6%E5%AE%9A%E7%BB%93%E6%9E%9C"><span class="toc-number">3.</span> <span class="toc-text">约定结果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E6%A8%A1%E5%9E%8B"><span class="toc-number">3.1.</span> <span class="toc-text">一致性模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">3.2.</span> <span class="toc-text">最终一致性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%92%E5%88%97%E6%9B%B4%E6%96%B0"><span class="toc-number">4.</span> <span class="toc-text">排列更新</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E6%8E%92%E5%BA%8F"><span class="toc-number">4.1.</span> <span class="toc-text">日志排序</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%9F%E5%88%B0%E6%9B%B4%E6%96%B0"><span class="toc-number">4.1.1.</span> <span class="toc-text">迟到更新</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%E6%8E%92%E5%BA%8F"><span class="toc-number">4.2.</span> <span class="toc-text">时间排序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%92%9F%E5%81%8F%E5%B7%AE"><span class="toc-number">4.3.</span> <span class="toc-text">时钟偏差</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%B0%E5%BD%95%E5%9B%A0%E6%9E%9C"><span class="toc-number">5.</span> <span class="toc-text">记录因果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%A0%E6%9E%9C%E5%85%B3%E7%B3%BB"><span class="toc-number">5.1.</span> <span class="toc-text">因果关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E6%97%B6%E9%92%9F"><span class="toc-number">5.2.</span> <span class="toc-text">逻辑时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E9%92%9F%E5%88%A4%E6%96%AD"><span class="toc-number">5.3.</span> <span class="toc-text">时钟判断</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%86%E5%88%AB%E5%B9%B6%E5%8F%91"><span class="toc-number">6.</span> <span class="toc-text">识别并发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E9%BE%99%E5%90%8D%E6%AC%A1"><span class="toc-number">6.1.</span> <span class="toc-text">接龙名次</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E5%BA%8F%E5%92%8C%E5%81%8F%E5%BA%8F"><span class="toc-number">6.2.</span> <span class="toc-text">全序和偏序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E6%97%B6%E9%92%9F"><span class="toc-number">6.3.</span> <span class="toc-text">向量时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E6%9B%B4%E6%96%B0"><span class="toc-number">6.4.</span> <span class="toc-text">向量更新</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%86%B2%E7%AA%81"><span class="toc-number">6.4.1.</span> <span class="toc-text">版本冲突</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%9F%E4%B8%80%E8%A7%82%E5%AF%9F"><span class="toc-number">7.</span> <span class="toc-text">统一观察</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%B2%E8%A1%8C%E8%A7%82%E5%AF%9F"><span class="toc-number">7.1.</span> <span class="toc-text">串行观察</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A5%E6%A0%BC%E9%A1%BA%E5%BA%8F"><span class="toc-number">7.2.</span> <span class="toc-text">严格顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">7.3.</span> <span class="toc-text">线性一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E5%89%AF%E6%9C%AC"><span class="toc-number">7.4.</span> <span class="toc-text">主副本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E5%85%A5%E5%BA%8F%E5%8F%B7"><span class="toc-number">7.5.</span> <span class="toc-text">写入序号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E6%88%90%E6%9C%AC"><span class="toc-number">7.6.</span> <span class="toc-text">复制成本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">7.7.</span> <span class="toc-text">顺序一致性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E9%A1%BA%E5%BA%8F"><span class="toc-number">7.7.1.</span> <span class="toc-text">内存顺序</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%89%E6%8B%A9%E4%BF%9D%E8%AF%81"><span class="toc-number">8.</span> <span class="toc-text">选择保证</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E9%80%89%E6%8B%A9"><span class="toc-number">8.1.</span> <span class="toc-text">模型选择</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
   const showKatex = () => {
     document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
   }

@@ -1,13 +1,13 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-08：事务机制 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="事务要求 事务范围 事务（transaction，简称 TX）为一组需要共同处理的数据操作划定边界。例如，转账中的扣款与入账需要共同生效，库存检查与订单建立也需要相互配合。事务处理的数据可以是数据库账户、键值存储记录、目录项、inode，也可以是共享内存中的对象；关键在于明确哪些操作需要按同一组规则提交、隔离和恢复。 程序通常用 begin 标记事务开始，用 commit 请求提交，系统据此识别需">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-08：OCC、HTM 与 MVCC | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="事务要求 事务范围 事务把需要共同解释的读写放在同一边界内。转账的扣款、入账和记录需要配合，购物的检查库存、扣减与建立订单也一样。数据可以是账户、键值记录、目录项、inode 或共享内存对象。 begin 标记开始，commit 请求提交。一次请求中的参数解析、通信和响应不一定都属于同一事务，边界应依据数据依赖确定。 购物图中若检查余量与扣减分开，两人可能都依据同一库存购买；只扣减不建立订单也会留">
 <meta property="og:type" content="article">
-<meta property="og:title" content="计算机系统工程-08：事务机制">
+<meta property="og:title" content="计算机系统工程-08：OCC、HTM 与 MVCC">
 <meta property="og:url" content="https://acannedfish.github.io/2026/10/16/SE3331_08/index.html">
 <meta property="og:site_name" content="aCannedFish&#39;s Home">
-<meta property="og:description" content="事务要求 事务范围 事务（transaction，简称 TX）为一组需要共同处理的数据操作划定边界。例如，转账中的扣款与入账需要共同生效，库存检查与订单建立也需要相互配合。事务处理的数据可以是数据库账户、键值存储记录、目录项、inode，也可以是共享内存中的对象；关键在于明确哪些操作需要按同一组规则提交、隔离和恢复。 程序通常用 begin 标记事务开始，用 commit 请求提交，系统据此识别需">
+<meta property="og:description" content="事务要求 事务范围 事务把需要共同解释的读写放在同一边界内。转账的扣款、入账和记录需要配合，购物的检查库存、扣减与建立订单也一样。数据可以是账户、键值记录、目录项、inode 或共享内存对象。 begin 标记开始，commit 请求提交。一次请求中的参数解析、通信和响应不一定都属于同一事务，边界应依据数据依赖确定。 购物图中若检查余量与扣减分开，两人可能都依据同一库存购买；只扣减不建立订单也会留">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://acannedfish.github.io/img/background11.png">
 <meta property="article:published_time" content="2026-10-16T03:00:00.000Z">
-<meta property="article:modified_time" content="2026-11-02T10:52:27.028Z">
+<meta property="article:modified_time" content="2026-11-02T11:42:59.476Z">
 <meta property="article:author" content="aCannedFish">
 <meta property="article:tag" content="乐观并发">
 <meta property="article:tag" content="硬件事务">
@@ -16,11 +16,11 @@
 <meta name="twitter:image" content="https://acannedfish.github.io/img/background11.png"><script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "BlogPosting",
-  "headline": "计算机系统工程-08：事务机制",
+  "headline": "计算机系统工程-08：OCC、HTM 与 MVCC",
   "url": "https://acannedfish.github.io/2026/10/16/SE3331_08/",
   "image": "https://acannedfish.github.io/img/background11.png",
   "datePublished": "2026-10-16T03:00:00.000Z",
-  "dateModified": "2026-11-02T10:52:27.028Z",
+  "dateModified": "2026-11-02T11:42:59.476Z",
   "author": [
     {
       "@type": "Person",
@@ -157,7 +157,7 @@
   },
   autoDarkmode: false
 }</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
-  title: '计算机系统工程-08：事务机制',
+  title: '计算机系统工程-08：OCC、HTM 与 MVCC',
   isHighlightShrink: false,
   isToc: true,
   pageType: 'post'
@@ -177,21 +177,22 @@
   display: block !important;
 }
 </style>
-</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-08：事务机制&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-08：事务机制</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-16T03:00:00.000Z" title="发表于 2026-10-16 11:00:00">2026-10-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-02T10:52:27.028Z" title="更新于 2026-11-02 18:52:27">2026-11-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="事务要求">事务要求</h2>
+</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-08：OCC、HTM 与 MVCC&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><!-- 移动端汉堡菜单按钮--><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-08：OCC、HTM 与 MVCC</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-16T03:00:00.000Z" title="发表于 2026-10-16 11:00:00">2026-10-16</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-02T11:42:59.476Z" title="更新于 2026-11-02 19:42:59">2026-11-02</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="事务要求">事务要求</h2>
 <h3 id="事务范围">事务范围</h3>
-<p>事务（transaction，简称 TX）为一组需要共同处理的数据操作划定边界。例如，转账中的扣款与入账需要共同生效，库存检查与订单建立也需要相互配合。事务处理的数据可以是数据库账户、键值存储记录、目录项、inode，也可以是共享内存中的对象；关键在于明确哪些操作需要按同一组规则提交、隔离和恢复。</p>
-<p>程序通常用 <code>begin</code> 标记事务开始，用 <code>commit</code> 请求提交，系统据此识别需要共同解释的读取和共同生效的修改。事务范围由业务依赖决定：一次服务请求还可能包含参数解析、网络传输和响应生成，划定边界时应先找出其中相互依赖的数据操作，再安排外部交互与提交的关系。</p>
+<p>事务把需要共同解释的读写放在同一边界内。转账的扣款、入账和记录需要配合，购物的检查库存、扣减与建立订单也一样。数据可以是账户、键值记录、目录项、inode 或共享内存对象。</p>
+<p>begin 标记开始，commit 请求提交。一次请求中的参数解析、通信和响应不一定都属于同一事务，边界应依据数据依赖确定。</p>
+<p>购物图中若检查余量与扣减分开，两人可能都依据同一库存购买；只扣减不建立订单也会留下半笔结果。事务协调这些操作，金额、数量、用户和权限仍由业务正确检查。金融讨论截图只能说明用户关心账户结果，具体故障原因还需交易记录确认。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859250.png" alt="购物订单的提交同时涉及商品数量与订单记录"></p>
-<p>沿购物图中的操作看，程序先检查 <code>item.count&gt;0</code>，再扣减库存，将商品加入购物车或订单。如果检查后允许其他请求插入，两笔请求就可能都依据同一份余量继续购买；如果库存扣减成功，订单却未建立，也会留下不完整业务。事务用于协调这组动作，而具体约束仍由业务表达：库存减少的数量应与订单一致，金额、商品和用户身份也需要分别检查。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859251.png" alt="金融服务异常的公开讨论，用于说明用户对账户结果的要求"></p>
-<p>图中是经过遮挡处理的公开讨论，反映用户对金融服务和账户显示的关注。单凭截图无法判断故障原因。账户系统需要依据可靠交易记录核对结果，让扣款、入账与交易身份保持对应，并处理失败、重试和恢复。</p>
 <blockquote>
 <p>金融应用为什么经常用事务组织转账？只让每次余额写入都完整执行，足够吗？</p>
 <p>解答：</p>
 <p>一笔转账同时涉及扣款、入账和交易记录，需要共同生效；多笔请求还要避免读取和覆盖彼此的中间状态。单次写入完整，只保证那一次访问，整笔业务仍可能只完成一部分。事务边界把这些操作交给共同的提交、隔离与恢复规则。</p>
 </blockquote>
 <h3 id="ACID">ACID</h3>
-<p>ACID 用四个性质描述事务的主要要求。理解时可以分别追问：失败后会留下什么，业务约束是否成立，并发操作可以看到什么，以及成功结果能够承受哪些故障：</p>
+<p>ACID 分别描述原子性、一致性、隔离性和持久性。原子性约束整笔保留或撤销，一致性要求正确事务维护业务约束，隔离性规定并发互相影响的规则，持久性保护已确认结果。</p>
+<p>提交点之前要有回退办法，之后要有足够依据完成，日志和检查点负责相应恢复。数据库能检查声明的约束，应用还需表达库存、金额和权限等条件。这里 C 的业务约束与副本读写一致性模型是不同语境。</p>
+<p>本篇先在无机器故障的内存模型中分析 OCC、HTM 和 MVCC，再将提交与日志保存结合。</p>
 <table>
 <thead>
 <tr>
@@ -223,15 +224,11 @@
 </tr>
 </tbody>
 </table>
-<p>原子性和持久性的日志、提交点与检查点见<a href="/2026/10/10/SE3331_06/">故障原子性</a>。提交点之前要能回退，之后要有足够恢复依据完成事务；收到成功确认后，结果需要保留。</p>
-<p>业务约束及单笔程序正确性见<a href="/2026/10/13/SE3331_07/#%E4%B8%9A%E5%8A%A1%E6%AD%A3%E7%A1%AE%E6%80%A7">并发原子性中的业务正确性</a>。数据库可以检查声明的约束，应用仍需正确表达金额、库存和权限等规则。ACID 中的 C 描述这些业务约束；<a href="/2026/10/08/SE3331_05/">并发一致性</a>讨论的模型则规定读写顺序和可见结果。</p>
-<p>本篇重点解释隔离性的三种实现思路：OCC 在执行后验证，HTM 用硬件跟踪内存访问，MVCC 让读取使用历史快照。下面先按无机器故障的内存读写分析，持久化再与日志协议结合。</p>
 <h2 id="先算再检查">先算再检查</h2>
-<p>把 OCC 想成一次带核对的计算。事务读取 A=100、B=100，在自己的工作区算出 B=200。共享 B 此时仍为 100。提交前，如果 A 和 B 的读取版本都有效，就发布 200；如果别人已经把 A 改为 110，就重新读数并计算 210。重试必须重算，不能只再次发送旧答案 200。</p>
 <h3 id="乐观执行">乐观执行</h3>
-<p>乐观并发控制（Optimistic Concurrency Control，OCC）先允许事务在私有工作区中读取、计算并暂存新值，提交前再检查计算所依赖的读取是否仍然有效。若其他事务已经改变了这些依赖，本次计算就不能直接发布，需要丢弃暂存结果，重新读取并计算。这样，冲突检查集中到提交阶段，业务计算期间通常无需长期持有记录锁。</p>
-<p>“乐观”表示执行阶段先允许工作继续。提交阶段仍需同步，保证通过检查的结果按规定发布。对读多写少、冲突较少的负载，可以减少计算过程中持锁和等待的时间。<a target="_blank" rel="noopener" href="https://www.eecs.harvard.edu/~htk/publication/1981-tods-kung-robinson.pdf">Kung 与 Robinson，1981</a>提出了经典 OCC 方法。</p>
-<p>一次事务分成三阶段：</p>
+<p>OCC 先允许事务读取、计算，将修改暂存在自己的工作区，提交前再检查计算依据是否有效。检查失败就丢弃本次结果，重新读取与计算。</p>
+<p>“乐观”指执行阶段先继续工作，提交仍需同步。读多写少、冲突较低时，可以减少长时间持锁。经典方法由 Kung 与 Robinson 在 1981 年提出。</p>
+<p>三个阶段是执行、验证和发布。发布使新值按协议对别人可见；如果还承诺持久性，成功回复前必须完成相应日志或可靠保存。</p>
 <table>
 <thead>
 <tr>
@@ -258,12 +255,10 @@
 </tr>
 </tbody>
 </table>
-<p>这里的“发布”表示修改开始按协议对其他事务可见。需要持久性时，还要在规定时刻完成日志等可靠保存，才能向用户报告相应的成功。</p>
 <h3 id="读写集合">读写集合</h3>
-<p>读集合保存计算依据，写集合保存计算结果。二者不能混成一张只保留最新值的表。例如事务从 A=100、B=100 算出 B=200，读集合仍须记住“B 原来属于哪个版本”，写集合才保存 200。</p>
-<p>同一事务随后再读 B，应看到自己的 200，才能延续前面的计算；提交验证却要比较首次读取的共享版本。代码因此先查写集合，再查已有读集合，第一次接触共享记录时才调用稳定读取接口。</p>
-<p>为了在计算结束后检查依赖，事务需要保存自己的执行上下文，其中至少包括读集合（read set）和写集合（write set）。前者记录计算依据，后者记录准备发布的修改，两者在提交前都由本事务管理。</p>
-<p>读集合记录本次计算依赖哪些记录、读到它们的哪个版本。写集合记录准备修改哪些记录、最终要写入什么值。例如执行 <code>B=A+B</code>，初始 <code>A=B=100</code>：</p>
+<p>读集合记录读了哪些对象、各自值与版本，写集合记录准备写哪里、最终值是什么。A=B=100，计算 B=A+B 后，读集合保留原 A、B，写集合暂存 B=200，共享 B 仍为 100。</p>
+<p>本事务再次读取 B，应先返回自己的 200，才能继续前面的计算。验证却要保留首次共享读取的原版本，不能用新计算值冒充旧状态。</p>
+<p>代码依次查写集合、已有读集合，再首次读取稳定共享记录。read_stable_record 返回匹配的值与版本，ReadEntry 保存私有读取信息。</p>
 <table>
 <thead>
 <tr>
@@ -282,28 +277,26 @@
 </tr>
 </tbody>
 </table>
-<p>在这个例子中，200 只保存在 T 的写集合里，共享 B 仍为 100，其他事务不能直接读取尚未提交的 200。但 T 自己再次读 B 时，应该优先取得暂存的新值，才能让同一笔业务中的后续计算延续前面的修改，这称为读到自己的写入。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">tx_read</span>(<span class="params">tx, key</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;先读取本事务的暂存写入，再读取共享记录并记住原版本。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> key <span class="keyword">in</span> tx.write_set:</span><br><span class="line">        <span class="keyword">return</span> tx.write_set[key]</span><br><span class="line">    <span class="keyword">if</span> key <span class="keyword">in</span> tx.read_set:</span><br><span class="line">        <span class="keyword">return</span> tx.read_set[key].value</span><br><span class="line"></span><br><span class="line">    value, version = read_stable_record(key)</span><br><span class="line">    tx.read_set[key] = ReadEntry(value=value, version=version)</span><br><span class="line">    <span class="keyword">return</span> value</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">tx_write</span>(<span class="params">tx, key, value</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;暂存新值，保留首次共享读取时记录的版本。&quot;&quot;&quot;</span></span><br><span class="line">    tx.write_set[key] = value</span><br></pre></td></tr></table></figure>
-<p><code>read_stable_record</code> 表示按记录协议取得相互匹配的数据与版本；<code>ReadEntry</code> 是私有的读取记录。写入自己的暂存值时，验证所需的原版本仍应保留，避免把“计算出的新值”误当成“共享存储原来就有的值”。</p>
 <h3 id="稳定读取">稳定读取</h3>
-<p>记录读集合时，数据值与版本号必须对应同一份状态，而它们可能需要分别读取。例如，事务先读到旧值 A=100，另一事务随后提交 A=110，最后才读到新版本 v2。如果将 <code>100,v2</code> 一起记入读集合，验证便可能误以为 100 就是 v2 的内容，接受一笔依赖旧值的计算。</p>
-<p>因此，记录读取需要保证内容、版本和并发状态相互匹配。常见思路是先读元信息，复制内容，再检查一次元信息；记录被其他写入者锁住或版本发生变化时，重新读取。也可以使用其他能取得稳定记录的接口。</p>
+<p>值与版本可能在不同时间读取。若先读旧 A=100，另一事务提交 A=110、版本 v2，再读版本得到 v2，就错误组合出 (100,v2)。后续检查 v2 不变，反而会接受旧值计算。</p>
+<p>因此先读版本和锁状态，再复制内容，再检查元信息。遇到安装中的记录或版本变化就重试，只有前后匹配且可读时才返回。</p>
+<p>实际实现还需要原子元信息、正确内存顺序和安全复制，不能仅靠普通多字节变量反复读保证同步。输出、网络等外部效果也应与提交配合，才能在验证失败时安全重算。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 概念流程；元信息访问和内容复制需符合语言、硬件的同步规则。</span><br><span class="line">重复：</span><br><span class="line">    before = 读取记录的版本和锁状态</span><br><span class="line">    如果有写入正在安装：重试或等待</span><br><span class="line">    value = 安全复制记录内容</span><br><span class="line">    after = 再读取版本和锁状态</span><br><span class="line">    如果 before 与 after 匹配且记录可读：</span><br><span class="line">        返回 value 和对应版本</span><br></pre></td></tr></table></figure>
-<p>这段代码表达稳定读取的条件。实际多字节对象不能靠普通变量反复读取自动取得正确同步，还需由数据库记录格式、原子元信息和内存顺序提供保证。事务输出等有外部效果的动作应在相应提交决定之后执行，验证失败时才能安全地重新计算。</p>
 <blockquote>
 <p>为什么“读取数据，再把它记入读集合”需要取得一份稳定记录？</p>
 <p>解答：</p>
 <p>其他事务可能同时安装新内容。若值来自旧版本、验证标记来自新版本，就会错误地接受基于旧值的计算。读取接口应返回相互对应的值、版本和有效状态，并让原版本保留到提交验证。</p>
 </blockquote>
 <h3 id="提交检查">提交检查</h3>
-<p>一种便于分析的 OCC 实现，用一把全局提交锁共同保护验证与发布。事务计算完后先取得锁，逐项比较读集合中保存的版本；全部匹配，才将写集合安装到共享存储。锁的作用是防止其他提交者在“检查有效”与“发布结果”之间插入修改。</p>
+<p>最简单的提交协议用一把全局锁覆盖验证与发布。取得锁后，逐项比较读集合版本，全部有效才安装写集合并推进版本。</p>
+<p>所有写入者必须遵守共同规则，读取者使用稳定读取接口。验证失败时尚未写入本事务新值，可以丢弃私有集合；离开临界区后释放锁。</p>
+<p>业务计算仍并发进行，全局锁只覆盖较短的检查与安装。它防止另一提交者插入“刚检查有效、尚未发布”的间隔。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">validate_and_commit</span>(<span class="params">tx, store</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;在共同提交范围内验证依赖，并发布全部暂存写入。&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">with</span> store.commit_lock:</span><br><span class="line">        <span class="keyword">for</span> key, old <span class="keyword">in</span> tx.read_set.items():</span><br><span class="line">            <span class="keyword">if</span> store.version(key) != old.version:</span><br><span class="line">                <span class="keyword">return</span> ABORTED</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> key, new_value <span class="keyword">in</span> tx.write_set.items():</span><br><span class="line">            store.install_new_value_and_version(key, new_value)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> COMMITTED</span><br></pre></td></tr></table></figure>
-<p>代码使用抽象的记录接口，假定所有写入者都遵守共同提交规则，读取者遵守稳定读取规则。失败时尚未向共享存储安装任何本事务的新值，因此可以丢弃私有集合；离开代码块时释放提交锁。</p>
-<p>业务计算仍可由多个事务并发执行。全局锁只覆盖版本验证和修改发布，不覆盖计算的全部过程；短事务的提交工作较少时，这个互斥范围通常也较短。</p>
 <h3 id="验证间隔">验证间隔</h3>
-<p>验证只说明检查当时的读取仍然有效。如果检查结束后没有继续保护依赖，另一提交者就可能先修改数据，本事务却仍按旧计算发布。下面的图将验证 V 与写入 W 分开，展示这种间隔如何造成丢失更新。</p>
+<p>初始 A=B=1，两笔都做 A+=1、B+=1，完整执行两次应为 3、3。如果两笔都先读到 1、算出 2，再都在任何写入前验证，检查都会通过，最后却各写入 2，丢失一次增加。</p>
+<p>图中的 R、V、W 分别是读取、验证和写入。加上共同提交锁后，第一笔发布 2，第二笔才验证，发现原版本变化并中止。它重试后读 2、算 3，再提交；只重发旧写集合 2 不能修复问题。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859237.png" alt="两笔事务都先验证旧值，再各自安装 2，丢失了一次增加"></p>
-<p>图中 R 为读，V 为验证，W 为写。初始 <code>A=B=1</code>，T1、T2 都要执行 <code>A+=1;B+=1</code>。每笔完整执行一次，两个数最终都应为 3。</p>
 <blockquote>
 <p>两笔事务都先读到 A=B=1，计算出各自的暂存结果 2；随后都在任何发布之前完成验证，再依次发布。最终是多少，问题出在哪里？</p>
 <p>解答：</p>
@@ -311,11 +304,11 @@
 <p>验证及其保护下的发布需要共同协调。使用全局提交锁时，一笔事务完成发布后，另一笔才验证；后者会发现版本改变并重试。</p>
 </blockquote>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859239.png" alt="共同提交锁让第二笔事务验证失败，避免直接覆盖第一笔结果"></p>
-<p>T1 发布后 A、B 为 2。T2 从头重试，重新读到 2、计算 3，再验证和发布。注意重试要重新读取、重新计算，不能只把旧写集合再次提交。</p>
 <h3 id="版本变化">版本变化</h3>
-<p>提交时可以比较数据值，也可以比较版本号，但两者回答的问题不同。值相同只说明当前内容与原来一致，版本相同还要求期间没有发生相应的已提交更新。下图中的 A 从 1 变为 2、又回到 1，用来说明为什么单看数值可能遗漏中间修改。</p>
+<p>比较当前值与比较版本，是两种不同检查。图中 A 从 1 变为 2，又由另一事务改回 1，旧事务只比较 1 会看不见中间修改。这称为 ABA。</p>
+<p>版本从 v0 推进到 v1、v2，则能记录更新已经发生。每次相应更新都要推进版本，编号溢出或复用也要有规则。</p>
+<p>图中的冲突依赖不能都对应同一个冲突串行顺序，但这个特定整数结果仍可能由 T2、T3、T1 得到。版本验证维护的是原读取未被相关提交改变这一条件，数值相等不等于同一版本。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859238.png" alt="A 经历 1 到 2 再到 1，较早读取 A 的事务仅比较整数时看不见中间修改"></p>
-<p>图中 T1、T2 都执行 <code>A+=1</code>，T3 执行 <code>A=1</code>。初始 A=1：</p>
 <table>
 <thead>
 <tr>
@@ -352,20 +345,16 @@
 </tr>
 </tbody>
 </table>
-<p>这个“原来是 A、变成 B、后来又回到 A”的现象称为 ABA 问题。只比较整数 1，T1 无法发现中间已提交两次修改；比较 v0 与 v2，就能发现它的原版本已过期。版本应在相应更新后推进，并处理编号复用或溢出的规则。</p>
-<p>图中的冲突环表示，原先那些读取和写入的依赖不能全部对应同一个串行顺序。若只观察整数结果，这个特定例子仍能按 T2、T3、T1 得到相同数值；版本验证所检查的是“读取之后没有发生过相关已提交修改”这一更具体的条件。数据值相等和同一版本各有明确含义。</p>
 <blockquote>
 <p>比较原值和比较版本会拒绝完全相同的调度吗？图中 T1 分别会看到什么？</p>
 <p>解答：</p>
 <p>比较原值时，T1 看到 <code>1=1</code>，会通过；比较版本时，看到 <code>v0≠v2</code>，会中止。版本标记保留修改历史，适合实现本节要求原读取保持有效的验证规则。</p>
 </blockquote>
 <h3 id="提交粒度">提交粒度</h3>
-<p>全局提交锁让所有提交共用一个互斥范围，即使两笔事务修改完全不同的记录，也要排队。缩小提交粒度时，可以改为按记录加锁，让提交只占用相关对象。不过，锁范围缩小后，验证也必须检查其他事务已经建立的并发状态。</p>
-<p>一个直接方案是按统一顺序取得 <code>read_set∪write_set</code> 中全部记录的锁，验证完读集合后，安装写集合，最后释放。集合要去重，固定顺序用来避免循环取锁；基本规则见<a href="/2026/10/13/SE3331_07/#%E4%B8%A4%E9%98%B6%E6%AE%B5%E9%94%81">两阶段锁与死锁</a>。</p>
-<p>进一步优化只锁写集合，读集合由版本验证保护。不过，验证还要检查相关记录有没有被其他事务锁住、准备发布。</p>
+<p>全局锁让无关记录的提交也等待。可先按共同顺序锁住读写集合的并集，去重后验证并安装，最后释放。共同顺序避免循环申请。</p>
+<p>进一步只锁写集合时，读集合要同时验证版本与外部锁状态。图中 T1 做 A+=B、只锁 A，T2 做 B+=A、只锁 B；初始都读 1、1，如果忽略对方锁，两者都可能写成 2、2。</p>
+<p>串行 T1→T2 应为 2、3，反向应为 3、2，所以 2、2 没有合法解释。另一事务已持写锁、尚未推进版本，也意味着相关提交正在发生。验证应识别锁所有者，自己的写锁不作为外部冲突。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859240.png" alt="T1 只锁 A，T2 只锁 B，若忽略对方的锁，两者可能同时通过旧读取验证"></p>
-<p>图中 T1 执行 <code>A+=B</code>，T2 执行 <code>B+=A</code>。设初始 A=B=1，两者都先读到 1、1。T1 只锁 A，T2 只锁 B，两个目标锁不同；若仅比较尚未改变的版本，两者都能通过，再分别发布 A=2、B=2。</p>
-<p>但先 T1 后 T2 应为 A=2、B=3，先 T2 后 T1 应为 A=3、B=2。2、2 没有相应的串行解释。两个事务都读取了对方即将覆盖的旧数据，形成双向依赖。</p>
 <blockquote>
 <p>只锁写集合以后，对读集合只检查版本够吗？应该怎样处理已经由其他提交者锁住的记录？</p>
 <p>解答：</p>
@@ -373,13 +362,14 @@
 <p>自己已经持有的写锁需要按所有者识别。既在读集合又在写集合中的记录，由本事务自己的锁保护，验证它原来的版本，不能把自己的锁当成外部冲突。</p>
 </blockquote>
 <h3 id="记录验证">记录验证</h3>
-<p>将写集合加锁与读集合验证结合起来，可以得到下面的简化流程。重点是同时检查版本和锁状态，并在失败路径上清理本次持有的资源：</p>
+<p>提交先按固定顺序取得不同写对象的锁，再检查全部原版本和其他提交者的冲突锁。失败释放已持锁、丢弃结果并重新执行；成功安装新值、推进版本并发布，再解锁。</p>
+<p>所有访问者都要遵守相同记录协议，包括元信息读取与内存发布顺序。范围查询、索引和插入还要保护相应依赖。</p>
+<p>OCC 的执行阶段不长期持锁，并不表示任何实现都不可能死锁。提交时逐把加锁仍需统一顺序，成功与失败路径都要清理。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># 省略持久化，只说明数据记录的并发提交条件。</span><br><span class="line">按固定顺序取得写集合中各个不同记录的锁</span><br><span class="line">验证全部读取：</span><br><span class="line">    原版本仍然匹配</span><br><span class="line">    记录没有被其他提交者以冲突方式锁住</span><br><span class="line">若失败：</span><br><span class="line">    释放本事务持有的全部锁，丢弃私有修改，重新执行</span><br><span class="line">若通过：</span><br><span class="line">    安全安装全部新值，推进版本，发布相应状态</span><br><span class="line">    按协议释放锁</span><br></pre></td></tr></table></figure>
-<p>所有写入者都要遵守记录锁、版本推进和发布规则。验证时读取锁与版本的方式、发布新内容的内存顺序，也属于协议的一部分。上面的步骤用于说明依赖条件；成熟系统还要保护索引、范围查询和新记录插入等访问。</p>
-<p>读阶段不长期持有记录锁，因此在本节模型中避免了业务计算过程中持锁等待。不过，若提交时逐把取锁且没有共同顺序，OCC 同样可能发生死锁。成功与失败路径都需要释放已取得的锁。</p>
 <h2 id="减少锁开销">减少锁开销</h2>
 <h3 id="只读成本">只读成本</h3>
-<p>OCC 对只读访问的一项潜在收益，是减少为了同步而修改共享状态的次数。2PL 通常需要取得相应锁、读取内容再释放锁，取锁经常使用原子读改写，释放也会修改锁状态。OCC 在低冲突路径中主要读取数据，提交时再检查版本与锁状态。因此，比较成本时应同时看业务数据访问和同步元信息的读写。</p>
+<p>2PL 的只读路径也要取得和释放相应锁，可能包含原子读改写和共享锁状态写入。OCC 低冲突路径主要读值与版本，之后再读元信息验证。</p>
+<p>表格比较的是共享同步工作的差别，具体指令数取决于锁模式与记录实现。下面先解释锁使用的原子操作，再看它为何可能比普通缓存读取贵。</p>
 <table>
 <thead>
 <tr>
@@ -398,51 +388,43 @@
 </tr>
 </tbody>
 </table>
-<p>记录采用读锁还是互斥锁、如何复制内容，会改变具体指令数。这张表说明的是同步方式和共享写入量的区别。理解为什么一次取锁可能更贵，需要先看硬件的原子操作。</p>
 <h3 id="原子交换">原子交换</h3>
-<p>锁本身也需要避免并发竞态。设状态 0 表示空闲，1 表示已持有；如果普通代码先读状态、看到 0 后再写 1，两个线程就可能同时读到 0，并分别认为自己取得了锁。因此，判断空闲与占用锁状态必须由能够保证原子性的操作共同完成。</p>
-<p>比较并交换（compare-and-swap，简称 CAS）把比较与条件修改作为一个原子操作。其含义可以写为：</p>
+<p>若锁状态 0 为空闲、1 为持有，普通“读到 0 再写 1”可能被两个线程同时完成，双方都以为拿到了锁。</p>
+<p>CAS 将比较与条件修改作为一个原子操作：值等于 expected 才改成 desired。用它从 0 改到 1，同一次状态变化只有一个竞争者成功。不同语言接口可能返回成功布尔值或更新 expected。</p>
+<p>x86 常用带 LOCK 前缀的内存 CMPXCHG 实现跨核原子读改写。用普通读取、比较和赋值写出相似源代码，不会自动具有原子性。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 这是硬件操作的语义描述，整个过程须由原子原语保证。</span><br><span class="line">old = *ptr</span><br><span class="line">如果 old == expected：</span><br><span class="line">    *ptr = desired</span><br><span class="line">返回 old</span><br></pre></td></tr></table></figure>
-<p>用它把 <code>flag</code> 从 0 改为 1 时，只有一个线程能在这次状态变化上成功。其他线程取得的旧值为 1，于是继续等待。CAS 的不同语言接口可能返回布尔成功标记，或把实际值写回 expected，使用时要依据具体接口。</p>
-<p>x86 通常用带 <code>LOCK</code> 前缀的内存 <code>CMPXCHG</code> 完成这种跨核心原子读改写；其他体系结构也有相应原语。源代码中写出相同的普通读、比较和赋值，并不会自动取得这些保证。<a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html">Intel 指令手册</a></p>
 <h3 id="自旋锁">自旋锁</h3>
-<p>自旋锁让未取得锁的线程在循环中继续尝试，不立即进入阻塞等待。下面使用 C11 原子对象实现 0 到 1 的状态转换，同时为取得与释放指定内存顺序，使锁还能协调临界区数据的可见性：</p>
+<p>自旋锁未取得时继续循环尝试。代码使用 C11 原子对象，每轮把 expected 设为 0，成功才访问临界区。</p>
+<p>compare_exchange_weak 可以出现需要重试的失败，因此放在循环中。成功 acquire 与释放 release 配合，使临界区数据对后续持有者正确可见；释放只需符合顺序的原子 store。</p>
+<p>这个示例省略退避与让出 CPU。临界区长或持有者暂停时，忙等会消耗资源，应结合持锁时间和调度选择自旋或阻塞。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdatomic.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 用 0/1 原子状态协调互斥访问；等待者持续尝试。 */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="type">atomic_int</span> flag;</span><br><span class="line">&#125; <span class="type">spin_lock_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 初始化应在锁被其他线程访问之前完成。 */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">spin_init</span><span class="params">(<span class="type">spin_lock_t</span> *lock)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">atomic_init</span>(&amp;lock-&gt;flag, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 成功的 acquire 与前一持有者的 release 配合发布临界区数据。 */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">spin_acquire</span><span class="params">(<span class="type">spin_lock_t</span> *lock)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="type">int</span> expected = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (atomic_compare_exchange_weak_explicit(</span><br><span class="line">                &amp;lock-&gt;flag,</span><br><span class="line">                &amp;expected,</span><br><span class="line">                <span class="number">1</span>,</span><br><span class="line">                memory_order_acquire,</span><br><span class="line">                memory_order_relaxed)) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 释放时把空闲状态发布给后续取得锁的线程。 */</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">spin_release</span><span class="params">(<span class="type">spin_lock_t</span> *lock)</span></span><br><span class="line">&#123;</span><br><span class="line">    atomic_store_explicit(&amp;lock-&gt;flag, <span class="number">0</span>, memory_order_release);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><code>compare_exchange_weak</code> 可能要求重试，因此放在循环里；每轮重新设置 expected=0。取锁成功后，线程才访问受保护数据。释放使用原子 store 即可，仍需满足正确的发布顺序。</p>
-<p>这个实现便于理解，不包含退避、让出 CPU 或其他优化。临界区很长、持有者被暂停时，忙等会消耗执行资源；选择自旋或阻塞式等待，需要结合持锁时间与调度条件。</p>
 <h3 id="同步开销">同步开销</h3>
+<p>历史图示中，L1 读取约 1 ns、分支预测错误约 3 ns、L2 读取约 4 ns、mutex 加解锁对约 17 ns、主存约 100 ns。它们表示一组量级，不是所有平台的固定延迟。</p>
+<p>原子读改写通常还要协调缓存行所有权，多核争用同一锁会反复转移状态。减少只读路径上的共享写入因此可能有收益，但仍要把验证、重试与提交总成本一起计算。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859241.png" alt="历史延迟示意中，L1 读取约 1 ns，mutex 加解锁对约 17 ns"></p>
-<p>图中给出某组历史示意数值：L1 缓存读取约 1 ns，分支预测错误约 3 ns，L2 读取约 4 ns，mutex 加解锁一对约 17 ns，主存读取约 100 ns。它们用于说明数量级，实际数值随处理器、缓存状态和争用改变。</p>
-<p>从缓存层面看，原子读改写通常还需要协调缓存行的所有权。多个核反复争用同一锁时，对锁状态的修改会引起更多跨核协调，成本可能超过单次本地缓存读取。因此，减少只读记录上的同步写入可以成为 OCC 的优化方向；是否划算仍要计入验证、重试和发布的完整成本。</p>
 <h3 id="提交次序">提交次序</h3>
-<p>下面用两笔事务跟踪版本验证与提交顺序，设初始 A=B=100。两者开始时都读取旧状态，但准备修改不同对象：</p>
-<ul>
-<li>T1 计算 <code>B=A+B</code>，读集合包含 A=100、B=100，写集合准备 B=200。</li>
-<li>T2 计算 <code>A=A×1.1</code>，读集合包含 A=100，写集合准备 A=110。</li>
-</ul>
-<p>这里按示例的精确十进制数计算，实际货币程序还要使用合适的金额表示。</p>
+<p>初始 A=B=100，T1 读取两者，暂存 B=200；T2 读取 A，暂存 A=110。按示例使用精确十进制，真实金额也要选择合适表示。</p>
+<p>图中 T2 先提交 A=110，T1 再检查时发现原 A 过期，丢弃 B=200。重试读到 A=110、B=100，计算 B=210，成功顺序对应 T2→T1。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859242.png" alt="T2 先提交 A=110，T1 随后发现 A 的原读取已经过期"></p>
-<p>T2 先进入提交范围，A 的原版本仍匹配，可以发布 A=110。T1 随后验证时，发现它曾读取的 A 已更新，丢弃暂存的 B=200。重试 T1 会读到 A=110、B=100，重新计算 B=210。</p>
-<p>这套验证自然地把后来成功重试的 T1 排在 T2 之后。它维护了一个具体的可串行化顺序，同时可能限制其他原本也合法的排列。</p>
 <h3 id="保守中止">保守中止</h3>
+<p>同一组原读取也存在另一种合法排列：T1 先用 100、100 写 B=200，T2 再写 A=110，最后为 110、200。依赖只有 T1→T2，没有环。</p>
+<p>但当前版本验证因 T2 已先发布而拒绝旧 T1，这称为 false abort 或保守中止。协议选用更容易检查的条件，可能拒绝其他排列下仍合法的执行。</p>
+<p>读取越多、运行越久，被修改的机会通常越大，重试要丢弃更多已做工作。高冲突时还需安排退避、优先级和完成机会，避免活锁或饥饿。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859243.png" alt="同一个例子只产生 T1 指向 T2 的依赖，原计算其实可按 T1、T2 排列"></p>
-<p>回到同一组读取和暂存写入，检查是否还存在别的合法串行解释。若将 T1 排在 T2 前，T1 根据 A=B=100 把 B 改为 200，T2 再将 A 改为 110，最终为 A=110、B=200。T1 读取旧 A 产生 <code>T1→T2</code> 的依赖，但没有反方向的冲突，因此图中的依赖图无环。</p>
-<p>但本节这套按提交时的当前版本检查依赖的 OCC，会因 T2 先发布 A 而拒绝原 T1。这称为保守中止或误中止（false abort）：协议拒绝了一个按更灵活顺序仍可接受的执行。这个说法针对该协议选择的检查条件。</p>
 <blockquote>
 <p>上例为什么可以中止 T1，又称它为误中止？T1 重试后得到的 B=210，与原本可接受的 B=200 各对应什么顺序？</p>
 <p>解答：</p>
 <p>原 T1 的 A 版本已经变化，按本算法应中止；若另选 T1→T2 的顺序，原来的 B=200 也有合法解释，因此称为保守拒绝。重试后的 B=210 对应 T2→T1；B=200 对应 T1→T2。两种结果各自依赖一个完整的串行顺序。</p>
 </blockquote>
-<p>读取记录越多，执行时间越长，读集合中某一项被其他事务修改的机会通常越大。重试要丢掉这段已经完成的计算；冲突频繁时，同一笔事务可能反复失败。需要结合重试调度和完成机会处理活锁、饥饿，基本区别见<a href="/2026/10/13/SE3331_07/#%E9%87%8D%E8%AF%95%E6%B4%BB%E6%80%A7">重试活性</a>。</p>
 <h3 id="冲突负载">冲突负载</h3>
+<p>图横轴是并发事务数，纵轴是吞吐，没有完整数值刻度。低争用时 OCC 少持锁，热点增加后，验证失败和重复计算占用资源，成功吞吐下降。2PL 等锁也有成本，但可以避免先做很多工作再丢弃。</p>
+<p>并发数本身不等于冲突程度。访问不同记录可继续并行，集中修改热点才增加争用。应测量集合大小、执行时间、热点、提交成功率和完成事务的总成本。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859244.png" alt="并发事务增加时，OCC 在低争用处较高，争用加重后下降更明显"></p>
-<p>图的横轴是并发事务数，纵轴是成功事务吞吐量，没有完整数值刻度，用于说明负载趋势。低冲突时，OCC 减少业务计算期间的持锁与等待；热点争用增加后，更多计算在验证时失败，回滚和重做占用了资源，却没有增加成功提交量。2PL 需要等待锁，但也可能避免先完成大量计算再将其丢弃。</p>
-<p>并发数本身没有决定冲突程度。如果事务始终访问不同对象，增加并发可以继续分担工作；若都修改少数热点，等待或重试会更明显。选择方案要测量读写集合大小、执行时间、热点分布、成功提交率和完成事务的总成本。</p>
 <h2 id="硬件支持">硬件支持</h2>
 <h3 id="硬件事务">硬件事务</h3>
-<p>硬件事务内存（Hardware Transactional Memory，HTM）将部分事务跟踪工作交给处理器。程序标出一段事务区域，CPU 记录其中的内存读写，并尝试让它们作为一个整体提交；发生冲突或硬件资源不足时，则中止这次尝试并撤销相应事务性修改。它与软件 OCC 一样包含试探执行和冲突处理，但使用了硬件提供的跟踪与回滚机制。</p>
-<p>Intel 的 RTM 是 Restricted Transactional Memory，属于 Intel TSX 的接口之一，最早出现在支持该功能的 Haswell 产品中。其他体系结构也提出过相应机制，例如 Arm TME；具体处理器、系统和指令接口需要分别确认。</p>
-<p>RTM 的基本指令为：</p>
+<p>HTM 由处理器跟踪事务区域内的内存读写，尝试整体提交，冲突或资源不足则撤销本次事务性修改。它把部分记录与检测工作交给硬件。</p>
+<p>Intel RTM 属于 TSX 接口，最早见于支持它的 Haswell 产品。XBEGIN 开始并指定失败路径，XEND 尝试提交，XABORT 主动中止。失败时恢复相应寄存器与事务写入，_xbegin 状态帮助决定是否重试。</p>
+<p>HTM 保护内存访问，不自动提供数据库落盘持久性，也无法撤销已经发送的网络或设备 I/O。Arm TME 等体系结构有自己的机制，具体支持要按平台确认。</p>
 <table>
 <thead>
 <tr>
@@ -465,29 +447,20 @@
 </tr>
 </tbody>
 </table>
-<p>事务成功开始后，代码可以按普通内存访问的形式读取和修改受保护数据。中止时，CPU 撤销这次区域内的事务性写入和相应寄存器状态，再进入失败处理分支。<code>_xbegin</code> 返回的状态帮助程序判断是否进入事务、是否适合重试。</p>
-<p>这种原子性保护内存执行中的相关访问。数据库还需要日志等持久化规则；网络发送、设备 I/O 等外部效果也不能靠这段内存回滚随意撤销。因此事务区域应选择适合这种执行方式的代码。<a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/articles/technical/transactional-memory-speculative-spin-mutex-tbb.html">Intel RTM 说明</a></p>
 <h3 id="硬件冲突">硬件冲突</h3>
+<p>图中 CPU 0 进入事务，读取 x=0，所在缓存行进入读集合。CPU 1 在区域外写 x=1，冲突使 CPU 0 的尝试中止，尚未提交的事务写入撤销，并转到 fallback。</p>
+<p>CPU 1 的 x=1 保留，也没有自动加入 CPU 0 的事务。具体争用处理由硬件决定，区域外的多步业务仍需自己的同步。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859245.png" alt="CPU 0 的事务读取 x 后，CPU 1 在区域外写 x，引起事务中止"></p>
-<p>图中 x 最初为 0：</p>
-<ol>
-<li>CPU 0 执行 <code>_xbegin</code>，进入事务区域，读取 x=0。</li>
-<li>x 所在缓存行进入硬件读集合。</li>
-<li>CPU 1 在事务区域之外执行 x=1。</li>
-<li>硬件检测到冲突，让 CPU 0 的这次事务尝试中止。</li>
-<li>CPU 0 进入 fallback 分支，之前尚未提交的事务性修改被撤销；CPU 1 的 x=1 保留。</li>
-</ol>
-<p>沿图中的红叉看，触发中止的是 CPU 1 对事务已读缓存行的写入，普通写入者无需等 CPU 0 的事务完成。检测到冲突后怎样处理争用、选择中止者，由具体硬件实现决定。区域外的这次写入继续保留；如果它也是一组多步业务的一部分，那组业务仍需自己的同步安排。</p>
 <blockquote>
 <p>另一个线程在 RTM 区域之外写入 x，会自动被纳入同一笔事务吗？</p>
 <p>解答：</p>
 <p>该写入属于另一个执行过程。图中它改变了当前事务已经读取的缓存行，引起事务中止；它自己的写入仍生效。事务的失败处理随后决定重试或采用其他同步路径。</p>
 </blockquote>
 <h3 id="失败处理">失败处理</h3>
-<p>RTM 提供尽力而为的事务执行，架构并不承诺一段代码最终一定能以硬件事务方式成功。有些失败来自暂时冲突，重试可能成功；另一些失败来自容量或执行条件，原样重试仍可能继续失败。因此，程序不能只依赖无限重试来保证业务完成。</p>
-<p>一种常见方法是有限次尝试后，回到保证能够推进的普通加锁路径。事务快速路径也要读取并检查同一把后备锁，让它与慢路径共同协调。</p>
+<p>RTM 不保证某段代码最后一定成功。暂时冲突可能重试成功，容量或执行条件导致的失败可能一直重复，所以程序需要正确的后备路径。</p>
+<p>常见做法是最多尝试 K 次，状态不适合重试时提前结束，再取得普通锁执行同一业务。事务路径也必须读取后备锁，发现已持有就主动中止。</p>
+<p>读取锁把它纳入硬件读集合，后备路径取锁改变该状态时，能够与事务路径形成冲突。若快速路径完全忽略后备锁，两条路径就缺少共同保护。平台不支持或禁用 RTM 时直接采用后备路径。</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># 逻辑流程；具体代码需使用编译器支持的 RTM 和锁接口。</span><br><span class="line">最多尝试 K 次：</span><br><span class="line">    status = xbegin()</span><br><span class="line">    如果成功进入事务：</span><br><span class="line">        读取后备锁状态；已被持有时主动 xabort</span><br><span class="line">        执行业务的内存操作</span><br><span class="line">        xend()</span><br><span class="line">        返回成功</span><br><span class="line">    若状态表明不宜继续事务重试：</span><br><span class="line">        结束尝试</span><br><span class="line"></span><br><span class="line">取得后备锁</span><br><span class="line">执行同一组业务操作</span><br><span class="line">释放后备锁</span><br><span class="line">返回结果</span><br></pre></td></tr></table></figure>
-<p>这里的 K 是重试上限。RTM 可用性要在相应平台上确认，不支持或被禁用时直接走后备路径。快速、后备和其他相关访问路径还要共同遵守同步规则。</p>
 <blockquote>
 <p>为什么快速路径必须读后备锁？只在多次失败后取得锁就够吗？</p>
 <p>解答：</p>
@@ -495,47 +468,39 @@
 <p>这样两条路径共享同一套互斥条件。只有后备路径使用锁、快速路径完全忽略锁时，二者的业务可能不受同一规则协调。<a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/articles/community/tsx-fallback-paths.html">Intel 后备路径说明</a></p>
 </blockquote>
 <h3 id="缓存跟踪">缓存跟踪</h3>
-<p>HTM 可以理解为硬件支持的乐观执行：先跟踪读取与暂存写入，再利用冲突检测决定能否提交。缓存记录事务访问的行，缓存一致性协议则让处理器知道其他核心是否正在取得冲突访问权限。下面的图展示这一检测怎样发生。</p>
-<p>缓存行是一小段由硬件共同管理的内存内容。一个核想写某行时，需要取得相应的写入权限；其他核可能收到使该行失效等一致性消息。</p>
+<p>缓存一致性协议让核心协调同一缓存行的读写权限，HTM 利用其中信息检测事务冲突。图中 CPU 0 读 x 后记录读集合，CPU 1 请求写入权限，失效消息命中 CPU 0 的事务读取，触发中止。</p>
+<p>事务写集合也需要保存暂存内容与跟踪状态，成功时再发布。图中 read-bit 是概念表示，内部实现随处理器变化。粒度为缓存行，因此不同字段位于同一行也可能产生额外冲突。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859246.png" alt="另一个核请求写入权限，一致性消息命中事务读集合，引发中止"></p>
-<p>图中 CPU 0 读取 x 后，本地缓存将其标为共享状态，并记录它属于当前事务的读集合。CPU 1 想写 x，要求取得对应行的独占权限；失效消息到达 CPU 0，命中读集合标记，CPU 0 中止事务。</p>
-<p>暂存写入同样需要硬件保存追踪状态，并在提交时按规定发布。缓存行中的 read-bit 等框表示概念上的事务跟踪信息，具体内部结构因处理器而异。追踪以缓存行为单位，还可能让访问同一行不同字段的线程发生额外冲突。</p>
 <h3 id="容量限制">容量限制</h3>
-<p>硬件跟踪资源有限，因此 HTM 能容纳的事务大小也有限。工作集指本次事务读取或写入涉及的数据范围；范围越大，越需要保留更多事务状态。下图分别测量读集合与写集合，二者的限制可能不同。</p>
+<p>硬件跟踪资源有限，事务工作集太大可能中止。图横轴为工作集大小，纵轴为中止率，使用非线性刻度。Haswell 时代该实验标出写集合约 31 KB、读集合约 4 MB。</p>
+<p>写集合需要保存尚未提交的数据，读集合主要保留冲突检测信息，因此容量不同。L1、其他缓存层、关联度、地址分布和其他运行工作都会影响可用空间，不能直接用总缓存大小当作每笔事务的保证。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859247.png" alt="历史 Haswell 测试中，写集合与读集合的容量限制不同"></p>
-<p>横轴是工作集大小，纵轴是中止率，两者都采用非线性的刻度。图中标出写集合约 31 KB、读集合约 4 MB 的历史测试结果。随着集合增大，中止率上升；写集合更早达到图示限制。</p>
-<p>写集合需要暂存尚未提交的修改，读集合需要保留检测冲突的状态。图示实现把事务写入与 L1 缓存容量联系起来，读集合的跟踪还能利用其他缓存层级。缓存容量、关联度、地址分布和同时运行的工作都会影响结果，不能直接把总缓存大小当成每笔事务一定可用的空间。</p>
-<p>这些数值来自特定 Haswell 时代实验，作用是说明硬件追踪资源有限，不构成所有处理器的统一事务容量保证。<a target="_blank" rel="noopener" href="https://ipads.se.sjtu.edu.cn/zh/publications/WangEuroSys14.pdf">Wang 等，EuroSys 2014</a></p>
 <h3 id="执行时长">执行时长</h3>
+<p>图中事务从微秒运行到毫秒，中止率随时间增长，长事务接近 100%，标出约 3.9 ms 的实验点。</p>
+<p>运行越久，遇到中断、调度、缓存状态变化和冲突的机会越多，某些指令或事件也会直接中止。这里的时长不是统一架构上限。RTM 区域宜控制工作集和执行时间，等待网络等长过程需要按其他路径安排。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859248.png" alt="事务运行时间增加时，中止率逐渐升高，图中标出约 3.9 ms 的测试结果"></p>
-<p>这张图把关注点从事务大小转向执行时长：横轴从微秒增长到毫秒，纵轴为中止率。图示实验中，长事务的中止率接近 100%，并标出约 3.9 ms。这说明该实验环境下持续执行较长时间的事务难以成功，但不能把 3.9 ms 当成所有处理器统一规定的时间上限；结果还取决于平台、执行事件和访问方式。</p>
-<p>事务越长，遇到中断、调度、缓存状态变化或其他冲突的机会通常越多。某些指令和事件本身也会引起中止。适合 RTM 的代码应尽量保持内存工作集和执行时间可控，避免把等待网络或设备响应的长过程直接放进区域。</p>
-<p>失败后的后备路径仍要保持业务正确，并能够在这些条件下继续运行。成功路径较快与整体程序能够稳定完成，需要一起评估。</p>
 <h3 id="负载差异">负载差异</h3>
+<p>两图都按线程数比较每秒百万事务，但纵轴范围不同。SmallBank 中图示 HTM 增长较快，TPC-C 中软件 OCC 系统 Silo 更高，不能跨图直接比较线的高度。</p>
+<p>SmallBank 多为短账户操作，TPC-C 订单访问多条商品、库存和明细，集合与控制流程更复杂，容量及中止成本可能更明显。Silo 是 SOSP 2013 的多核内存数据库，这组比较针对当时系统和配置。</p>
+<p>HTM 成功时减少显式软件跟踪，失败处理和后备协调仍有成本。选用时应按真实业务比较完整执行。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859249.png" alt="SmallBank 与 TPC-C 两类实验中，HTM 与软件 OCC 的性能关系不同"></p>
-<p>比较这两张吞吐图时，先注意纵轴范围不同：横轴都是线程数，纵轴都是每秒百万事务，不能直接按曲线高度跨图比较。左图 SmallBank 中，HTM 随线程增加增长较快；右图 TPC-C 中，软件 OCC 系统 Silo 取得更高吞吐，而图示 HTM 方案的增长有限。同一种硬件机制在不同业务中可能表现不同。</p>
-<p>SmallBank 包括较短的账户操作。TPC-C 的新订单等业务会访问多条商品、库存与订单明细，读写集合和控制流程更复杂，硬件容量及中止成本更容易产生影响。图示结果说明硬件支持仍需与负载特点配合。</p>
-<p>Silo 是 SOSP 2013 提出的内存数据库，使用面向多核的 OCC 提交协议。这里的比较针对图中的系统版本和配置，不能据此给所有软件 OCC 与 HTM 排出固定优劣顺序。<a target="_blank" rel="noopener" href="https://read.seas.harvard.edu/~kohler/pubs/tu13speedy.pdf">Silo 原论文</a></p>
-<p>成功时，HTM 可以减少显式记录读写集合和部分软件同步的工作；失败处理、容量限制、普通代码路径的协调仍由程序设计者安排。OCC 的方法也因此有软件与硬件等多种实现形式。</p>
 <h2 id="保留历史">保留历史</h2>
-<p>长查询不一定需要追逐每一笔新写入。例如报表先读 A，再读 B，只要两者来自同一完整历史状态，就可以计算对应时刻的总额。MVCC 保留旧版本，让后一次读取仍能找到配套的 B。选择快照时要固定一个边界，之后每次读取都按这个边界取版本。</p>
 <h3 id="长时间读取">长时间读取</h3>
-<p>浏览商品、生成报表和审计经常需要读取大量记录，却不修改数据。2PL 要协调这些读锁与写入者的写锁；普通 OCC 则可能在查询计算很久后，因某个读取版本被更新而要求重跑。如果业务允许读取某个完整的历史状态，可以考虑保留旧版本，让查询继续使用同一份快照。</p>
-<p>如果一笔事务只查询一个完整历史状态，读到稍早的结果也许符合业务。保留旧版本，就能给这类读取提供另一种执行方式。</p>
+<p>报表和审计读取很多记录，但可能不修改。2PL 需要协调读锁，OCC 可能在计算结束后发现某个版本变化而重跑。</p>
+<p>图中 T1 已读完 A0、B0，T2 随后提交更新，普通当前版本验证仍会中止 T1。如果业务接受那份完整旧状态，可以将只读 T1 排在 T2 前。</p>
+<p>更困难的交错是 T1 只读完 A0，T2 更新 A、B，T1 才读 B。保留 B0，才能让它继续取得配套旧状态。下一图因此同时保留新旧版本，并按固定边界选择。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859252.png" alt="T1 已经读完同一旧状态，T2 更新后，普通 OCC 仍因版本变化中止 T1"></p>
-<p>T1 计算 A+B，先读到 <code>A0、B0</code>。T2 随后把 A、B 改成新值并提交。T1 到提交检查时，旧版本已经过期，于是被本节前面的 OCC 算法中止。</p>
 <blockquote>
 <p>T1 已完整读取旧 A、旧 B，只准备返回它们的和。为了取得一个可串行化的读取结果，是否必然要中止它？</p>
 <p>解答：</p>
 <p>若这两项来自同一个合法旧状态，可以把只读 T1 排在 T2 前。普通 OCC 的当前版本验证仍会拒绝它，但业务可以选择由多版本机制继续提供这份完整旧快照。前提是旧状态确实一致，并且满足接口所承诺的时效。</p>
 </blockquote>
-<p>另一种交错更需要保留旧版本：T1 读完 A0，T2 更新 A、B 并提交，T1 才准备读 B。如果只剩新 B，它就会组合到旧 A、新 B。将旧 B 留下来，才能继续取得原先那份快照。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859253.png" alt="新旧版本同时保留后，T1 继续读取与 A0 配套的 B0"></p>
-<p>图中较新的 B 仍供之后的事务使用，较早开始的 T1 继续选择 B0。保留版本需要同时规定如何选取版本，才能保证每次读取来自同一份逻辑状态。</p>
 <h3 id="多版本">多版本</h3>
-<p>多版本并发控制（Multi-Version Concurrency Control，MVCC）为同一条记录保留多个历史版本，让不同事务按各自的可见性规则读取。每个版本至少保存数据值，以及决定其何时可见的标记。读者因此可以继续访问旧状态，写入者则建立新版本，而无需立即覆盖读者正在使用的内容。</p>
+<p>MVCC 为记录保存多个版本，每个包含值与可见性标记。写入建立新版本，旧读者继续使用历史。</p>
+<p>例如 A 的版本时间为 0、3、7，值为 1、2、5。快照边界 4 选时间 3 的值 2，边界 8 选时间 7 的值 5。不同记录的选中版本时间可以不同，只要都符合同一可见性规则。</p>
+<p>事务自己的暂存写入仍优先可见。快照是一组按共同边界选出的逻辑状态，不必复制整份数据库。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859254.png" alt="单一 value 变为版本列表，每个版本分别保存值与版本标记"></p>
-<p>例如 A 的版本链可以写为：</p>
 <table>
 <thead>
 <tr>
@@ -558,65 +523,47 @@
 </tr>
 </tbody>
 </table>
-<p>快照时间为 4 的事务选版本 3，取得值 2；快照时间为 8 的事务选版本 7，取得值 5。版本号和数据值分别表示历史位置与实际内容。</p>
-<p>快照表示一组在同一可见性规则下选出的记录。事务开始时取得快照边界，之后每次读取都按同一个边界选择，自己的暂存写入仍优先对本事务可见。</p>
-<p>写入则创建新版本，保留旧版本供仍在使用它们的读者访问。不同记录的最新版本号不必相同：某条记录较久没变化，它较早创建的版本仍可属于当前快照。</p>
 <h3 id="逻辑时间">逻辑时间</h3>
-<p>为了确定每笔事务应读取哪些版本，本例使用全局原子计数器分配递增编号。事务取得开始边界 sts，写入者取得提交版本标记 cts，读取时比较两者的逻辑先后。这些“时间”用于排序，无需对应现实中的秒数；编号分配与版本发布还必须遵守同一套协议。</p>
-<p>FAA 是 fetch-and-add，原子地取出计数器旧值并加上给定增量。例如计数器从 0 开始，可以用 <code>FAA(g,1)+1</code> 得到编号 1、2、3。不同线程取得不同编号；开始与发布过程使用同一套次序规则。</p>
-<p>只读事务的版本选择为：</p>
+<p>本例用全局原子计数器分配开始边界 sts 与提交标记 cts，它们表示逻辑先后。FAA 原子地返回旧计数并递增，例如 FAA(g,1)+1 从 0 得到 1、2、3。</p>
+<p>读取时，从按协议可见、cts 不超过 sts 的版本中取最新者。式中的 max 按时间排序，不按数据值大小。边界固定为 4 后再次读取，仍不能改用时间 7 的版本，除非读取的是本事务自己的暂存修改。</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>v</mi><mo>∗</mo></msup><mo stretchy="false">(</mo><mi>X</mi><mo separator="true">,</mo><mi>T</mi><mo stretchy="false">)</mo><mo>=</mo><mi>max</mi><mo>⁡</mo><mo stretchy="false">{</mo><mi>v</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo><mo>∣</mo><mi>c</mi><mi>t</mi><mi>s</mi><mo stretchy="false">(</mo><mi>v</mi><mo stretchy="false">)</mo><mo>≤</mo><mi>s</mi><mi>t</mi><mi>s</mi><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mtext> </mtext><mi>v</mi><mtext> 按协议可见</mtext><mo stretchy="false">}</mo></mrow><annotation encoding="application/x-tex">v^*(X,T)=\max\{v(X)\mid cts(v)\le sts(T),\ v\text{ 按协议可见}\}
 </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7387em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mbin mtight">∗</span></span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">max</span><span class="mopen">{</span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">t</span><span class="mord mathnormal">s</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal">s</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace"> </span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mord text"><span class="mord"> </span><span class="mord cjk_fallback">按协议可见</span></span><span class="mclose">}</span></span></span></span></span></p>
-<p>含义是：在对象 X 的可见版本中，找出提交标记不超过 T 开始边界的最新一个。式中的 max 按版本时间排序。</p>
 <blockquote>
 <p>A 有提交标记 0、3、7 的三个可见版本，值分别为 1、2、5。事务开始边界为 4，应读哪个版本？它后来再次读 A 时，能否直接换成最新版本 7？</p>
 <p>解答：</p>
 <p>读取标记 3 的版本，得到 2。固定事务快照继续使用边界 4，版本 7 超出该边界；再次读取仍应按同一个快照规则选择。若本事务已暂存修改，则按读自己写入的规则取得本地结果。</p>
 </blockquote>
 <h2 id="快照与冲突">快照与冲突</h2>
-<p>保留版本只提供历史材料，还需要规则决定哪些版本可以一起读取。先看更新 A、B 只发布了一半的反例，再看两个自增都从旧值 0 算出 1 的反例。前者需要完整发布，后者需要写冲突检查。最后的写偏差则说明：写不同记录的事务，也可能通过读取依赖互相冲突。</p>
 <h3 id="部分快照">部分快照</h3>
-<p>版本编号解决了“选哪一个历史版本”，但一笔事务更新多个对象时，还需要保证它们共同可见。物理安装仍会逐条进行，如果新编号已经被读者使用，而部分新版本尚未安装，读者就可能拼出一份从未完整存在过的状态。</p>
+<p>时间编号不自动保证一笔多记录更新完整可见。图中 T2 先取 cts=1，只安装 B1；T1 再取 sts=2，读取 A 只找到 A0，读取 B 却可选 B1，拼出半笔事务。</p>
+<p>分配到编号只是取得标签，提交完成还需要安装、可见性与持久化条件共同满足。必须把编号次序与发布协议联系起来。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859255.png" alt="T2 已取编号并安装 B1，但尚未安装 A1，T1 组合到 A0 与 B1"></p>
-<p>图中的过程为：</p>
-<ol>
-<li>T2 取得版本时间 1，准备同时生成 A1、B1。</li>
-<li>T2 先安装 B1，A1 还没写入。</li>
-<li>T1 取得开始时间 2。</li>
-<li>T1 读取 A，只找到 A0；读取 B，则找到满足 <code>1≤2</code> 的 B1。</li>
-<li>T2 最后才安装 A1。</li>
-</ol>
-<p>T1 取得的 A0、B1 混合了同一笔事务的前后状态。虽然每次读取都遵守了编号比较，一组更新的发布边界仍缺少协调。</p>
-<p>这里的 cts 是发布过程中使用的逻辑标记。分配到它，只代表取得了编号；只有满足协议的安装、可见性和持久化条件，才具有相应的“提交完成”含义。</p>
 <h3 id="完整可见">完整可见</h3>
-<p>在本例中，可以用锁将编号分配与完整版本安装联系起来：写入者先锁住整个写集合，再取得发布用的时间标记，随后逐项安装新版本。读者遇到仍被锁住、尚未安装完成的记录，就等待它可安全读取。这样，读者使用较新边界时，就不会从这些待更新对象中提前取走不配套的旧值。</p>
+<p>本例先锁住全部写对象，再取得发布时间，逐项安装新版本。读者遇到安装中的记录就等它可读。图中 T2 锁 A、B 后取 1，写完 B1 并解锁；T1 取 2 后读 A，因为仍有锁而等待，最后取得 A1、B1。</p>
+<p>若先取 1 再锁，T1 可能在锁建立前取 2并读走旧 A，之后又选到新 B，所以次序不能随意交换。也可使用统一发布状态或统一解锁等其他完整快照协议。</p>
+<p>版本链还要安全遍历，节点不能在读者使用中回收，共享链头需正确发布。简单检查一次普通布尔锁变量不足以完成并发结构。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859256.png" alt="先锁 A、B 再取提交时间，T1 读取尚未安装的 A 时等待"></p>
-<p>图中 T2 先锁 A、B，再取得时间 1。安装 B1 并释放 B 的锁后，T1 取得开始时间 2。它读取 A 时发现 A 仍被锁住，所以暂时等待；A1 安装完毕并释放后，T1 读取 A1，再按同一边界读取 B1。</p>
-<p>这个示例允许已经安装完成的记录先释放锁。每条记录都必须在自己的新版本安全发布后才能解锁；读者要遵守锁状态、版本可见性和并发遍历规则。也可以选择全部安装后统一发布状态或统一解锁，实际数据库还有其他快照发布方案。</p>
 <blockquote>
 <p>在这套读者遇锁等待的方案中，能先取提交时间，再去锁记录吗？</p>
 <p>解答：</p>
 <p>若写入者先取得 1，后来才锁 A、B，读者可能在这段间隔取得开始时间 2，并在任何锁出现前读走旧 A。之后写入者安装新 B，读者又按 <code>1≤2</code> 选到它，仍会组合旧 A、新 B。</p>
 <p>因此这套规则要求全部相关写锁先建立，再分配发布版本时间；或者另用能保证完整快照可见的协议。时间编号的分配顺序需要与记录的保护和发布顺序一起设计。</p>
 </blockquote>
-<p>版本链还需要安全访问：读者取得的节点不能在访问途中被释放，链头等共享元信息需要正确发布。只在普通代码中检查一次布尔变量，并不足以实现完整的并发数据结构。</p>
 <h3 id="写入冲突">写入冲突</h3>
-<p>保留多个版本并没有消除写入竞争。两笔事务可能都根据同一个旧值计算，再各自建立新版本；如果提交时不检查依赖，仍会发生丢失更新。下图设初始 A0=0，两笔事务都执行 A+=1，检查多版本链为何不能单独保证两次增加。</p>
+<p>初始 A0=0，两事务都自增，开始时间为 1、2，各自读 0、算 1。若无检查，先后建立 A3=1、A4=1，虽然多了两个版本，仍只增加一次。</p>
+<p>持有写锁时检查最新提交版本是否晚于本事务开始。T2 发现 latest cts=3&gt;sts=2，应中止或按规定处理冲突，重试才会读 1并计算 2。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859257.png" alt="两笔事务从 A0=0 计算，各自生成值为 1 的新版本，仍丢失一次增加"></p>
-<p>T1 的开始时间为 1，T2 为 2，二者都读 A0=0。若不验证就提交，T1 生成 A3=1，T2 又生成 A4=1。版本链里虽然有两个新版本，最新值仍为 1；两次完整自增应得到 2。</p>
 <blockquote>
 <p>保存了两个值为 1 的新版本，是否意味着两次自增都正确生效？第二个写入者需要检查什么？</p>
 <p>解答：</p>
 <p>自增的新值取决于读取的旧值。两者都从 0 计算出 1，第二次没有接续第一次已经产生的结果。提交时应检查目标记录是否出现了本事务开始之后的新提交；若已经有，就丢弃旧计算、重试，或按其他明确的冲突规则处理。</p>
 </blockquote>
-<p>在写锁保护下，可以对写集合中每个对象检查：</p>
 <p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>c</mi><mi>t</mi><msub><mi>s</mi><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">s</mi><mi mathvariant="normal">t</mi></mrow></msub><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo><mo>&gt;</mo><mi>s</mi><mi>t</mi><mi>s</mi><mo stretchy="false">(</mo><mi>T</mi><mo stretchy="false">)</mo><mspace width="1em"/><mo>⟹</mo><mspace width="1em"/><mi>T</mi><mtext> 发生写冲突</mtext></mrow><annotation encoding="application/x-tex">cts_{\mathrm{latest}}(X)&gt;sts(T)\quad\Longrightarrow\quad
 T\text{ 发生写冲突}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">t</span><span class="mord"><span class="mord mathnormal">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathrm mtight">latest</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">s</span><span class="mord mathnormal">t</span><span class="mord mathnormal">s</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mclose">)</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">⟹</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mord text"><span class="mord"> </span><span class="mord cjk_fallback">发生写冲突</span></span></span></span></span></span></p>
-<p>T2 开始于 2，提交时 A 的最新提交标记已为 3，满足 <code>3&gt;2</code>，所以中止。重试取得更新的开始边界，读到 A3=1，再计算 2，才能接续这笔增加。</p>
 <h3 id="快照隔离">快照隔离</h3>
-<p>将固定快照读取、完整版本发布和写写冲突检测结合起来，可以构成一类快照隔离（Snapshot Isolation，SI）实现。每笔事务依据同一个开始边界读取，并在提交时检查自己准备写入的对象是否已被并发事务更新。下面将开始、读取、暂存和发布整理到同一流程中。</p>
+<p>固定快照读取、完整发布与写写冲突检查组合成一类 SI 实现。开始时取得 sts，读取自己的写入或边界内版本，修改放入私有集合，提交时保护写集合、检查版本，再分配并安装新版本。</p>
+<p>只读事务拥有完整有效快照后，通常不用因为之后产生新版本而重跑，但可能等待发布完成，也会受故障或取消影响。读写事务只通过写写检查，还没有验证全部跨记录读取依赖。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859258.png" alt="开始、快照读取、暂存写入与提交检查共同组成事务流程"></p>
-<p>可以按下表跟踪：</p>
 <table>
 <thead>
 <tr>
@@ -647,26 +594,20 @@ T\text{ 发生写冲突}</annotation></semantics></math></span><span class="kate
 </tr>
 </tbody>
 </table>
-<p>验证和取得编号的具体安排由实现决定，必须满足前面解释的发布条件。在本例中，写集合被保护期间再决定相应检查与编号，避免其他写入者插入冲突更新。</p>
-<p>一笔只读事务没有写集合；已经取得完整有效的固定快照时，可以按它读完，通常无需因后续写入更新了当前版本而重新验证、重跑。它仍可能等正在发布的版本，系统故障、用户取消等情况则按相应接口处理。</p>
-<p>读写事务即使通过这套写写检查，也还没有检查所有跨记录依赖。</p>
 <h3 id="写偏差">写偏差</h3>
-<p>这里需要区分“写同一个对象”与“共同依赖一个业务条件”。两名值班人员各修改自己的状态，写集合可以完全不同。但“至少一人在岗”同时约束两条记录。一笔事务依据对方仍在岗而离岗，另一笔也作同样判断，就可能一起破坏约束。</p>
-<p>因此，检查写集合是否相交只能发现部分冲突。要判断可串行化，还要追踪每笔事务读取了哪些旧版本，以及这些版本由谁覆盖。下图中的双向箭头正来自这种读取依赖。</p>
+<p>T1 读旧 X 后写 Y，T2 读旧 Y 后写 X，写集合不同，所以写写检查可能都通过。但两笔各自要求排在对方修改之前，依赖形成环。</p>
+<p>值班例子中 X、Y 初始都为 1，规则至少一人在岗。T1 见 X=1 让 Y 离岗，T2 见 Y=1 让 X 离岗，最后两者都是 0。任一串行顺序中，后者都会看见对方已离岗而停止，因此这个结果没有合法串行解释。</p>
+<p>MVCC 是版本机制，SI 是一种隔离保证。稳定快照与同对象写冲突保护，仍不足以维护所有跨记录业务条件。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261016105859259.png" alt="两笔事务读取对方的旧值，分别写入不同记录，写集合虽不重叠仍形成依赖环"></p>
-<p>沿图中两条时间线看，T1 在时间 1 开始，读取 X0，随后提交 Y3；T2 在时间 2 开始，读取 Y0，随后提交 X4。两者各自写不同对象，写集合没有交集，因此仅做写写冲突检查时，两笔都可能提交。接下来还要检查它们读取对方旧值所产生的跨记录依赖。</p>
-<p>但 T1 使用了 T2 修改之前的 X，要求在相应串行解释中位于 T2 前；T2 又使用 T1 修改之前的 Y，要求位于 T1 前。依赖成环，无法将两笔完整事务排成符合这些观察的串行顺序。这类异常称为写偏差（write skew）。</p>
 <blockquote>
 <p>两位值班人员 X、Y 初始都在岗，1 表示在岗、0 表示离岗。规则要求至少一人在岗。T1 读取 X，确认 X=1 就将 Y 改为 0；T2 读取 Y，确认 Y=1 就将 X 改为 0。二者从同一旧状态开始，快照隔离的写写检查会发现冲突吗？业务结果是否正确？</p>
 <p>解答：</p>
 <p>T1 的写集合只有 Y，T2 的写集合只有 X，没有共同写入的记录，因此仅检查写写冲突时可以都通过。二者分别看到对方仍在岗，最终得到 X=0、Y=0，违反至少一人在岗的规则。</p>
 <p>如果 T1 完整先执行，T2 随后会看到 Y=0，不能再让 X 离岗；反过来也一样。两者都离岗没有合法串行解释。这正对应图中的双向读取依赖。</p>
 </blockquote>
-<p>SI 能提供稳定快照并避免这里的同记录丢失更新，跨记录业务约束仍可能因这种依赖受到破坏。MVCC 是保存和选择版本的机制，可以与不同的并发控制协议结合；SI 是其中一种隔离保证。<a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf">Berenson 等，1995</a>系统讨论了快照隔离与这些异常。</p>
 <h3 id="读取验证">读取验证</h3>
-<p>要进一步提供可串行化保证，就需要处理写集合之外的读取依赖。一种思路是在读写事务提交时验证读集合，检查相关版本或并发状态是否发生了会破坏串行解释的变化，并与提交锁协议共同协调。前面的 OCC 验证方法可以用于多版本读写事务，但具体检查必须覆盖实际访问的记录与范围。</p>
-<p>在值班例子中，若 T1 已发布 Y=0，T2 再验证它读取的旧 Y，就会发现依赖过期；若两者同时准备发布，锁状态与依赖检查也必须共同协调。不能让双方都仅在对方发布之前通过检查，然后独立写入。</p>
-<p>纯只读事务可以继续使用完整快照，减少长查询的重跑。读写事务则根据需要选择更强的验证、锁定业务约束涉及的对象，或使用数据库已经实现的可串行化机制。</p>
+<p>加强保证时，可以让读写事务在提交阶段验证读集合，并与锁和发布规则共同协调。值班例子中，T1 发布 Y=0 后，T2 检查旧 Y 就发现失效；同时发布时也要通过锁状态等规则阻止双方都依据旧检查提交。</p>
+<p>只读事务可以继续受益于历史快照。读写事务根据约束选择验证、相关对象锁或数据库的可串行化机制。MV-2PL、MV-OCC 等使用相同多版本存储，也可以提供不同控制规则。</p>
 <blockquote>
 <p>SI 下可以默认忽略写偏差吗？“使用 MVCC”是否已经说明系统提供了可串行化？</p>
 <p>解答：</p>
@@ -674,11 +615,12 @@ T\text{ 发生写冲突}</annotation></semantics></math></span><span class="kate
 <p>MVCC 说明保存并选择多个版本，具体隔离还取决于写冲突、读依赖和提交规则。MV-2PL、MV-OCC 等可以在多版本存储上提供不同保证，不能只凭 MVCC 这个名称确定事务的隔离级别。</p>
 </blockquote>
 <h3 id="版本回收">版本回收</h3>
-<p>多版本带来的空间成本，需要通过安全回收控制。一个版本即使已经被更新，仍可能是某个活跃事务快照中应当读取的版本。如果仅因它不是最新值就删除，长事务后续访问同一快照时便可能找不到数据。因此，回收条件取决于是否还有读者需要这段历史。</p>
-<p>系统可以跟踪活跃快照边界，保留每个边界所需的最新历史版本和之后仍可能被访问的版本；确认没有读者需要某段历史后，再安全回收。新链头的发布和旧节点的释放也要与并发访问协调。</p>
-<p>长查询因此可能增加历史保留量。需要同时考虑读取稳定性、内存或存储占用以及回收进度，不能只根据某版本“已经被新版本替代”就将它删除。</p>
+<p>旧版本仍可能属于活跃事务的快照，不能仅因已有新版本就删除。系统跟踪活跃边界，保留每个读者所需的最新历史版本及之后仍可能使用的版本，确认无人需要后再回收。</p>
+<p>长查询会延长历史保留，增加空间。发布链头、遍历与释放都需要并发安全，回收进度与读取稳定性必须一起维护。</p>
 <h2 id="方法对照">方法对照</h2>
 <h3 id="机制选择">机制选择</h3>
+<p>2PL 提前取得保护，OCC 先计算后验证，HTM 用硬件跟踪内存，MVCC 保存历史供快照读取。表中比较各自的等待、重试、容量与空间成本。</p>
+<p>同一系统可以组合它们，例如 MVCC 服务长读、OCC 验证读写事务，或 HTM 快速尝试加普通锁后备。检查时追踪读取版本、暂存位置、提交协调、失败清理和最终隔离持久性，不能只凭机制名称推断全部保证。</p>
 <table>
 <thead>
 <tr>
@@ -710,9 +652,7 @@ T\text{ 发生写冲突}</annotation></semantics></math></span><span class="kate
 </tr>
 </tbody>
 </table>
-<p>同一系统可以组合这些方法。例如用 MVCC 服务长只读事务，给读写事务增加 OCC 验证；或者用 HTM 作为一段锁保护代码的快速路径，失败时回到锁。</p>
-<p>检查实现时，依次确认读取来自哪个版本、暂存修改是否已经共享可见、验证与发布怎样协调、冲突后怎样清理重试，以及整笔事务最终承诺哪种隔离与持久性。</p>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/16/SE3331_08/">https://acannedfish.github.io/2026/10/16/SE3331_08/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E4%B9%90%E8%A7%82%E5%B9%B6%E5%8F%91/">乐观并发</a><a class="post-meta__tags" href="/tags/%E7%A1%AC%E4%BB%B6%E4%BA%8B%E5%8A%A1/">硬件事务</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E7%89%88%E6%9C%AC/">多版本</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/10/13/SE3331_07/" title="计算机系统工程-07：并发原子性"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-07：并发原子性</div></div></div></a><a class="pagination-related  no-desc" href="/2026/10/29/SE3331_09/" title="计算机系统工程-09：分布式提交"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统工程-09：分布式提交</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E8%A6%81%E6%B1%82"><span class="toc-number">1.</span> <span class="toc-text">事务要求</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E8%8C%83%E5%9B%B4"><span class="toc-number">1.1.</span> <span class="toc-text">事务范围</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ACID"><span class="toc-number">1.2.</span> <span class="toc-text">ACID</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E7%AE%97%E5%86%8D%E6%A3%80%E6%9F%A5"><span class="toc-number">2.</span> <span class="toc-text">先算再检查</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B9%90%E8%A7%82%E6%89%A7%E8%A1%8C"><span class="toc-number">2.1.</span> <span class="toc-text">乐观执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%86%99%E9%9B%86%E5%90%88"><span class="toc-number">2.2.</span> <span class="toc-text">读写集合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%B3%E5%AE%9A%E8%AF%BB%E5%8F%96"><span class="toc-number">2.3.</span> <span class="toc-text">稳定读取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E6%A3%80%E6%9F%A5"><span class="toc-number">2.4.</span> <span class="toc-text">提交检查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E9%97%B4%E9%9A%94"><span class="toc-number">2.5.</span> <span class="toc-text">验证间隔</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%8F%98%E5%8C%96"><span class="toc-number">2.6.</span> <span class="toc-text">版本变化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E7%B2%92%E5%BA%A6"><span class="toc-number">2.7.</span> <span class="toc-text">提交粒度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%B0%E5%BD%95%E9%AA%8C%E8%AF%81"><span class="toc-number">2.8.</span> <span class="toc-text">记录验证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%8F%E5%B0%91%E9%94%81%E5%BC%80%E9%94%80"><span class="toc-number">3.</span> <span class="toc-text">减少锁开销</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AA%E8%AF%BB%E6%88%90%E6%9C%AC"><span class="toc-number">3.1.</span> <span class="toc-text">只读成本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E5%AD%90%E4%BA%A4%E6%8D%A2"><span class="toc-number">3.2.</span> <span class="toc-text">原子交换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E6%97%8B%E9%94%81"><span class="toc-number">3.3.</span> <span class="toc-text">自旋锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%BC%80%E9%94%80"><span class="toc-number">3.4.</span> <span class="toc-text">同步开销</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E6%AC%A1%E5%BA%8F"><span class="toc-number">3.5.</span> <span class="toc-text">提交次序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E5%AE%88%E4%B8%AD%E6%AD%A2"><span class="toc-number">3.6.</span> <span class="toc-text">保守中止</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%B2%E7%AA%81%E8%B4%9F%E8%BD%BD"><span class="toc-number">3.7.</span> <span class="toc-text">冲突负载</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E6%94%AF%E6%8C%81"><span class="toc-number">4.</span> <span class="toc-text">硬件支持</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E4%BA%8B%E5%8A%A1"><span class="toc-number">4.1.</span> <span class="toc-text">硬件事务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E5%86%B2%E7%AA%81"><span class="toc-number">4.2.</span> <span class="toc-text">硬件冲突</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%B1%E8%B4%A5%E5%A4%84%E7%90%86"><span class="toc-number">4.3.</span> <span class="toc-text">失败处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E8%B7%9F%E8%B8%AA"><span class="toc-number">4.4.</span> <span class="toc-text">缓存跟踪</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%B9%E9%87%8F%E9%99%90%E5%88%B6"><span class="toc-number">4.5.</span> <span class="toc-text">容量限制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%97%B6%E9%95%BF"><span class="toc-number">4.6.</span> <span class="toc-text">执行时长</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%9F%E8%BD%BD%E5%B7%AE%E5%BC%82"><span class="toc-number">4.7.</span> <span class="toc-text">负载差异</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%9D%E7%95%99%E5%8E%86%E5%8F%B2"><span class="toc-number">5.</span> <span class="toc-text">保留历史</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%95%BF%E6%97%B6%E9%97%B4%E8%AF%BB%E5%8F%96"><span class="toc-number">5.1.</span> <span class="toc-text">长时间读取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E7%89%88%E6%9C%AC"><span class="toc-number">5.2.</span> <span class="toc-text">多版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E6%97%B6%E9%97%B4"><span class="toc-number">5.3.</span> <span class="toc-text">逻辑时间</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E7%85%A7%E4%B8%8E%E5%86%B2%E7%AA%81"><span class="toc-number">6.</span> <span class="toc-text">快照与冲突</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%83%A8%E5%88%86%E5%BF%AB%E7%85%A7"><span class="toc-number">6.1.</span> <span class="toc-text">部分快照</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E5%8F%AF%E8%A7%81"><span class="toc-number">6.2.</span> <span class="toc-text">完整可见</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E5%85%A5%E5%86%B2%E7%AA%81"><span class="toc-number">6.3.</span> <span class="toc-text">写入冲突</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%AB%E7%85%A7%E9%9A%94%E7%A6%BB"><span class="toc-number">6.4.</span> <span class="toc-text">快照隔离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E5%81%8F%E5%B7%AE"><span class="toc-number">6.5.</span> <span class="toc-text">写偏差</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E9%AA%8C%E8%AF%81"><span class="toc-number">6.6.</span> <span class="toc-text">读取验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%9B%9E%E6%94%B6"><span class="toc-number">6.7.</span> <span class="toc-text">版本回收</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E5%AF%B9%E7%85%A7"><span class="toc-number">7.</span> <span class="toc-text">方法对照</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%BA%E5%88%B6%E9%80%89%E6%8B%A9"><span class="toc-number">7.1.</span> <span class="toc-text">机制选择</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/10/16/SE3331_08/">https://acannedfish.github.io/2026/10/16/SE3331_08/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E4%B9%90%E8%A7%82%E5%B9%B6%E5%8F%91/">乐观并发</a><a class="post-meta__tags" href="/tags/%E7%A1%AC%E4%BB%B6%E4%BA%8B%E5%8A%A1/">硬件事务</a><a class="post-meta__tags" href="/tags/%E5%A4%9A%E7%89%88%E6%9C%AC/">多版本</a></div><div class="post-share"><div class="social-share" data-image="/img/background11.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/10/13/SE3331_07/" title="计算机系统工程-07：并发控制与两阶段锁"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-07：并发控制与两阶段锁</div></div></div></a><a class="pagination-related  no-desc" href="/2026/10/29/SE3331_09/" title="计算机系统工程-09：两阶段提交与主备复制"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统工程-09：两阶段提交与主备复制</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">118</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">79</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E8%A6%81%E6%B1%82"><span class="toc-number">1.</span> <span class="toc-text">事务要求</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E8%8C%83%E5%9B%B4"><span class="toc-number">1.1.</span> <span class="toc-text">事务范围</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ACID"><span class="toc-number">1.2.</span> <span class="toc-text">ACID</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E7%AE%97%E5%86%8D%E6%A3%80%E6%9F%A5"><span class="toc-number">2.</span> <span class="toc-text">先算再检查</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B9%90%E8%A7%82%E6%89%A7%E8%A1%8C"><span class="toc-number">2.1.</span> <span class="toc-text">乐观执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%86%99%E9%9B%86%E5%90%88"><span class="toc-number">2.2.</span> <span class="toc-text">读写集合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%B3%E5%AE%9A%E8%AF%BB%E5%8F%96"><span class="toc-number">2.3.</span> <span class="toc-text">稳定读取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E6%A3%80%E6%9F%A5"><span class="toc-number">2.4.</span> <span class="toc-text">提交检查</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E9%97%B4%E9%9A%94"><span class="toc-number">2.5.</span> <span class="toc-text">验证间隔</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%8F%98%E5%8C%96"><span class="toc-number">2.6.</span> <span class="toc-text">版本变化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E7%B2%92%E5%BA%A6"><span class="toc-number">2.7.</span> <span class="toc-text">提交粒度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%B0%E5%BD%95%E9%AA%8C%E8%AF%81"><span class="toc-number">2.8.</span> <span class="toc-text">记录验证</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%8F%E5%B0%91%E9%94%81%E5%BC%80%E9%94%80"><span class="toc-number">3.</span> <span class="toc-text">减少锁开销</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AA%E8%AF%BB%E6%88%90%E6%9C%AC"><span class="toc-number">3.1.</span> <span class="toc-text">只读成本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E5%AD%90%E4%BA%A4%E6%8D%A2"><span class="toc-number">3.2.</span> <span class="toc-text">原子交换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E6%97%8B%E9%94%81"><span class="toc-number">3.3.</span> <span class="toc-text">自旋锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8C%E6%AD%A5%E5%BC%80%E9%94%80"><span class="toc-number">3.4.</span> <span class="toc-text">同步开销</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E6%AC%A1%E5%BA%8F"><span class="toc-number">3.5.</span> <span class="toc-text">提交次序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E5%AE%88%E4%B8%AD%E6%AD%A2"><span class="toc-number">3.6.</span> <span class="toc-text">保守中止</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%B2%E7%AA%81%E8%B4%9F%E8%BD%BD"><span class="toc-number">3.7.</span> <span class="toc-text">冲突负载</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E6%94%AF%E6%8C%81"><span class="toc-number">4.</span> <span class="toc-text">硬件支持</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E4%BA%8B%E5%8A%A1"><span class="toc-number">4.1.</span> <span class="toc-text">硬件事务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E5%86%B2%E7%AA%81"><span class="toc-number">4.2.</span> <span class="toc-text">硬件冲突</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%B1%E8%B4%A5%E5%A4%84%E7%90%86"><span class="toc-number">4.3.</span> <span class="toc-text">失败处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%93%E5%AD%98%E8%B7%9F%E8%B8%AA"><span class="toc-number">4.4.</span> <span class="toc-text">缓存跟踪</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%B9%E9%87%8F%E9%99%90%E5%88%B6"><span class="toc-number">4.5.</span> <span class="toc-text">容量限制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%97%B6%E9%95%BF"><span class="toc-number">4.6.</span> <span class="toc-text">执行时长</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B4%9F%E8%BD%BD%E5%B7%AE%E5%BC%82"><span class="toc-number">4.7.</span> <span class="toc-text">负载差异</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BF%9D%E7%95%99%E5%8E%86%E5%8F%B2"><span class="toc-number">5.</span> <span class="toc-text">保留历史</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%95%BF%E6%97%B6%E9%97%B4%E8%AF%BB%E5%8F%96"><span class="toc-number">5.1.</span> <span class="toc-text">长时间读取</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E7%89%88%E6%9C%AC"><span class="toc-number">5.2.</span> <span class="toc-text">多版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%BB%E8%BE%91%E6%97%B6%E9%97%B4"><span class="toc-number">5.3.</span> <span class="toc-text">逻辑时间</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E7%85%A7%E4%B8%8E%E5%86%B2%E7%AA%81"><span class="toc-number">6.</span> <span class="toc-text">快照与冲突</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%83%A8%E5%88%86%E5%BF%AB%E7%85%A7"><span class="toc-number">6.1.</span> <span class="toc-text">部分快照</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%8C%E6%95%B4%E5%8F%AF%E8%A7%81"><span class="toc-number">6.2.</span> <span class="toc-text">完整可见</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E5%85%A5%E5%86%B2%E7%AA%81"><span class="toc-number">6.3.</span> <span class="toc-text">写入冲突</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%AB%E7%85%A7%E9%9A%94%E7%A6%BB"><span class="toc-number">6.4.</span> <span class="toc-text">快照隔离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%99%E5%81%8F%E5%B7%AE"><span class="toc-number">6.5.</span> <span class="toc-text">写偏差</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%BB%E5%8F%96%E9%AA%8C%E8%AF%81"><span class="toc-number">6.6.</span> <span class="toc-text">读取验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%9B%9E%E6%94%B6"><span class="toc-number">6.7.</span> <span class="toc-text">版本回收</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E5%AF%B9%E7%85%A7"><span class="toc-number">7.</span> <span class="toc-text">方法对照</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%BA%E5%88%B6%E9%80%89%E6%8B%A9"><span class="toc-number">7.1.</span> <span class="toc-text">机制选择</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
   const showKatex = () => {
     document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
   }
