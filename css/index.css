@@ -7922,3 +7922,29 @@ blockquote.pullquote.right {
     transform: rotate(360deg);
   }
 }
+#nav:not(.hide-menu) .nav-search-page {
+  margin-left: 14px;
+}
+.site-search {
+  --pf-font: var(--site-body-font);
+  --pf-text: var(--text-highlight-color);
+  --pf-text-secondary: var(--font-color);
+  --pf-text-muted: var(--toc-link-color);
+  --pf-background: var(--card-bg);
+  --pf-border: var(--tab-border-color);
+  --pf-hover: var(--search-bg);
+  --pf-border-focus: var(--btn-bg);
+  --pf-outline-focus: var(--btn-bg);
+  --pf-mark: var(--site-strong-color);
+}
+.site-search pagefind-results {
+  color: var(--pf-text);
+}
+#post #article-container :is(h1,
+h2,
+h3,
+h4,
+h5,
+h6)[id] {
+  scroll-margin-top: 72px;
+}

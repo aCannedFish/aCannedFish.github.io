@@ -427,7 +427,7 @@
   /** Resolve nested archive, tag and category URLs to their primary nav item. */
   const activeRouteFor = pathname => {
     const normalized = pathname.replace(/\/{2,}/g, '/').replace(/\/?$/, '/')
-    const primaryRoutes = ['/about/', '/archives/', '/tags/', '/categories/', '/friends/']
+    const primaryRoutes = ['/about/', '/archives/', '/tags/', '/categories/', '/friends/', '/search/']
     return primaryRoutes.find(route => normalized.startsWith(route)) || (normalized === '/' ? '/' : '')
   }
 
