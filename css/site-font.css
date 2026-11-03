@@ -1,6 +1,8 @@
-/* Use the bold Songti face for page text while preserving code, formula and icon fonts. */
+@import url("/fonts/noto-serif-sc/700.css");
+
+/* Serve the same open-source Songti face on desktop and mobile. */
 :root {
-  --site-body-font: "Songti SC", "STSong", "SimSun", serif;
+  --site-body-font: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
   --site-strong-color: #006b3c;
 }
 
@@ -56,4 +58,10 @@ button {
 
 #page-header.full_page #site-title {
   font-weight: 700 !important;
+}
+
+/* Keep Safari from enlarging text after rotation while preserving page zoom. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
