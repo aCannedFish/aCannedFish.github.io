@@ -184,6 +184,7 @@ template {
 #aside-content .card-archives ul.card-archive-list > .card-archive-list-item a span,
 #aside-content .card-categories ul.card-category-list > .card-category-list-item a span,
 .site-data > a .headline,
+.site-data > .site-data-item .headline,
 #nav #blog-info,
 #sidebar #sidebar-menus .menus_items .site-page {
   overflow: hidden;
@@ -3725,24 +3726,29 @@ figure.highlight pre .javascript .function {
   width: 100%;
   table-layout: fixed;
 }
-.site-data > a {
+.site-data > a,
+.site-data > .site-data-item {
   display: table-cell;
 }
-.site-data > a div {
+.site-data > a div,
+.site-data > .site-data-item div {
   -webkit-transition: color 0.25s ease, -webkit-transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   -moz-transition: color 0.25s ease, -moz-transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   -o-transition: color 0.25s ease, -o-transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   -ms-transition: color 0.25s ease, -ms-transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   transition: color 0.25s ease, transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
-.site-data > a:hover div {
+.site-data > a:hover div,
+.site-data > .site-data-item:hover div {
   color: #2f6a53 !important;
 }
-.site-data > a .headline {
+.site-data > a .headline,
+.site-data > .site-data-item .headline {
   color: var(--font-color);
   font-size: 0.95em;
 }
-.site-data > a .length-num {
+.site-data > a .length-num,
+.site-data > .site-data-item .length-num {
   margin-top: -0.45em;
   color: var(--text-highlight-color);
   font-size: 1.2em;
