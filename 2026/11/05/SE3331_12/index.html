@@ -1,0 +1,833 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-12：网络分层与链路层 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="网络分层 浏览器向服务器请求一个网页。浏览器需要告诉服务器想看哪个页面，操作系统需要让请求到达服务器上的 Web 服务，网卡则要把请求发给本地网络中的下一台设备。同一段数据沿途会经过几个协议，每个协议负责其中一部分工作。    层次 这一层处理什么 网页请求中的例子     应用层 定义通信双方交换的内容及其含义 浏览器用 HTTP 请求一个 URL 对应的资源，服务器返回 HTML   传输层">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机系统工程-12：网络分层与链路层">
+<meta property="og:url" content="https://acannedfish.github.io/2026/11/05/SE3331_12/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="网络分层 浏览器向服务器请求一个网页。浏览器需要告诉服务器想看哪个页面，操作系统需要让请求到达服务器上的 Web 服务，网卡则要把请求发给本地网络中的下一台设备。同一段数据沿途会经过几个协议，每个协议负责其中一部分工作。    层次 这一层处理什么 网页请求中的例子     应用层 定义通信双方交换的内容及其含义 浏览器用 HTTP 请求一个 URL 对应的资源，服务器返回 HTML   传输层">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background12.png">
+<meta property="article:published_time" content="2026-11-05T06:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-05T07:15:22.116Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="计算机网络">
+<meta property="article:tag" content="链路层">
+<meta property="article:tag" content="差错控制">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background12.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机系统工程-12：网络分层与链路层",
+  "url": "https://acannedfish.github.io/2026/11/05/SE3331_12/",
+  "image": "https://acannedfish.github.io/img/background12.png",
+  "datePublished": "2026-11-05T06:00:00.000Z",
+  "dateModified": "2026-11-05T07:15:22.116Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/11/05/SE3331_12/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4&amp;site=d897aab3052c"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机系统工程-12：网络分层与链路层',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css?v=d897aab3052c"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"><link rel="stylesheet" href="/lib/katex/katex.min.css">
+<style data-katex-display>
+/* Hide the MathML fallback; when it is laid out, every formula renders twice. */
+#article-container .katex .katex-mathml {
+  display: none !important;
+}
+
+/* Reveal KaTeX without waiting for the theme loader to add .katex-show. */
+#article-container .katex {
+  display: inline !important;
+}
+
+#article-container .katex-display > .katex {
+  display: block !important;
+}
+</style>
+</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><div class="site-data-item"><div class="headline">文章</div><div class="length-num">121</div></div><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/search/"><i class="fa-fw fas fa-search"></i><span> 搜索</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-12：网络分层与链路层&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/search/"><i class="fa-fw fas fa-search"></i><span> 搜索</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><div class="nav-search-page" id="search-button"><a class="site-page" href="/search/" aria-label="搜索"><i class="fas fa-search fa-fw" aria-hidden="true"></i></a></div><!-- 移动端汉堡菜单按钮--><button id="toggle-menu" type="button" aria-label="打开导航菜单" aria-controls="sidebar-menus"><span class="site-page"><i class="fas fa-bars fa-fw" aria-hidden="true"></i></span></button></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-12：网络分层与链路层</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-05T06:00:00.000Z" title="发表于 2026-11-05 14:00:00">2026-11-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-05T07:15:22.116Z" title="更新于 2026-11-05 15:15:22">2026-11-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="网络分层">网络分层</h2>
+<p>浏览器向服务器请求一个网页。浏览器需要告诉服务器想看哪个页面，操作系统需要让请求到达服务器上的 Web 服务，网卡则要把请求发给本地网络中的下一台设备。同一段数据沿途会经过几个协议，每个协议负责其中一部分工作。</p>
+<table>
+<thead>
+<tr>
+<th>层次</th>
+<th>这一层处理什么</th>
+<th>网页请求中的例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>应用层</td>
+<td>定义通信双方交换的内容及其含义</td>
+<td>浏览器用 HTTP 请求一个 URL 对应的资源，服务器返回 HTML</td>
+</tr>
+<tr>
+<td>传输层</td>
+<td>在两端主机之间传送数据，用端口区分应用</td>
+<td>TCP 把字节按序交给对端，通过序号和确认发现丢失并重传</td>
+</tr>
+<tr>
+<td>网络层</td>
+<td>让数据包跨越多个网络到达目的主机</td>
+<td>IP 包携带目的 IP 地址，每台路由器据此选择下一跳</td>
+</tr>
+<tr>
+<td>链路层</td>
+<td>在同一条链路上传递一帧数据</td>
+<td>笔记本通过 Wi-Fi 把帧交给接入点，下一段链路可以使用以太网</td>
+</tr>
+</tbody>
+</table>
+<p>在分层图里，可以横着找同一种协议，也可以竖着看一次通信会经过哪些层。左边的 OSI 模型从下到上是物理层、数据链路层、网络层、传输层、会话层、表示层和应用层。中间的 TCP/IP 模型把物理传输和成帧归入网络接口层，应用协议负责会话和数据表示等工作。右边是课程采用的划分，链路层负责一跳，网络层负责跨网络转发，端到端层在此基础上向应用提供服务。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150311042.png" alt="OSI、TCP/IP 与课程采用的分层方式"></p>
+<h3 id="协议与地址">协议与地址</h3>
+<p>应用先确定要找的服务。浏览器根据 URL 中的主机名查询 IP 地址，根据 URL 中的路径请求资源。文件传输可以用 FTP，发送邮件可以用 SMTP，收取邮件可以用 POP3。它们对请求和响应的解释不同，同一套网络都能承载这些应用。</p>
+<p>数据到达一台主机后，还要交给相应的程序。TCP 和 UDP 都用端口号标明通信两端。下图中，两种首部的第一行都是源端口和目的端口。TCP 还带有序号、确认号、标志和窗口等字段，用来建立连接、恢复丢失的数据和控制发送速度。UDP 首部只有源端口、目的端口、长度和校验和，保留每条消息的边界，丢失后的处理由应用决定。代理可以终止一条连接再建立另一条，防火墙也可以按地址和端口筛选经过的流量。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150313633.png" alt="TCP 和 UDP 首部中的端口及控制字段"></p>
+<p>IP 地址标识设备接入网络的接口。路由器收到包后，查看目的 IP 地址并查询转发表。以太网交换机在一段局域网内根据链路层地址转发帧。应用可以用同一种 IP 接口跨越以太网、Wi-Fi、光纤和蜂窝网络，只需各段链路都能承载 IP 包。协议栈因此常画成沙漏，腰部是 IP，上下两端容纳多种协议和传输技术。</p>
+<p>共同的接口也解释了为什么网络规模会影响网络的价值。假设网络里有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> 个人都能互相通信，每个人就有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">N-1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> 个潜在通信对象。两人之间的联系只算一次，全网共有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo stretchy="false">(</mo><mi>N</mi><mo>−</mo><mn>1</mn><mo stretchy="false">)</mo><mi mathvariant="normal">/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">N(N-1)/2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mclose">)</span><span class="mord">/2</span></span></span></span> 对潜在通信伙伴。IP 层统一寻址与转发，各应用可以按自己的需要在端系统中增加可靠性等功能，无需途中的网络理解网页或邮件的内容。</p>
+<h3 id="逐层封装">逐层封装</h3>
+<p>沿着图从上往下读。应用给出一段数据，TCP 在前面加上 TCP 首部，组成报文段。IP 把整个报文段当作自己的载荷，加上 IP 首部，组成数据报。以太网再把 IP 数据报装进帧里，加上本跳的地址、类型和尾部校验字段。接收端反向处理，按帧的类型找到 IP，再按 IP 首部中的协议号找到 TCP，最后根据连接信息把数据交给应用。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150309169.png" alt="应用数据逐层封装为报文段、IP 数据报和链路帧"></p>
+<p>例如，TCP 要发送 100 字节应用数据。假设 TCP 和 IPv4 都使用 20 字节的基本首部，报文段共 120 字节，IP 数据报共 140 字节。在普通以太网上再加上 14 字节 MAC 首部和 4 字节帧校验序列，得到 158 字节的帧。在线路上，网卡还先发送 8 字节的前导码和帧起始定界符。因此算链路开销时，要分清从哪里开始数。普通无 VLAN 标签的以太网 MAC 帧长为 64 至 1518 字节，其中能装的上层数据最多为 1500 字节。</p>
+<p>图中字段也说明了每层怎样区分多种上层协议。IPv4 首部的 Protocol 字段标明载荷应交给 TCP、UDP 还是 ICMP。常用的 <code>ping</code> 通过 ICMP 回显请求和回显应答探测 IP 连通性。Total Length 给出整个 IP 数据报的长度，源地址和目的地址各占 32 位。TTL 限制转发跳数，首部校验和用来检测 IPv4 首部的差错。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150310532.png" alt="IPv4 首部中的长度、协议号、地址和 TTL"></p>
+<p>一段应用数据也可能分成多个报文段发送。每经过一台路由器，入站链路的帧封装就结束了。路由器取出 IP 包，更新转发所需的字段，再按出站链路的规则装进新帧。两端主机要处理从链路层到应用层的完整协议栈，中间的 IP 路由器只需处理沿途转发所涉及的层次。</p>
+<h2 id="比特传输">比特传输</h2>
+<h3 id="共享时钟">共享时钟</h3>
+<p>芯片上的两个寄存器可以共用一个时钟。寄存器 A 在一个时钟沿更新输出，导线上的电压经过传播逐渐稳定，寄存器 B 在下一个时钟沿读取输入。时钟周期必须容得下电路和导线的延迟。两端都知道何时写、何时读，线上就只需传数据。</p>
+<p>如果 A 和 B 各用自己的时钟，B 怎样判断数据已经稳定？一种方式是再接两根控制线。A 先把一个比特放到数据线上，等数据稳定，再改变 ready 信号。B 观察到 ready 变化后读取数据，随后改变 acknowledge 信号。A 收到确认，才用下一个比特替换数据线上的值。图中的箭头给出了三个信号各自的方向。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150310017.png" alt="三线握手中 data、ready 和 acknowledge 的方向"></p>
+<p>设信号从 A 传播到 B 需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">\Delta t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">Δ</span><span class="mord mathnormal">t</span></span></span></span> 秒，反向耗时相同。即使忽略电路处理时间，A 也至少要等 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi mathvariant="normal">Δ</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">2\Delta t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">2Δ</span><span class="mord mathnormal">t</span></span></span></span> 才能收到确认。一根数据线每次握手传 1 位，速率上限约为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mo stretchy="false">(</mo><mn>2</mn><mi mathvariant="normal">Δ</mi><mi>t</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">1/(2\Delta t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1/</span><span class="mopen">(</span><span class="mord">2Δ</span><span class="mord mathnormal">t</span><span class="mclose">)</span></span></span></span> bit/s。如果同时铺设 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> 根数据线，每次握手可传 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> 位，上限相应变为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mi mathvariant="normal">/</mi><mo stretchy="false">(</mo><mn>2</mn><mi mathvariant="normal">Δ</mi><mi>t</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">N/(2\Delta t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mord">/</span><span class="mopen">(</span><span class="mord">2Δ</span><span class="mord mathnormal">t</span><span class="mclose">)</span></span></span></span> bit/s。并行 SCSI 和早期打印机接口都用过并行传输。</p>
+<h3 id="恢复时钟">恢复时钟</h3>
+<p>线缆越长，每位等一次应答的代价越高。串行链路让发送端按约定速率连续发送比特，多个比特可以同时在路上传播。USB 和 SATA 都采用串行传输。接收端面临的新问题是，自己的时钟与发送端略有偏差，读得太早或太晚都可能把一个比特认成相邻的比特。</p>
+<p>接收端可以用锁相环（PLL）从输入信号恢复时钟。压控振荡器（VCO）先产生一个接近发送频率的本地信号。鉴相电路比较输入信号与本地信号，一种实现是将两者相乘并滤波，再用所得电压调整振荡器。经过反馈调节，本地时钟会跟上输入信号的频率和相位，接收端就能在电平稳定时采样。</p>
+<p>频率略有偏差的两个时钟会逐渐错开。如果输入长时间保持同一电平，接收端就缺少校准时钟的依据。曼彻斯特编码把每一位分成前后两半，并规定两半电平相反。因此即使连续发送相同的数据位，接收端也能在每一位中间看到一次跳变。双方只需事先约定两个跳变方向分别代表哪个值。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150311635.png" alt="NRZ 与曼彻斯特编码发送同一串数据时的波形"></p>
+<p>图中的虚线划分比特周期。看中间连续的三个 1，黑色 NRZ 波形在这段时间保持高电平，红色波形在每个比特中点都从低变高。按图中的约定，上升沿表示 1，下降沿表示 0。有些系统采用相反的方向，把 0 编成 01、1 编成 10。两端采用同一约定，就能从跳变方向读出数据。每传一位需要两个码元，因此在相同的码元速率下，比特率降为每码元传一位时的一半。</p>
+<h2 id="链路复用">链路复用</h2>
+<h3 id="时分复用">时分复用</h3>
+<p>波士顿和洛杉矶之间的一条干线可以同时承载多路电话。呼叫建立时，两端交换机为这路通话预留一个周期性时隙，通话结束再释放。接收端按时隙的位置区分通话，即使某人暂时不说话，他的时隙也保留下来。这种定期获得传输机会的通信方式适合连续传送语音样本。</p>
+<p>假设每路电话每秒采样 8000 次，每个样本 8 位，每路需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>8000</mn><mo>×</mo><mn>8</mn><mo>=</mo><mn>64,000</mn></mrow><annotation encoding="application/x-tex">8000\times8=64{,}000</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">8000</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">8</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">64</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">000</span></span></span></span> bit/s。每隔 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mn>8000</mn></mrow><annotation encoding="application/x-tex">1/8000</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1/8000</span></span></span></span> 秒，也就是 125 微秒，每路都要送出一个样本。在 45 Mbit/s 的干线上，一个周期可发送 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>45,000,000</mn><mi mathvariant="normal">/</mi><mn>8000</mn><mo>=</mo><mn>5625</mn></mrow><annotation encoding="application/x-tex">45{,}000{,}000/8000=5625</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">45</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">000</span><span class="mord"><span class="mpunct">,</span></span><span class="mord">000/8000</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">5625</span></span></span></span> 位。安排 703 路通话需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>703</mn><mo>×</mo><mn>8</mn><mo>=</mo><mn>5624</mn></mrow><annotation encoding="application/x-tex">703\times8=5624</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">703</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">8</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">5624</span></span></span></span> 位，恰好能放下。此处按课件的简化模型计算，暂不计额外的线路开销。下图相邻两个标出的 8 位样本属于同一路电话，中间的时间可以交给其他通话。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150313074.png" alt="一条通话每隔一个复用周期发送一个 8 位样本"></p>
+<blockquote>
+<p>第 704 路电话呼入时会怎样？703 路各自占用一个时隙，剩下的 1 位装不下一个 8 位样本，新呼叫只能等待或收到忙音。已经接通的人仍听到连续的声音，因为接收端每 125 微秒就收到下一个样本，可以按原采样节奏还原语音。</p>
+</blockquote>
+<h3 id="分组复用">分组复用</h3>
+<p>一台电脑下载文件时会连续收到许多数据，下载结束后却可能长时间空闲。给每台电脑预留固定时隙，会让空闲电脑占着线路。分组网络把数据拆成有限长度的包，每个包携带地址等控制信息，链路空闲时就发送一个等待中的包。例如，一个来源可以一次发送 4000 位数据，另一个来源随后只发 750 位。两份数据各自带有控制信息，接收端可以分别处理。长消息也可以分段，到接收端再重组。语音也可以分组传送，由接收端缓冲后按时播放。</p>
+<p>图中不同颜色代表不同来源。多个输入同时需要同一个输出口时，交换设备把暂时发不出去的包放入队列，依次送上链路，这就是复用。收到包后，设备按首部中的目的地址查表，决定应交给哪个输出口，这就是分用。缓冲区使设备可以吸收短时突发，代价是排队等待，队列满后还可能丢包。无连接分组转发省去了逐次建立呼叫的步骤，设备仍需保存转发表和队列。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150312090.png" alt="多股输入流在同一输出口排队"></p>
+<h2 id="成帧与校验">成帧与校验</h2>
+<h3 id="帧的边界">帧的边界</h3>
+<p>接收端能读出 0 和 1 之后，还需要知道一帧从哪里开始、在哪里结束。一种简单的设计是用连续七个 1 作分隔符。为了让数据中的七个 1 可以原样还原，发送端每在数据里数到连续六个 1，就额外插入一个 0。例如，数据 <code>1111111</code> 在线上变成 <code>11111101</code>。接收端识别帧边界后，按同一规则去掉填入的 0。这种方法称为比特填充，采用哪一种标志和填充规则由具体协议规定。</p>
+<h3 id="检错与纠错">检错与纠错</h3>
+<p>链路中的噪声可能让 1 变成 0，或者让 0 变成 1。发送端可以随帧附上校验值，接收端根据收到的数据重新计算。发现错误后，可以丢帧并由上层处理，也可以请求链路对端重发。后者要求发送端把尚未确认的帧保存在缓冲区。另一种做法是在发送或写盘前加入足够的冗余，使接收端或读盘设备能够自行恢复数据，称为前向纠错（FEC）。系统可以按误码特点和重传代价搭配这些方法。</p>
+<p>检错和纠错的区别可以用汉明距离算出来。两个等长比特串中，取值不同的位置数就是它们的汉明距离。把两串按位异或再数 1，也能得到这个数。例如，<code>100101</code> 与 <code>000111</code> 异或得到 <code>100010</code>，其中有两个 1，说明这两串相差两位。编码规则允许发送的比特串称为码字。若任意两个码字至少相差 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span> 位，翻转少于 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span> 位就无法从一个合法码字变成另一个。只做检错时，接收端因此能发现最多 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">d-1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7778em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">d</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> 位错误。要纠正 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span></span></span></span> 位错误，还得保证收到的串只会落在一个码字的 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span></span></span></span> 位范围内，这要求 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>t</mi><mo>&lt;</mo><mi>d</mi></mrow><annotation encoding="application/x-tex">2t&lt;d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6835em;vertical-align:-0.0391em;"></span><span class="mord">2</span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span>。</p>
+<table>
+<thead>
+<tr>
+<th>最小距离</th>
+<th>接收端能据此做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>检出任意一位翻转</td>
+</tr>
+<tr>
+<td>3</td>
+<td>纠正任意一位翻转。如果只做检错，可以检出两位翻转</td>
+</tr>
+<tr>
+<td>4</td>
+<td>在纠正一位错误的同时，认出两位错误并报告。若只做检错，可以检出三位翻转</td>
+</tr>
+</tbody>
+</table>
+<p>以偶校验为例，在两位数据后加一位，让整串中 1 的个数为偶数。于是 <code>00 → 000</code>，<code>01 → 011</code>，<code>10 → 101</code>，<code>11 → 110</code>。三位比特共有八种组合，只有这四种是合法码字。图上沿一条边移动相当于翻转一位。从任何一个加粗的码字出发，走一步都会落在非法组合上，走两步却可能到达另一个合法码字。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150312701.png" alt="三位比特串中四个合法的偶校验码字"></p>
+<h3 id="汉明码">汉明码</h3>
+<p>怎样用三个校验位定位一个错误？把四位数据装进七个位置，每次读取要区分八种情况，即七个位置中某一位出错，或所有位都正确。三个校验结果恰好能够表示 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mn>3</mn></msup><mo>=</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">2^3=8</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">8</span></span></span></span> 种情况。给较长数据块编码时可以共用校验位，例如 56 位数据用 6 个位置校验位就能定位单错，还可以加一位总奇偶校验来检测双错。</p>
+<p>把七个位置从左到右编号为 1 至 7。位置 1、2、4 放校验位，位置 3、5、6、7 依次放数据位。每个校验位负责一组位置，各组分别检查编号的二进制表示中最低位、第二位和第三位为 1 的那些位置。</p>
+<table>
+<thead>
+<tr>
+<th>校验组</th>
+<th>参与偶校验的位置</th>
+<th>数据为 1101 时应填的校验位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1、3、5、7</td>
+<td>位置 3、5、7 都是 1，因此位置 1 填 1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2、3、6、7</td>
+<td>位置 3、6、7 为 1、0、1，因此位置 2 填 0</td>
+</tr>
+<tr>
+<td>4</td>
+<td>4、5、6、7</td>
+<td>位置 5、6、7 为 1、0、1，因此位置 4 填 0</td>
+</tr>
+</tbody>
+</table>
+<p>依次读出七个位置，得到码字 <code>1010101</code>。假如收到 <code>1010001</code>，第 1、4 组的偶校验失败，第 2 组通过。因为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>+</mo><mn>4</mn><mo>=</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">1+4=5</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">5</span></span></span></span>，出错的是第 5 位，把它翻转即可。若收到 <code>1110101</code>，只有第 2 组失败，因此恢复第 2 位。校验位自身出错也可以用同一方法定位。</p>
+<blockquote>
+<p>如果三位同时翻转，会发生什么？从合法码字 <code>1010101</code> 出发，同时翻转第 1、2、3 位，得到 <code>0100101</code>。第 1 组有两位变动，第 2 组也有两位变动，第 4 组未受影响，三组检查全部通过。接收端会把它当作另一条合法数据。三位错误也可能导致错误的纠正结果，普通七位汉明码只保证纠正单错。</p>
+</blockquote>
+<h2 id="PPP">PPP</h2>
+<p>点对点链路两端各有一台设备。两端要就帧格式、接收能力和上层协议达成一致，才知道怎样解释对方送来的字节。点对点协议（PPP）把这些工作分开。链路控制协议 LCP 建立和配置链路，网络控制协议族 NCP 配置所承载的网络层协议，其中 IPCP 用于 IPv4。</p>
+<p>在常见的 HDLC 风格封装中，PPP 帧的字段依次如下。两端先识别标志，再检查 FCS，通过校验后根据协议字段交付载荷。</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>常用长度</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>起始标志</td>
+<td>1 字节</td>
+<td><code>0x7E</code>，比特表示为 <code>01111110</code></td>
+</tr>
+<tr>
+<td>地址、控制</td>
+<td>各 1 字节</td>
+<td>默认分别为 <code>0xFF</code> 和 <code>0x03</code>，沿用点对点成帧格式</td>
+</tr>
+<tr>
+<td>协议</td>
+<td>默认 2 字节</td>
+<td>说明载荷类型，例如 <code>0x0021</code> 表示 IPv4</td>
+</tr>
+<tr>
+<td>信息</td>
+<td>可变</td>
+<td>网络层数据报或 PPP 控制报文</td>
+</tr>
+<tr>
+<td>帧校验序列 FCS</td>
+<td>2 或 4 字节</td>
+<td>使用 CRC 检测传输差错</td>
+</tr>
+<tr>
+<td>结束标志</td>
+<td>1 字节</td>
+<td>同样为 <code>0x7E</code>，也可作为下一帧的起始标志</td>
+</tr>
+</tbody>
+</table>
+<p>注意标志中间有六个连续的 1。在按位同步的 PPP 链路上，发送端每遇到五个连续的 1 就填一个 0，接收端再去掉它。异步字节链路则使用转义字节。成帧的目的相同，两种链路识别边界的单位不同。</p>
+<p>假设路由器 A 能接收 1500 字节的信息字段，希望使用 32 位 FCS，路由器 B 只支持 16 位 FCS。双方先交换 LCP 配置请求和答复，调整未获同意的选项。两边各自的配置都得到确认后，链路进入打开状态。接下来 IPCP 协商 IPv4 所需的参数，然后 PPP 才开始承载 IPv4 数据报。这样，发送方在发出业务数据前就已知道对端能按什么条件接收。</p>
+<h2 id="跨网传输">跨网传输</h2>
+<p>一段链路只能把帧交给这一跳能接收它的设备。目的主机在远处时，发送方给 IP 层的是最终目的地址。每台路由器按转发表选择下一跳，再用本地链路把包送过去。控制平面负责生成和更新这张表，数据平面负责对每个到达的包查表并转发。链路故障、新增连接或代价变化都可能触发重新选路。小网络可以手工配置静态路由，规模增大后，路由器需要交换信息并自行更新路由。</p>
+<p>IP 提供尽力而为的投递。路由器遇到无法转发的包或队列已满时可以丢包。应用需要可靠交付时，可以由传输层检测丢失并重传。另一种服务按完整消息跟踪交付，把等待转交的消息暂存在磁盘上，等下一站确认后再清理。它把持久化和重试放在更高一层。</p>
+<p>超时也可能发生在回复途中。服务器若已执行请求，客户端此时重发同一请求，服务器就可能执行两次。例如读取网页通常可以重复，重复扣款就会改变余额。需要避免重复执行的服务，可以给请求分配标识，并记录已经处理的请求及其结果。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/11/05/SE3331_12/">https://acannedfish.github.io/2026/11/05/SE3331_12/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/background12.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/10/29/SE3331_11/" title="计算机系统工程-11：Spanner 与 TrueTime"><img class="cover" src="/img/background11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-11：Spanner 与 TrueTime</div></div></div></a><a class="pagination-related  no-desc" href="/2026/11/05/SE3331_13/" title="计算机系统工程-13：IP 路由与转发"><img class="cover" src="/img/background13.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">计算机系统工程-13：IP 路由与转发</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/06/23/SE2302_07/" title="计算机系统基础-07：网络"><img class="cover" src="/img/background9.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-23</div><div class="info-item-2">计算机系统基础-07：网络</div></div></div></a><a class="pagination-related no-desc" href="/2026/11/05/SE3331_13/" title="计算机系统工程-13：IP 路由与转发"><img class="cover" src="/img/background13.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-05</div><div class="info-item-2">计算机系统工程-13：IP 路由与转发</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><div class="site-data-item"><div class="headline">文章</div><div class="length-num">121</div></div><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E5%88%86%E5%B1%82"><span class="toc-number">1.</span> <span class="toc-text">网络分层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%9C%B0%E5%9D%80"><span class="toc-number">1.1.</span> <span class="toc-text">协议与地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%90%E5%B1%82%E5%B0%81%E8%A3%85"><span class="toc-number">1.2.</span> <span class="toc-text">逐层封装</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%AF%94%E7%89%B9%E4%BC%A0%E8%BE%93"><span class="toc-number">2.</span> <span class="toc-text">比特传输</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E6%97%B6%E9%92%9F"><span class="toc-number">2.1.</span> <span class="toc-text">共享时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%81%A2%E5%A4%8D%E6%97%B6%E9%92%9F"><span class="toc-number">2.2.</span> <span class="toc-text">恢复时钟</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%93%BE%E8%B7%AF%E5%A4%8D%E7%94%A8"><span class="toc-number">3.</span> <span class="toc-text">链路复用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E5%88%86%E5%A4%8D%E7%94%A8"><span class="toc-number">3.1.</span> <span class="toc-text">时分复用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E7%BB%84%E5%A4%8D%E7%94%A8"><span class="toc-number">3.2.</span> <span class="toc-text">分组复用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%90%E5%B8%A7%E4%B8%8E%E6%A0%A1%E9%AA%8C"><span class="toc-number">4.</span> <span class="toc-text">成帧与校验</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%A7%E7%9A%84%E8%BE%B9%E7%95%8C"><span class="toc-number">4.1.</span> <span class="toc-text">帧的边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E9%94%99%E4%B8%8E%E7%BA%A0%E9%94%99"><span class="toc-number">4.2.</span> <span class="toc-text">检错与纠错</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B1%89%E6%98%8E%E7%A0%81"><span class="toc-number">4.3.</span> <span class="toc-text">汉明码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PPP"><span class="toc-number">5.</span> <span class="toc-text">PPP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%A8%E7%BD%91%E4%BC%A0%E8%BE%93"><span class="toc-number">6.</span> <span class="toc-text">跨网传输</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/site-navigation.js" defer></script><script src="/js/site-motion.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#route-state","#page-header","#route-content","#aside-content","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+  const navigationSwitches = window.SiteNavigation ? window.SiteNavigation.switches : {}
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    switches: navigationSwitches,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: true,
+    // Route switches position new pages before their first painted frame.
+    scrollTo: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

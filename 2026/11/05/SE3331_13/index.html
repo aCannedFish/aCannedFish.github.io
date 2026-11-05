@@ -1,0 +1,873 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机系统工程-13：IP 路由与转发 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="下一跳 主机要把一个 IP 包发给远处的服务器，只要先把它交给一台能继续转发的路由器。对这个包来说，这台路由器就是主机的下一跳。随后每台路由器都查自己的转发表，根据目的 IP 地址决定下一跳和出接口。沿途各台设备的决定接得上，包才能到达服务器。 这些表是怎样得到的？管理员可以为出口固定的小网络配置静态路由。链路较多时，路由器会运行路由协议，发现邻居、交换可达信息，再选出到各目的地的路径。很多域内协">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机系统工程-13：IP 路由与转发">
+<meta property="og:url" content="https://acannedfish.github.io/2026/11/05/SE3331_13/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="下一跳 主机要把一个 IP 包发给远处的服务器，只要先把它交给一台能继续转发的路由器。对这个包来说，这台路由器就是主机的下一跳。随后每台路由器都查自己的转发表，根据目的 IP 地址决定下一跳和出接口。沿途各台设备的决定接得上，包才能到达服务器。 这些表是怎样得到的？管理员可以为出口固定的小网络配置静态路由。链路较多时，路由器会运行路由协议，发现邻居、交换可达信息，再选出到各目的地的路径。很多域内协">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background13.png">
+<meta property="article:published_time" content="2026-11-05T06:01:00.000Z">
+<meta property="article:modified_time" content="2026-11-05T07:13:07.641Z">
+<meta property="article:author" content="aCannedFish">
+<meta property="article:tag" content="计算机网络">
+<meta property="article:tag" content="IP">
+<meta property="article:tag" content="路由协议">
+<meta property="article:tag" content="BGP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background13.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机系统工程-13：IP 路由与转发",
+  "url": "https://acannedfish.github.io/2026/11/05/SE3331_13/",
+  "image": "https://acannedfish.github.io/img/background13.png",
+  "datePublished": "2026-11-05T06:01:00.000Z",
+  "dateModified": "2026-11-05T07:13:07.641Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/11/05/SE3331_13/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4&amp;site=d897aab3052c"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机系统工程-13：IP 路由与转发',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css?v=d897aab3052c"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"><link rel="stylesheet" href="/lib/katex/katex.min.css">
+<style data-katex-display>
+/* Hide the MathML fallback; when it is laid out, every formula renders twice. */
+#article-container .katex .katex-mathml {
+  display: none !important;
+}
+
+/* Reveal KaTeX without waiting for the theme loader to add .katex-show. */
+#article-container .katex {
+  display: inline !important;
+}
+
+#article-container .katex-display > .katex {
+  display: block !important;
+}
+</style>
+</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><div class="site-data-item"><div class="headline">文章</div><div class="length-num">121</div></div><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/search/"><i class="fa-fw fas fa-search"></i><span> 搜索</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;计算机系统工程-13：IP 路由与转发&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/search/"><i class="fa-fw fas fa-search"></i><span> 搜索</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><div class="nav-search-page" id="search-button"><a class="site-page" href="/search/" aria-label="搜索"><i class="fas fa-search fa-fw" aria-hidden="true"></i></a></div><!-- 移动端汉堡菜单按钮--><button id="toggle-menu" type="button" aria-label="打开导航菜单" aria-controls="sidebar-menus"><span class="site-page"><i class="fas fa-bars fa-fw" aria-hidden="true"></i></span></button></div></nav><div id="post-info"><h1 class="post-title">计算机系统工程-13：IP 路由与转发</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-05T06:01:00.000Z" title="发表于 2026-11-05 14:01:00">2026-11-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-05T07:13:07.641Z" title="更新于 2026-11-05 15:13:07">2026-11-05</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/">Note</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Note/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%E5%B7%A5%E7%A8%8B/">计算机系统工程</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="下一跳">下一跳</h2>
+<p>主机要把一个 IP 包发给远处的服务器，只要先把它交给一台能继续转发的路由器。对这个包来说，这台路由器就是主机的下一跳。随后每台路由器都查自己的转发表，根据目的 IP 地址决定下一跳和出接口。沿途各台设备的决定接得上，包才能到达服务器。</p>
+<p>这些表是怎样得到的？管理员可以为出口固定的小网络配置静态路由。链路较多时，路由器会运行路由协议，发现邻居、交换可达信息，再选出到各目的地的路径。很多域内协议用 HELLO 报文发现邻居并确认它们仍能通信。路由器通告哪些目的地可以到达，以及到达它们的代价。链路中断或代价发生变化后，路由器再更新自己的选择。计算和更新路径属于控制平面，逐包查表和转发属于数据平面。</p>
+<p>把路由器画成节点，直连线路画成边，边上的数表示代价。代价可以按跳数、带宽或管理员配置的度量确定。下面的例子用沿途各条边的代价之和比较路径。A 直连 B 的代价为 7，经 D 到 B 的代价为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mo>+</mo><mn>1</mn><mo>=</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">2+1=3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">3</span></span></span></span>。因此 A 发给 B 的包，走代价较小的路径时，第一跳应该交给 D。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150319452.png" alt="六台路由器和各条直连链路的代价"></p>
+<h2 id="链路状态路由">链路状态路由</h2>
+<p>链路状态路由（link-state routing）让每台路由器获得本区域的拓扑。以 A 为例，它先测得自己与 B、D、F 相邻，向邻居发出一份通告，列出 <code>(B,7)、(D,2)、(F,1)</code>。邻居把新通告转发到其他链路。路由器按发起者和序号识别已经处理过的版本，重复收到同一份就停止转发，也可以跳过刚刚送来这份通告的接口。这种逐跳传播称为泛洪。</p>
+<p>B、D、F 等节点也会分别通告自己直连的链路。只要区域仍然连通，一条边故障的消息就可以沿其他边传遍区域。每台路由器把最新通告拼成带权图，再以自己为起点运行 Dijkstra 算法。OSPF 和 IS-IS 都采用这一思路。</p>
+<h3 id="最短路径">最短路径</h3>
+<p>从 A 出发，先记下到自己的距离为 0，到其他节点的距离为无穷大。每一步都从尚未确定的节点中取当前距离最小的一个，记为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi></mrow><annotation encoding="application/x-tex">u</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">u</span></span></span></span>。对它的每个邻居 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span></span></span></span>，尝试用“到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi></mrow><annotation encoding="application/x-tex">u</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">u</span></span></span></span> 的距离加上边 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi></mrow><annotation encoding="application/x-tex">u</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">u</span></span></span></span> 到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span></span></span></span> 的代价”改进到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span></span></span></span> 的距离。由于链路代价非负，所有还未确定的路线都无法再把到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi></mrow><annotation encoding="application/x-tex">u</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">u</span></span></span></span> 的距离降得更低，因此这一轮可以确定 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi></mrow><annotation encoding="application/x-tex">u</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">u</span></span></span></span> 的最短距离。</p>
+<p>下表沿用上面的图。表内是 A 到各节点目前已知的最小代价，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∞</mi></mrow><annotation encoding="application/x-tex">\infty</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord">∞</span></span></span></span> 表示还未找到路径。</p>
+<table>
+<thead>
+<tr>
+<th>本轮处理的节点</th>
+<th style="text-align:right">B</th>
+<th style="text-align:right">C</th>
+<th style="text-align:right">D</th>
+<th style="text-align:right">E</th>
+<th style="text-align:right">F</th>
+<th>发生了什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td style="text-align:right">7</td>
+<td style="text-align:right"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∞</mi></mrow><annotation encoding="application/x-tex">\infty</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord">∞</span></span></span></span></td>
+<td style="text-align:right">2</td>
+<td style="text-align:right"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∞</mi></mrow><annotation encoding="application/x-tex">\infty</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord">∞</span></span></span></span></td>
+<td style="text-align:right">1</td>
+<td>先登记与 A 直连的三条边</td>
+</tr>
+<tr>
+<td>F</td>
+<td style="text-align:right">7</td>
+<td style="text-align:right"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∞</mi></mrow><annotation encoding="application/x-tex">\infty</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord">∞</span></span></span></span></td>
+<td style="text-align:right">2</td>
+<td style="text-align:right">6</td>
+<td style="text-align:right">1</td>
+<td>经 F 到 E 的代价为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>+</mo><mn>5</mn><mo>=</mo><mn>6</mn></mrow><annotation encoding="application/x-tex">1+5=6</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">5</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">6</span></span></span></span></td>
+</tr>
+<tr>
+<td>D</td>
+<td style="text-align:right">3</td>
+<td style="text-align:right">7</td>
+<td style="text-align:right">2</td>
+<td style="text-align:right">5</td>
+<td style="text-align:right">1</td>
+<td>经 D 到 B、C、E 的代价分别为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">2+1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span>、<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mo>+</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">2+5</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">5</span></span></span></span>、<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mo>+</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">2+3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">3</span></span></span></span></td>
+</tr>
+<tr>
+<td>B</td>
+<td style="text-align:right">3</td>
+<td style="text-align:right">6</td>
+<td style="text-align:right">2</td>
+<td style="text-align:right">5</td>
+<td style="text-align:right">1</td>
+<td>经 B 到 C 的代价为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>+</mo><mn>3</mn><mo>=</mo><mn>6</mn></mrow><annotation encoding="application/x-tex">3+3=6</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">3</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">3</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">6</span></span></span></span></td>
+</tr>
+<tr>
+<td>E、C</td>
+<td style="text-align:right">3</td>
+<td style="text-align:right">6</td>
+<td style="text-align:right">2</td>
+<td style="text-align:right">5</td>
+<td style="text-align:right">1</td>
+<td>依次检查 E、C，已有距离都无需更新</td>
+</tr>
+</tbody>
+</table>
+<p>填转发表时，还得记下该往哪里发。A 从直连邻居开始扩展时，第一跳就是那个邻居。如果新路径经由某个已知节点，第一跳就沿用到该节点的第一跳。例如 C 的最终路径是 A → D → B → C。A 到 C 的距离更新为 6，出站仍然交给 D。D 收到包后才会把它转发给 B，最后由 B 交给 C。因此，A 发往 B、C、D、E 的包都交给 D，发往 F 的包直接交给 F。</p>
+<h2 id="距离向量路由">距离向量路由</h2>
+<p>距离向量路由（distance-vector routing）允许路由器只跟直连邻居交换消息。每台路由器维护一列“目的地、当前距离”，这列数就是它的距离向量。起初它只确定到自己的代价为 0。认识直连邻居后，就能列出直连代价。收到其他节点的向量时，路由器用这些数更新自己的估计，再向邻居通告自己的新向量。</p>
+<p>设 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>D</mi><mi>X</mi></msub><mo stretchy="false">(</mo><mi>y</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">D_X(y)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.07847em;">X</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mclose">)</span></span></span></span> 为 X 估计的到目的地 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span></span></span></span> 的最小代价，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>c</mi><mo stretchy="false">(</mo><mi>X</mi><mo separator="true">,</mo><mi>v</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">c(X,v)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">c</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mclose">)</span></span></span></span> 为 X 到邻居 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span></span></span></span> 的直连代价。经 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span></span></span></span> 去 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span></span></span></span> 的候选代价等于走到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span></span></span></span> 的代价，加上 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span></span></span></span> 通告的剩余代价。比较所有邻居的结果，就得到 Bellman–Ford 的更新式。</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>D</mi><mi>X</mi></msub><mo stretchy="false">(</mo><mi>y</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mrow><mi>min</mi><mo>⁡</mo></mrow><mrow><mi>v</mi><mtext> </mtext><mo>∈</mo><mtext> </mtext><mrow><mi mathvariant="normal">N</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">i</mi><mi mathvariant="normal">g</mi><mi mathvariant="normal">h</mi><mi mathvariant="normal">b</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">s</mi></mrow><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo></mrow></munder><mo fence="true" stretchy="true" minsize="1.2em" maxsize="1.2em">(</mo><mi>c</mi><mo stretchy="false">(</mo><mi>X</mi><mo separator="true">,</mo><mi>v</mi><mo stretchy="false">)</mo><mo>+</mo><msub><mi>D</mi><mi>v</mi></msub><mo stretchy="false">(</mo><mi>y</mi><mo stretchy="false">)</mo><mo fence="true" stretchy="true" minsize="1.2em" maxsize="1.2em">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">D_X(y)=\min_{v\,\in\,\mathrm{Neighbors}(X)}\bigl(c(X,v)+D_v(y)\bigr).
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.07847em;">X</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.816em;vertical-align:-0.966em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.6679em;"><span style="top:-2.309em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span><span class="mspace mtight" style="margin-right:0.1952em;"></span><span class="mrel mtight">∈</span><span class="mspace mtight" style="margin-right:0.1952em;"></span><span class="mord mtight"><span class="mord mathrm mtight">Neighbors</span></span><span class="mopen mtight">(</span><span class="mord mathnormal mtight" style="margin-right:0.07847em;">X</span><span class="mclose mtight">)</span></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span><span class="mop">min</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.966em;"><span></span></span></span></span></span><span class="mopen"><span class="delimsizing size1">(</span></span><span class="mord mathnormal">c</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.2em;vertical-align:-0.35em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0278em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mclose"><span class="delimsizing size1">)</span></span><span class="mord">.</span></span></span></span></span></p>
+<p>实现时要记住当前路径用了哪个邻居。另一个邻居给出更小的代价，可以改走它。当前使用的邻居通告代价上升或撤销了路由时，也要用最新信息重算，即使所有候选路径都比原先更贵。</p>
+<h3 id="逐轮更新">逐轮更新</h3>
+<p>仍从 A 看同一张图。A 最初知道到 B 为 7、到 D 为 2、到 F 为 1。让每个节点先通告自己知道的直连代价，看看一轮之后 A 会得到什么。</p>
+<table>
+<thead>
+<tr>
+<th>A 收到的通告</th>
+<th>A 的计算</th>
+<th>表中变化</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B 到 C 为 3，到 D 为 1</td>
+<td>经 B 到 C 为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>7</mn><mo>+</mo><mn>3</mn><mo>=</mo><mn>10</mn></mrow><annotation encoding="application/x-tex">7+3=10</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">7</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">3</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">10</span></span></span></span>，经 B 到 D 为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>7</mn><mo>+</mo><mn>1</mn><mo>=</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">7+1=8</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">7</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">8</span></span></span></span></td>
+<td>先记下到 C 为 10，去 D 仍走直连链路</td>
+</tr>
+<tr>
+<td>D 到 B 为 1，到 C 为 5，到 E 为 3，到 F 为 4</td>
+<td>加上 A 到 D 的 2，候选代价分别为 3、7、5、6</td>
+<td>去 B、C、E 都改记为经 D，去 F 仍直连</td>
+</tr>
+<tr>
+<td>F 到 D 为 4，到 E 为 5</td>
+<td>经 F 到 D 为 5，到 E 为 6</td>
+<td>到 D 已有代价 2，到 E 已有代价 5，二者都更低</td>
+</tr>
+</tbody>
+</table>
+<p>这一轮结束时，A 会向邻居通告 <code>(B,3)、(C,7)、(D,2)、(E,5)、(F,1)</code>。D 在同一轮中也听到了 B 的通告，算出 D → B → C 的代价为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>+</mo><mn>3</mn><mo>=</mo><mn>4</mn></mrow><annotation encoding="application/x-tex">1+3=4</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">3</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span></span></span></span>。下一轮，A 收到 D 通告的 4，才把到 C 的距离从 7 改成 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mo>+</mo><mn>4</mn><mo>=</mo><mn>6</mn></mrow><annotation encoding="application/x-tex">2+4=6</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">6</span></span></span></span>。它最终选择的第一跳和前面用 Dijkstra 算出的一致。</p>
+<h3 id="计数到无穷">计数到无穷</h3>
+<p>距离通告没有记录完整路径，故障发生前留下的旧通告可能造成环路。看一条更短的链 A—B—C，每条边的代价都是 1。起初 B 到 C 为 1，A 通过 B 到 C 为 2。图中 A 在 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>0</mn><mo separator="true">,</mo><mn>10</mn><mo separator="true">,</mo><mn>20</mn><mo separator="true">,</mo><mo>…</mo></mrow><annotation encoding="application/x-tex">t=0,10,20,\ldots</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">10</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">20</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner">…</span></span></span></span> 通告，B 在 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>5</mn><mo separator="true">,</mo><mn>15</mn><mo separator="true">,</mo><mn>25</mn><mo separator="true">,</mo><mo>…</mo></mrow><annotation encoding="application/x-tex">t=5,15,25,\ldots</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">5</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">15</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">25</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="minner">…</span></span></span></span> 通告。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150315141.png" alt="B 到 C 的链路断开后，两端轮流收到过期距离"></p>
+<ol>
+<li>在 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">t=9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">9</span></span></span></span>，B 发现到 C 的链路断开，将 C 记为不可达。A 此时仍保存着经 B 到 C 的旧记录。</li>
+<li>在 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>10</mn></mrow><annotation encoding="application/x-tex">t=10</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">10</span></span></span></span>，A 报告“我到 C 的距离是 2”。B 看不到这条路经过自己，于是认为可以经 A 到 C，距离记为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>+</mo><mn>2</mn><mo>=</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">1+2=3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">3</span></span></span></span>。</li>
+<li>在 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>15</mn></mrow><annotation encoding="application/x-tex">t=15</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">15</span></span></span></span>，B 向 A 报告距离 3。A 本来就依赖 B，于是把自己的距离更新为 4。到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>=</mo><mn>20</mn></mrow><annotation encoding="application/x-tex">t=20</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">20</span></span></span></span>，B 又把距离更新为 5。</li>
+</ol>
+<p>此时两端都在把去 C 的包交给对方。协议会把某个有限数值定义为“无穷大”，直到距离涨到该值才判定不可达。取值太小，会把真实可达的长路径排除在外。取值越大，错误消息来回传播的轮次可能越多。RIP 把 16 跳定义为不可达，可用路径最多 15 跳。</p>
+<p>水平分割（split horizon）可以消除图中的两节点误判。A 既然通过 B 到 C，就省略发回 B 的这条路由。采用毒性逆转（poisoned reverse）时，A 会向 B 明确报告这条路的距离为无穷大。两种做法都能让 B 看出 A 无法给它提供到 C 的备用路线。涉及更多节点的环路仍需要等待其他更新收敛。</p>
+<h3 id="交换开销">交换开销</h3>
+<p>设区域内有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span> 台路由器、<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span></span></span></span> 条双向链路。在一次完整的链路状态发布中，每台路由器各发一份本地通告，每份泛洪到整个区域，按每条链路两个方向各转发一次估算，约需 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>N</mi><mi>L</mi></mrow><annotation encoding="application/x-tex">2NL</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mord mathnormal">L</span></span></span></span> 次传输。随后各节点可在本地计算路径。距离向量的每一轮只需相邻双方各发一份向量，约为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>L</mi></mrow><annotation encoding="application/x-tex">2L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">2</span><span class="mord mathnormal">L</span></span></span></span> 次传输，但一份向量包含许多目的地，而且新信息每轮只能再传播一跳。路径越长，传遍所需的轮数往往越多。这里比较的是消息次数，消息长度和收敛轮数也会影响实际开销。</p>
+<h2 id="分层路由">分层路由</h2>
+<h3 id="区域与前缀">区域与前缀</h3>
+<p>如果每台路由器都为全球每个网络接口保存单独的表项，转发表和通告都会随接口数增长。可以给地址分层，例如把“11,75”解释为第 11 区域的第 75 号站。外部路由器只需保存如何到第 11 区域，包进入区域后，再按站号交给内部路由器。区域还可以继续划分，不同地区也可采用不同层数。</p>
+<p>下图右侧是 R1.B 的两部分转发表。目的地是 R1.C 时，先匹配本区域，再查本地表，走 2 号接口。若目的地属于 R3，区域表直接给出 1 号接口，R1.B 无需知道 R3 内有哪些主机。代价是外部路由器看到的细节更少，有时会错过全网最短路径。地址也反映接入位置，设备搬到另一个区域时，通常要换到该区域的地址段。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150318097.png" alt="R1.B 对区域和本地节点分别查表"></p>
+<p>互联网以自治系统（AS）划分管理范围。一个 AS 由同一管理方实施路由策略。AS 内可以运行 OSPF、IS-IS、RIP 或 EIGRP 等内部网关协议，按内部度量选择路径。承担域间通信的边界路由器还运行 BGP，与其他 AS 交换目的网络的可达信息。收到一个外部前缀后，AS 内部仍要把包送到合适的出口。</p>
+<p>IP 用前缀表达一块连续、对齐的地址。CIDR 记法 <code>18.0.0.0/24</code> 表示前 24 位固定，后 8 位可以变化，覆盖 <code>18.0.0.0</code> 至 <code>18.0.0.255</code>。外部路由器可用一条通告代表这 256 个地址。分配连续地址块能减少表项。查表时优先采用匹配位数最多的前缀，因此大地址块内需要单独转发的一小块也能有自己的出口。</p>
+<h3 id="路径向量">路径向量</h3>
+<p>考虑第三种通告方式。每个节点通告到目的地会经过哪些节点，收到通告的一方在路径前加上自己，并选出愿意采用的路径。节点到自己的路径起初可以记为空。图中的 G 通过 1 号接口连接 A，通过 2、3、4 号接口分别连接 H、J、K。得知 J 能直接到 D 后，G 可以记录经 J 到 D，随后把去 D 的包送到 3 号接口。边上的数字在这幅图里表示本机接口编号。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150317166.png" alt="G 根据邻居通告的路径选择出接口"></p>
+<p>这就是路径向量（path vector）。如果 J 给 G 的候选路径已经包含 G，G 就丢弃它，否则把包交给 J 后还会回到自己。一个目的地有多条可行路径时，节点按本地规则选择。邻居加入新链路后可以通告新路径，原有路径失效时可以撤销，接收方随之删除依赖这条通告的路线，重新选择。相较只报距离的做法，通告更长，但接收者能识别路径中是否已有自己，避免前面逐次增加距离的过程。</p>
+<h3 id="BGP-策略">BGP 策略</h3>
+<p>BGP 把路径向量用于自治系统之间，通告的目的地是 IP 前缀，路径中的编号代表 AS。相邻 BGP 路由器通过 TCP 建立会话，用 KEEPALIVE 维持会话，用 UPDATE 发布或撤销路由。有变化时发送增量更新，可靠传输由 TCP 提供。路由器通常会拒绝 AS 路径中已经含有本 AS 编号的候选项。</p>
+<p>自治系统还要决定愿意替谁转发流量。最常见的两种关系是购买转接服务和对等互联。客户向上游付费，让上游把自己的流量送到互联网的其他地方。两个对等网络通常同意让自己的网络和客户访问对方及对方的客户。对等可以缩短路径并节省付给上游的费用，是否建立对等取决于双方的业务安排。</p>
+<p>这些约定影响路由的接收和发布。常见的导入策略会优先选择从客户学到的路径，其次是对等方，最后是需要付费的上游。条件相同再比较其他路径属性。对外发布时，运营商通常向所有邻居通告自身及客户前缀，向客户提供更完整的路由，而从一个对等方或上游学到的路由通常只通告给客户。因此不同 AS 看到的可达路径可以不同。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150317698.png" alt="X 与 Z、Y 对等，向 T 购买转接，同时服务自己的客户"></p>
+<p>读图时，把等号看成对等关系。C 是 Z 的客户，所以 Z 会向对等方 X 通告 C。X 会向 Z 和 Y 通告自己的客户 C1、C2、C3，Y 也会向 X 通告自己的客户 D。如果 X 再把从 Z 学来的 C 通告给 Y，Y 就会把发往 C 的流量交给 X，由 X 免费替两个对等方转接。按照图中的策略，X 会省略这条通告。X 同样会省略从上游 T 学来的路线，否则替 Y 转发还要向 T 付费。</p>
+<blockquote>
+<p>图上 Y 没有经 X 到 C 的路由，它怎样访问 C？Y 可以向自己的上游购买转接。较小的网络可接入区域运营商，区域运营商再连接骨干运营商。顶层骨干之间通过对等互联交换可达信息，所以 Y 还可以从自己的上游学到另一条路。</p>
+</blockquote>
+<p>BGP 需要同时处理可达性和各家的运营策略。一个网络接入多个上游时，同一个地址块可能出现更多候选路径，也可能需要发布更具体的前缀。配置错误或互相冲突的策略会让路由反复变化。AS 路径检查可以发现环路，却无法单凭一条通告证明发布者有权代表该前缀。2017 年 12 月，俄罗斯的 AS39523 异常通告了包含 Google、Apple、Facebook 和 Microsoft 在内的多个网络前缀，部分流量因此被引向错误的网络。</p>
+<h2 id="IP-包转发">IP 包转发</h2>
+<h3 id="收包与发包">收包与发包</h3>
+<p>路由算法算出表项后，每个到达的 IP 包都可以独立查表。下图中有两条入口。从左上开始，本机的传输层调用 <code>NETWORK_SEND</code>，交出一段数据、目的地址以及网络层和上层协议的标识。IP 层选定源地址，把上层协议号和载荷一起写入新包，再调用 <code>NETWORK_HANDLE</code>。从右下开始，网卡收到其他设备发来的帧，链路层取出载荷，按帧中的类型交给相应的网络层处理函数，也会进入 <code>NETWORK_HANDLE</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150315874.png" alt="本机发送和链路接收的数据进入同一套网络层处理流程"></p>
+<p>如果目的 IP 属于本机，处理函数就按上层协议号交付载荷，并带上源地址。例如 IP 把 TCP 报文段交给 TCP，TCP 再按连接信息交给对应的 socket。如果是需要转发的 IPv4 包，路由器会执行以下操作。</p>
+<ol>
+<li>按目的 IP 在转发表里做最长前缀匹配，取得出接口和下一跳。如果有默认路由，也可以匹配 <code>0.0.0.0/0</code>。找不到任何可用路由时，丢弃这个包。</li>
+<li>将 TTL 减 1。若减到 0，丢弃这个包，通常向源端返回 ICMP 超时报文。这样即使转发表暂时形成环路，包也不会一直循环。</li>
+<li>更新 IPv4 首部校验和，因为 TTL 字段已经改变。按出接口所用的链路协议，为下一跳加上新的帧封装，再从该接口发出。</li>
+</ol>
+<h3 id="软件转发">软件转发</h3>
+<p>一块多端口网卡通常为各端口提供多组收包队列（RX）和发包队列（TX）。下图中的两个处理进程各负责一组队列。一台机器用 DPDK（Data Plane Development Kit）实现软件路由器时，可以让工作线程在用户态轮询自己的 RX 队列，成批取包，读取目的地址并查转发表，再把待发的包放入出端口的 TX 队列。这样可以绕过内核的常规收发路径，减少每包的中断和调度开销。图中 RX、TX 的编号是队列编号，同一端口可以由多个核分担。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150315497.png" alt="DPDK 工作进程轮询网卡的收发队列"></p>
+<p>RouteBricks 进一步把转发工作分到多台通用服务器。下图左边是传统路由器，输入口和输出口之间由机箱内的交换结构连接。右边把外部线路接到若干服务器上，服务器之间通过内部链路交换包。入站服务器需要从另一台机器的端口出包时，就先把包传给那台机器。每台服务器内部又能用多核并行处理不同队列，扩展转发能力时既能增加核心，也能增加服务器。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150318625.png" alt="传统机箱的内部交换结构与 RouteBricks 的服务器互连"></p>
+<h2 id="以太网与-ARP">以太网与 ARP</h2>
+<h3 id="共享介质">共享介质</h3>
+<p>早期以太网把多台站点接在同一段介质上。站点先听线路，空闲时开始发送，同时继续监听是否发生冲突。两台相距较远的设备可能在对方信号尚未到达时都判断线路空闲，于是同时发送。检测到冲突后，双方停止当前传输，随机等待再试。连续冲突时扩大随机等待的范围，称为二进制指数退避。这套方法叫作带冲突检测的载波侦听多路访问（CSMA/CD）。</p>
+<p>为什么共享以太网需要规定最短帧长？假设发送方刚要发完最短帧，远端才检测到冲突。冲突信号还得沿线路传回来，发送方必须仍在发送才能察觉。因此共享网段的最大往返延迟要受发送时间约束。经典 10/100 Mbit/s 半双工以太网的时隙是 512 比特时间，对应 64 字节最短 MAC 帧。把帧前的 8 字节前导码和定界符也数进去，一次最短发送在线上共占 576 比特时间。</p>
+<p>实验以太网的速率约为 3 Mbit/s，后来的标准以太网、快速以太网和千兆以太网分别达到 10、100 和 1000 Mbit/s。理解这些数字时还要看端口如何连接。集线器（hub）把收到的信号复制到其他端口，所有设备共享带宽和冲突域。交换机（switch）学习“源 MAC 地址出现在哪个端口”，对已知目的 MAC 定向转发，广播帧和目的 MAC 未知的帧则在同一广播域内从其他端口发出。使用全双工点对点链路时，每个端口可以独立收发，链路长度主要受物理介质限制。</p>
+<p>一块网卡在常规单播和广播通信中会接收发给自身 MAC 的单播帧，以及它所在广播域内的广播帧，再按类型字段把载荷交给 IPv4、ARP 等协议。共享介质上的其他单播帧通常会被网卡过滤。以太网广播地址是 <code>ff:ff:ff:ff:ff:ff</code>，同一广播域内每台主机都能收到，这给查找邻居提供了一个办法。</p>
+<h3 id="地址解析">地址解析</h3>
+<p>下图有两套地址。上方的 L、M、N、E 是网络层标识，下方的 17、15、18、19 等是各站在这段以太网上的链路层标识。L 要向同一链路上的服务器 N 发 RPC，可以把包交给站 18。L 想访问远处的 E 时，则要先交给路由器 K 在本段上的站 19。即使 E 在另一段链路上碰巧也叫站 15，当前链路上的站 15 仍是 M。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150319038.png" alt="L 到本地 N 和远端 E 时使用不同的以太网下一跳"></p>
+<p>在 IPv4 以太网上，主机先查路由，确定下一跳的 IP，再用 ARP（地址解析协议）查询这个 IP 对应的 MAC。若目的地就在本链路上，下一跳 IP 就是目的 IP。若目的地在外网，下一跳通常是本地网关。主机先查本地 ARP 缓存，找到有效记录即可直接封装。</p>
+<p>若缓存为空，主机会在本地链路广播 ARP 请求，带上发送方的 IP 和 MAC，以及待查的目标 IP。图中的多个站都能收到请求，拥有目标 IP 的站通常把自己的 MAC 单播回复给请求者。请求者把映射暂存在缓存里，下次发包便可省去一次广播。ARP 报文中的硬件类型、网络协议类型、两种地址长度以及操作码，共同说明后续地址字段的意义。早期的 RARP 执行相反方向的查询，例如无盘主机已知自己的 MAC，启动时向服务器询问分配给它的 IP。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150314392.png" alt="ARP 请求广播给所有站，响应通常单播回请求者"></p>
+<p>路由器一般不会把一段以太网上的 ARP 广播转到下一段。如果启用代理 ARP，路由器也可以代远端地址回答。例如 L 在本地询问 E，站 19 知道如何路由到 E，便用自己的链路地址回复。这样 L 临时保存的是“要到 E，把帧交给 19”。在普通的默认网关配置下，L 会直接查询网关的地址。</p>
+<h2 id="NAT">NAT</h2>
+<p>私有地址可以在多个网络中重复使用，例如两所学校内部都可以出现 <code>10.8.8.8</code>。公网不发布通往这些私有地址的路由，内网主机主动访问公网时，出口网关可以把源地址翻译为自己的公网地址。多个连接共用一个公网地址时，网关还要用传输层端口区分连接。这种转换称为 NAPT，也常称为端口地址转换（PAT）。</p>
+<p>沿图中的箭头读一遍请求和回复。左上角是内网主机发出的 TCP 报文，右上角是同一份请求经过网关后的样子。底部是回复经过网关前后的样子，中间的红色表格是网关保存的映射。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150316294.png" alt="网关对出站请求和入站回复进行相反方向的地址与端口转换"></p>
+<table>
+<thead>
+<tr>
+<th>观察位置</th>
+<th>源 IP 和端口</th>
+<th>目的 IP 和端口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>内网主机发出的请求</td>
+<td><code>192.168.1.2:54321</code></td>
+<td><code>173.194.72.104:80</code></td>
+</tr>
+<tr>
+<td>网关发往公网的请求</td>
+<td><code>202.120.40.85:60001</code></td>
+<td><code>173.194.72.104:80</code></td>
+</tr>
+<tr>
+<td>服务器发回的回复</td>
+<td><code>173.194.72.104:80</code></td>
+<td><code>202.120.40.85:60001</code></td>
+</tr>
+<tr>
+<td>网关交回内网的回复</td>
+<td><code>173.194.72.104:80</code></td>
+<td><code>192.168.1.2:54321</code></td>
+</tr>
+</tbody>
+</table>
+<p>出站时网关分配了端口 60001，并记住它对应内网端点 <code>192.168.1.2:54321</code>。回复到达这个公网端口，网关便能还原内网目的 IP 和端口。第二条内网连接即使访问同一服务器，也可通过不同的外部端口区分。转换相关字段时，网关还要相应更新校验和。</p>
+<p>网关必须保存有效映射才能正确分发回复，因此其转发能力和映射表容量会影响所有经过它的连接。如果应用协议把本机地址写进载荷，网关只改首部后，对方仍可能拿到一个无法从公网使用的私有地址。两个内网合并时也可能有重叠地址，例如两边都使用 <code>10.0.0.0/24</code>。要让同一个路由环境能区分这两组主机，就得重新规划地址或在边界做相应转换。</p>
+<h2 id="一次网页请求">一次网页请求</h2>
+<p>图里校园网的三台主机共用一个网关。以 C 为例，它在示例中使用 <code>192.168.0.4</code>，网关内侧接口为 <code>192.168.0.1</code>，外侧为 <code>202.120.40.82</code>。不同网络接口上的 IP 分属各自连接的网络。右侧还有示例代理 <code>106.185.46.164</code>，配置代理的程序先与代理通信，再由代理向目标服务发起另一段通信。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150314773.png" alt="校园网主机、网关两侧接口、远端站点与可选代理"></p>
+<p>以图中 C 直接访问百度为例，可以沿着第一个 TCP 连接请求，看清 IP 和 MAC 分别在什么时候改变。</p>
+<ol>
+<li>应用通过 DNS 取得 <code>www.baidu.com</code> 的地址，示例中为 <code>220.181.57.217</code>。程序对这个服务器地址和服务端口调用 <code>connect()</code>，TCP 开始建立连接。</li>
+<li>C 的操作系统查路由表，发现目的 IP 在本地子网之外，应使用默认网关。若缓存中没有 <code>192.168.0.1</code> 的记录，C 先广播 ARP 查询网关的 MAC。随后 C 发出以太网帧，目的 MAC 填网关，里面的 IP 包仍以百度为目的地。</li>
+<li>网关收到发给自己 MAC 的帧，取出 IP 包。目的 IP 属于远端，于是网关查转发表、更新 TTL。如果出口启用了端口地址转换，还会把私有源 IP 和源端口映射为公网端点。网关按照出接口的链路规则重新封装，交给下一跳。</li>
+<li>后续路由器重复逐跳转发。最后一台路由器发现服务器所在网络与自己直连，在以太网上取得服务器的 MAC 并发帧。服务器回复时以它看到的公网端点为目的地，校园网关再按 NAT 表把回复交给 C。</li>
+</ol>
+<blockquote>
+<p>C 明明知道服务器的 IP，为什么还要先查网关的 MAC？IP 地址指出最终目的地，目的 MAC 决定本段以太网上谁来接收这帧。远端服务器收不到校园网内部的广播，网关才是 C 在本段链路上能够直接交付的下一站。</p>
+</blockquote>
+<h2 id="ARP-欺骗">ARP 欺骗</h2>
+<p>ARP 缓存保存的是本地设备接受的 IP 与 MAC 对应关系。若设备接受了伪造的响应，就可能把正确的 IP 与攻击者的 MAC 关联，称为 ARP 缓存投毒。设 T1、T2 与攻击者接在同一台交换机上。攻击者向 T1 声称“<code>10.0.0.2</code> 对应我的 MAC”。T1 若更新缓存，此后发往 T2 的 IP 包仍写着 T2 的 IP，但以太网帧会先送到攻击者。T2 无需接收到这份伪造响应，T1 的去程流量就已经改道。</p>
+<p>图中两端都收到了伪造的响应。T1 把 T2 的 IP 映射到了攻击者，T2 也把 T1 的 IP 映射到了攻击者。若攻击者按真正的 MAC 把帧继续转给对端，双方仍可能保持通信，攻击者则位于两个方向的传输路径中，这就是中间人攻击。若攻击者直接丢弃帧，两端通信就会中断。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261105150313981.png" alt="两台目标主机的 ARP 缓存同时把对方的 IP 映射到攻击者的 MAC"></p>
+<p>动态 ARP 条目会老化，也可能被真实响应纠正，所以伪造的映射需要反复刷新才能维持。课件以约 40 秒作为演示间隔，实际时长取决于系统的缓存策略。课件还用 Hunt、Ettercap 举例，并提到某些 Unix 系统可通过 <code>ifconfig -arp</code> 关闭接口自身的常规 ARP 处理。转发给另一端和更改本机接口行为是两项独立操作。</p>
+<p>管理员可以为少量固定设备配置静态 ARP 条目，避免它们被动态响应改写。若要为整网所有主机逐一设置，换网卡、调整地址时都需要同步更新，维护成本较高。另一种做法是使用 Arpwatch 监听局域网里的 ARP 消息，保存平常观察到的 IP 与 MAC 对应关系。某个 IP 突然换到另一个 MAC，或在两个 MAC 之间反复切换时，它会通知管理员核查。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/11/05/SE3331_13/">https://acannedfish.github.io/2026/11/05/SE3331_13/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/background13.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width no-desc" href="/2026/11/05/SE3331_12/" title="计算机系统工程-12：网络分层与链路层"><img class="cover" src="/img/background12.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">计算机系统工程-12：网络分层与链路层</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related no-desc" href="/2026/06/23/SE2302_07/" title="计算机系统基础-07：网络"><img class="cover" src="/img/background9.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-23</div><div class="info-item-2">计算机系统基础-07：网络</div></div></div></a><a class="pagination-related no-desc" href="/2026/11/05/SE3331_12/" title="计算机系统工程-12：网络分层与链路层"><img class="cover" src="/img/background12.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-11-05</div><div class="info-item-2">计算机系统工程-12：网络分层与链路层</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><div class="site-data-item"><div class="headline">文章</div><div class="length-num">121</div></div><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%8B%E4%B8%80%E8%B7%B3"><span class="toc-number">1.</span> <span class="toc-text">下一跳</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%93%BE%E8%B7%AF%E7%8A%B6%E6%80%81%E8%B7%AF%E7%94%B1"><span class="toc-number">2.</span> <span class="toc-text">链路状态路由</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84"><span class="toc-number">2.1.</span> <span class="toc-text">最短路径</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B7%9D%E7%A6%BB%E5%90%91%E9%87%8F%E8%B7%AF%E7%94%B1"><span class="toc-number">3.</span> <span class="toc-text">距离向量路由</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%90%E8%BD%AE%E6%9B%B4%E6%96%B0"><span class="toc-number">3.1.</span> <span class="toc-text">逐轮更新</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E6%95%B0%E5%88%B0%E6%97%A0%E7%A9%B7"><span class="toc-number">3.2.</span> <span class="toc-text">计数到无穷</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%A4%E6%8D%A2%E5%BC%80%E9%94%80"><span class="toc-number">3.3.</span> <span class="toc-text">交换开销</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B1%82%E8%B7%AF%E7%94%B1"><span class="toc-number">4.</span> <span class="toc-text">分层路由</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8C%BA%E5%9F%9F%E4%B8%8E%E5%89%8D%E7%BC%80"><span class="toc-number">4.1.</span> <span class="toc-text">区域与前缀</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%AF%E5%BE%84%E5%90%91%E9%87%8F"><span class="toc-number">4.2.</span> <span class="toc-text">路径向量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#BGP-%E7%AD%96%E7%95%A5"><span class="toc-number">4.3.</span> <span class="toc-text">BGP 策略</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IP-%E5%8C%85%E8%BD%AC%E5%8F%91"><span class="toc-number">5.</span> <span class="toc-text">IP 包转发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%B6%E5%8C%85%E4%B8%8E%E5%8F%91%E5%8C%85"><span class="toc-number">5.1.</span> <span class="toc-text">收包与发包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%AF%E4%BB%B6%E8%BD%AC%E5%8F%91"><span class="toc-number">5.2.</span> <span class="toc-text">软件转发</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A5%E5%A4%AA%E7%BD%91%E4%B8%8E-ARP"><span class="toc-number">6.</span> <span class="toc-text">以太网与 ARP</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E4%BA%AB%E4%BB%8B%E8%B4%A8"><span class="toc-number">6.1.</span> <span class="toc-text">共享介质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%B0%E5%9D%80%E8%A7%A3%E6%9E%90"><span class="toc-number">6.2.</span> <span class="toc-text">地址解析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NAT"><span class="toc-number">7.</span> <span class="toc-text">NAT</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E7%BD%91%E9%A1%B5%E8%AF%B7%E6%B1%82"><span class="toc-number">8.</span> <span class="toc-text">一次网页请求</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ARP-%E6%AC%BA%E9%AA%97"><span class="toc-number">9.</span> <span class="toc-text">ARP 欺骗</span></a></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/site-navigation.js" defer></script><script src="/js/site-motion.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#route-state","#page-header","#route-content","#aside-content","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+  const navigationSwitches = window.SiteNavigation ? window.SiteNavigation.switches : {}
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    switches: navigationSwitches,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: true,
+    // Route switches position new pages before their first painted frame.
+    scrollTo: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
