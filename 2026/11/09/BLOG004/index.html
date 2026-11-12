@@ -1,0 +1,1097 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>从文件系统到一致性模型 | aCannedFish's Home</title><meta name="author" content="aCannedFish"><meta name="copyright" content="aCannedFish"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#e7f3ed"><meta name="description" content="本地文件系统 磁盘可以看作一个巨大的数组。文件系统通过几层抽象，提供了诸如 READ，WRITE 等 API，让我们能够访问，修改磁盘中的数据。 考虑一个 naive 的文件系统，这个 FS 中只有一个巨大的数组，每个数组索引指向一个 block。  对于这个 FS，我们只能通过 block 下标来访问数据。那么当向文件后追加新的 data，撞到了已经存储有其他 data 的 block 该怎么办">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从文件系统到一致性模型">
+<meta property="og:url" content="https://acannedfish.github.io/2026/11/09/BLOG004/index.html">
+<meta property="og:site_name" content="aCannedFish&#39;s Home">
+<meta property="og:description" content="本地文件系统 磁盘可以看作一个巨大的数组。文件系统通过几层抽象，提供了诸如 READ，WRITE 等 API，让我们能够访问，修改磁盘中的数据。 考虑一个 naive 的文件系统，这个 FS 中只有一个巨大的数组，每个数组索引指向一个 block。  对于这个 FS，我们只能通过 block 下标来访问数据。那么当向文件后追加新的 data，撞到了已经存储有其他 data 的 block 该怎么办">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://acannedfish.github.io/img/background6.png">
+<meta property="article:published_time" content="2026-11-09T13:58:00.000Z">
+<meta property="article:modified_time" content="2026-11-10T10:02:53.916Z">
+<meta property="article:author" content="aCannedFish">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://acannedfish.github.io/img/background6.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "从文件系统到一致性模型",
+  "url": "https://acannedfish.github.io/2026/11/09/BLOG004/",
+  "image": "https://acannedfish.github.io/img/background6.png",
+  "datePublished": "2026-11-09T13:58:00.000Z",
+  "dateModified": "2026-11-10T10:02:53.916Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "aCannedFish",
+      "url": "https://aCannedFish.github.io"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://acannedfish.github.io/2026/11/09/BLOG004/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4&amp;site=d897aab3052c"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#10261d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#e7f3ed')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":true},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '从文件系统到一致性模型',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/home-cards.css"><link rel="stylesheet" href="/css/mermaid.css"><link rel="stylesheet" href="/css/site-font.css?v=d897aab3052c"><link rel="stylesheet" href="/css/site-motion.css"><meta name="generator" content="Hexo 7.3.0"><link rel="stylesheet" href="/lib/katex/katex.min.css">
+<style data-katex-display>
+/* Hide the MathML fallback; when it is laid out, every formula renders twice. */
+#article-container .katex .katex-mathml {
+  display: none !important;
+}
+
+/* Reveal KaTeX without waiting for the theme loader to add .katex-show. */
+#article-container .katex {
+  display: inline !important;
+}
+
+#article-container .katex-display > .katex {
+  display: block !important;
+}
+</style>
+</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><div class="site-data-item"><div class="headline">文章</div><div class="length-num">123</div></div><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/search/"><i class="fa-fw fas fa-search"></i><span> 搜索</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;从文件系统到一致性模型&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/search/"><i class="fa-fw fas fa-search"></i><span> 搜索</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><div class="nav-search-page" id="search-button"><a class="site-page" href="/search/" aria-label="搜索"><i class="fas fa-search fa-fw" aria-hidden="true"></i></a></div><!-- 移动端汉堡菜单按钮--><button id="toggle-menu" type="button" aria-label="打开导航菜单" aria-controls="sidebar-menus"><span class="site-page"><i class="fas fa-bars fa-fw" aria-hidden="true"></i></span></button></div></nav><div id="post-info"><h1 class="post-title">从文件系统到一致性模型</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-09T13:58:00.000Z" title="发表于 2026-11-09 21:58:00">2026-11-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-10T10:02:53.916Z" title="更新于 2026-11-10 18:02:53">2026-11-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Blog/">Blog</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="本地文件系统">本地文件系统</h2>
+<p>磁盘可以看作一个巨大的数组。文件系统通过几层抽象，提供了诸如 <code>READ</code>，<code>WRITE</code> 等 API，让我们能够访问，修改磁盘中的数据。</p>
+<p>考虑一个 naive 的文件系统，这个 FS 中只有一个巨大的数组，每个数组索引指向一个 block。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261109220822668.png" alt=""></p>
+<p>对于这个 FS，我们只能通过 block 下标来访问数据。那么当向文件后追加新的 data，撞到了已经存储有其他 data 的 block 该怎么办？想使用人类更容易理解的字符串文件名来访问文件怎么办？文件的读写权限怎么处理？文件系统即通过几层抽象来解决这些问题。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261109221354309.png" alt=""></p>
+<h3 id="Block-Layer">Block Layer</h3>
+<p>block 是文件系统管理 data 的<strong>最小单元</strong>，一般来说将一个 block 设置为 4K 大小（当然，这是一种效率与利用率 trade-off，更大的块会导致更多文件内部的空片段）——即使只需要写 1K data，也需要将 4K 的 block 读进来再写回去。一个 4K 的 block 大约为磁盘上 4 个连续的 sector，这层抽象可以将需要管理的 metadata 和索引数量缩小到原来的 4 倍。</p>
+<p>划分完 block，我们得到了一个连续存储数据的大数组。但是实际修改文件时，直接将整个数组扫一遍的效率是很低的，因此需要更高效的方法来快速找到空闲的块。因此引入 super block：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261109222759442.png" alt=""></p>
+<p>super block 放在启动块的后方。这个块中存储了块的大小（即 4K），空闲块的数量，空闲块的 list 以及其他的文件系统元数据。</p>
+<p>存储空闲块的方法是 bitmap，用一系列 0/1 bit 来指示每一个块是占用/空闲。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261109223230521.png" alt=""></p>
+<h3 id="File-Layer">File Layer</h3>
+<p>一个文件有时候可能对应多个 block，但是我们一般习惯于以文件为单位来访问。只有 block 时我们并不知道哪个 block 属于哪个文件，这里我们使用 inode（index node）来指示这一信息。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261109224108889.png" alt=""></p>
+<p>inode 中存储了一个文件具体指向哪些块，文件的实际大小，以及其他的元数据。其大小是固定的，一个 inode 对应一个文件。</p>
+<p>但是现在又有一个问题——inode 的大小是固定的，导致只用一层 block 索引的话文件的体积上限很小。和虚拟内存中的多级页表一样，这里使用多级 inode 来存储比较大的文件：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260924163110310.png" alt="inode 的直接与多级间接索引"></p>
+<p>4 KiB 块、4 B 块号时 <code>K=1024</code>，单个一级、二级、三级入口分别覆盖 4 MiB、4 GiB、4 TiB。若块号改为 8 B，<code>K=512</code>。六个直接入口、一个一级和一个二级入口，分别覆盖 24 KiB、2 MiB、1 GiB。八个入口在 inode 内只占 64 B。</p>
+<p>从 inode 访问文件时给一个 <code>offset</code> ，算出要访问的 block 在 inode 的 <code>block_nums</code> 中的索引即可。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261109230023304.png" alt=""></p>
+<h3 id="inode-Number-Layer">inode Number Layer</h3>
+<p>inode 只是一个存储文件元数据和块映射的数据结构，但是我们缺少一个名字来指示每一个 inode 实例——因此引入了 inode number layer，赋予每一个 inode 实例一个编号，这样我们可以通过这个编号来访问文件。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261109231527707.png" alt=""></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261109231159446.png" alt=""></p>
+<p>在磁盘的数据块之前，再划分一片区域作为 inode table，集中存储 inode。其索引即为每个 inode 的 inode number。</p>
+<p>现在放在一起：我们现在通过 inode number 来访问文件。给定要访问的 inode number 和 <code>offset</code>，通过 inode table 基址和 inode 大小找到对应的 inode 位置并返回，然后按照 <code>offset</code> 找到要访问的块。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261109231707889.png" alt=""></p>
+<p>现在我们在操作文件时，需要一个高效的方法来快速找到空闲的 inode——维护空闲链表和 inode 内部存空闲状态效率较低，和 block 一样维护一个 inode bitmap 就可以了。</p>
+<blockquote>
+<p>inode table 不一定非要存储在数据区之前的连续位置。可以使用分组方法，为每一段连续存储维护一张 inode table，访问时根据 inode number 先确认分组再确认分组内编号；或者维护一张 inode number 与存储位置的映射表，可以更加灵活地安排 inode 和数据区域的位置。</p>
+</blockquote>
+<h3 id="File-Name-Number">File Name Number</h3>
+<p>到目前为止，我们可以通过 inode number 来唯一标识一个文件，这对于机器的访问已经足够了。但是对于人来说，需要一个更加容易理解的标识方式——我们更加习惯于用一个字符串来标识一个文件，这个时候就需要一种方法来建立文件名字符串到 inode number 的映射。</p>
+<p>维护这个映射的结构为 directory，其本身就是一个文件，文件中则存储这些映射。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110111913712.png" alt=""></p>
+<p>找文件的过程就是对文件中存储的映射表做字符串匹配，找到对应的文件并返回其 inode number。</p>
+<blockquote>
+<p>Unix V6 的目录项固定为 16 B。inode 号占 2 B，剩余 14 B 存放文件名。这个限制按编码后的字节数计算。一个 ASCII 字母占 1 B，一个常见的 UTF-8 汉字占 3 B。四个这样的汉字占 12 B，可以放下，五个占 15 B，就超过了上限。</p>
+</blockquote>
+<blockquote>
+<p>对于字符串匹配的查找过程，线性目录最坏要检查 <code>N</code> 项，成本 <code>O(N)</code>。大目录可以使用 ext4 HTree 等索引，先按名称哈希定位有关块，再比较名称。</p>
+</blockquote>
+<h3 id="Path-Name-Layer">Path Name Layer</h3>
+<p>目录可以进行嵌套，<strong>相对路径</strong>体现了文件/目录之间的包含关系。如果 <code>path</code> 是一个文件名（如 <code>xx.txt</code>），就去给定的 <code>dir</code> 中找它的 inode number；如果不是（比如 <code>zz/yy/xx.txt</code>），就把路径的最内层（即 <code>zz/</code>）取出来作为下一次搜索的目录，将除去最内层的 <code>path</code>（<code>yy/xx.txt</code>）作为下一次搜索的 <code>path</code> 递归即可。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261109235927285.png" alt=""></p>
+<p><code>path</code> 会随着目录的嵌套越变越长，这个时候我们希望给文件一个简短的“别名”，让我们用一个较短的别名来访问文件，这里即需要用到 <code>LINK</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110000801437.png" alt=""></p>
+<p><code>LINK</code> 在当前的上下文下将一个指定 <code>path</code> 的文件链接到一个别名上（即建立一个 Hard Link），<code>UNLINK</code> 则解除掉一个文件名到 inode 的链接。<code>LINK</code> 和 <code>UNLINK</code> 的过程中维护一个 reference count，即指向一个文件的名称数量。当一个文件的 <code>refcnt</code> 减小到 0 时，这个文件被删除。</p>
+<p><code>LINK</code> 一般只允许针对一个<strong>不是目录</strong>的文件建立链接，通过下面的图可以理解其来由：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260924160513889.png" alt="目录硬链接形成环后，删除根入口留下不可达引用"></p>
+<p>目录 <code>x</code>（作为初始上下文）中通过名字 <code>a</code> 来链接到 inode 25 的目录，这个目录又通过名字 <code>b</code> 来链接到另一个目录，再通过这个目录链接回到 <code>a</code>。此时名字 <code>a</code> 指向的 inode 的 <code>refcnt</code> 为 2，当取消 <code>a</code> 对这个 inode 的链接时，这两个文件没有外界的 Hard Link 指向它，但是由于 <code>refcnt</code> 为 1，这两个文件又没有被删除。这就导致磁盘中出现了两个外界无法访问，但是又占用着内存而无法被删除/修改的 inode。</p>
+<p><code>..</code> 和 <code>.</code> 实际上也是在目录中放了指向上一级目录和自身的 Hard Link——这两者是例外。</p>
+<blockquote>
+<p>使用 <code>LINK</code> 和 <code>UNLINK</code> 可以完成对一个文件的重命名。假定我们修改了 <code>a.txt</code>，实际上是在一个 <code>a.txt.swp</code> 上做了修改再重命名为 <code>a.txt</code>。按照以下流程来做：</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">UNLINK(to_name: a.txt); # 释放名字 a.txt</span><br><span class="line">LINK(from_name: a.txt.swp, to_name: a.txt); # 将 a.txt 链接给临时文件</span><br><span class="line">UNLINK(from_name: a.txt.swp); # 释放临时文件名字</span><br></pre></td></tr></table></figure>
+<p>当在前两步中间断电的时候，<code>a.txt</code> 会从目录中消失，只留下一个临时文件。如果临时文件及其目录项已经保存，还能通过 <code>from_name</code> 找到新内容。重命名操作应当使用原子操作进行撤销或恢复，避免出现上面的不一致行为。</p>
+</blockquote>
+<blockquote>
+<p>考虑另一个场景 <code>mv a.txt b.txt</code>。<code>a.txt</code> 与 <code>b.txt</code> 起初是两份不同内容，将 <code>a.txt</code> 移到 <code>b.txt</code> 并覆盖目标文本。若先删除 <code>b.txt</code>，尚未建立新名称就发生故障，重启后看到了什么？完整旧状态和完整新状态分别是什么？</p>
+<p>完整旧状态是 <code>a.txt</code>、<code>b.txt</code> 分别保留原内容。完整新状态是 <code>a.txt</code> 名称消失，<code>b.txt</code> 指向原 <code>a.txt</code> 的内容。若删除 <code>b.txt</code> 已保存，而新绑定尚未保存，就只剩 <code>a.txt</code>，缺少正式目标名称。原子替换和相应恢复协议用于排除这种未完成状态作为最终结果。</p>
+</blockquote>
+<h3 id="Absolute-Path-Name-Layer">Absolute Path Name Layer</h3>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110103408256.png" alt=""></p>
+<p>相对路径以一个目录为 context 来指示一个文件。但是每一个相对路径（包括一个文件名）一定在一个目录的上下文里，一个目录作为一个文件，也一定在另一个目录的上下文中，被一个名字链接到。这样考虑的话会无限向上嵌套，所以需要规定一个没有名字的根目录作为最外层的一个目录，即 root 目录（路径表示为 <code>/</code>）。在 <code>/</code> 的上下文中无论执行 <code>cd</code> 到 <code>..</code> 还是 <code>.</code> 都会回到 <code>/</code> 中。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110005159851.png" alt=""></p>
+<p>抽象到这一层，我们已经可以通过一个绝对路径在任何上下文中访问文件系统中的文件了。考虑以下搜索 <code>/programs/prog.c</code> 的过程：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110005411159.png" alt=""></p>
+<p>搜索从根目录的 inode 开始：</p>
+<ol>
+<li>找到根目录 inode，其指向 14，37，16 三个 block；</li>
+<li>进入 block 14，对 <code>programs</code> 做字符串匹配，找到 block 14 中的 inode 7；</li>
+<li>回到 inode table 中的 inode 7，准备遍历其包含的 block。先进入 block 23，字符串匹配找到 inode 9；</li>
+<li>回到 inode table 中的 inode 9，发现其指向 block 61，这一层已经是一个文件而不是目录，所以直接读取 block 61 中的数据即可。</li>
+</ol>
+<blockquote>
+<p>查看一个目录文件的内部结构：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110010023648.png" alt=""></p>
+<p>存储方式为小端序，下图可以清楚地看出目录的结构，其中一行对应着目录中的一个 entry：</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110010113758.png" alt=""></p>
+<p>可以看出，目录文件的大小与文件本身包含 data 的大小并没有关系，而是由目录中文件条目的数量，以及文件的名字长度来决定。</p>
+</blockquote>
+<h3 id="Symbolic-Link-Layer">Symbolic Link Layer</h3>
+<p>不同的设备上有不同的 inode 空间，电脑的硬盘和插进来的 U 盘，所持有的 inode <code>X</code> 对应的是两个设备中不同的文件。然而，一个硬链接一般直接指向一个文件，所以在使用硬链接访问时会直接访问本机上对应的 inode，无法跨设备访问。</p>
+<p>此时我们需要一个类似于“快捷方式”的方法来访问其他存储设备上的文件，即 Symbolic Link（Soft Link），其通过一个文件直接存储链接文件的绝对路径来进行链接。外部的文件系统一般通过挂载的方式接入本机的文件系统。假设我们有 <code>FS_A</code> 和 <code>FS_B</code> 两个挂载的文件系统：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">/                              # FS_A</span><br><span class="line">├── home/</span><br><span class="line">│   └── notes.txt              # FS_A 的 inode 42</span><br><span class="line">└── mnt/</span><br><span class="line">    └── data/                  # 挂载点，从这里进入 FS_B</span><br><span class="line">        └── report.txt         # FS_B 的 inode 42</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>假设现在要访问 <code>report.txt</code>，用户给出路径 <code>/mnt/data/report.txt</code>，内核顺着路径查找，找到 <code>data</code> 挂载点后，因为其持有文件系统和挂载点的信息，所以知道 <code>report.txt</code> 的 42 是属于文件系统 <code>FS_B</code> 的，因此可以正确完成访问。软链接即通过存储绝对路径名来实现跨存储设备的访问。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110111008425.png" alt=""></p>
+<p>实际上可以给软链接赋予一个不存在的文件路径名，访问时沿着路径搜索会发现文件不存在，重新创建文件，软链接就可以搜索到对应的文件。一个软链接文件的大小取决于其存储的绝对路径名的长度，如 “<code>/tmp/abc</code>” 即为 8 个 char，即 8 Byte。</p>
+<p>软链接是一个独立的文件，并不会改变一个 inode 的 <code>refcnt</code>，这一点类似于快捷方式——文件删除时，软链接不会消失，而是会提示文件不存在；删除一个软链接，链接的文件的硬链接数量并没有变化。</p>
+<blockquote>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110111950132.png" alt=""></p>
+<p>当我们通过软链接前往一个路径，然后切换到 <code>..</code> 时，是回到当前目录的上一级，还是回到软链接所在的目录呢？答案是后者：Linux 出于“用户友好”的设计，会保存进入当前上下文之前的路径，以便在使用 <code>..</code> 时访问，因此实际上会进入之前软链接所在的文件夹而不是相对当前目录的上级文件夹。</p>
+</blockquote>
+<h2 id="文件系统-API">文件系统 API</h2>
+<p>应用通过系统调用访问文件系统。<code>CHDIR</code> 切换当前目录，<code>MKDIR</code> 创建目录，<code>CREAT</code> 创建文件，<code>LINK</code>、<code>UNLINK</code>、<code>RENAME</code> 和 <code>SYMLINK</code> 修改名字与文件之间的关系。<code>MOUNT</code> 和 <code>UNMOUNT</code> 挂载、卸载文件系统。对于 <code>READ</code>，内核会根据路径所属的挂载点，调用对应文件系统提供的实现。</p>
+<h3 id="打开文件">打开文件</h3>
+<p>考虑 <code>open(&quot;/foo/bar&quot;, O_RDONLY)</code>。内核沿路径找到 <code>bar</code> 的 inode，还要判断当前用户能否读这个文件。inode 中的 <code>userid</code> 和 <code>groupid</code> 记录文件的所有者和所属组，可以用 <code>chown</code> 修改。<code>mode</code> 分别记录所有者、同组用户和其他用户的读、写、执行权限。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113740210.png" alt="inode 中的权限和时间字段"></p>
+<p>图中最后三个字段记录不同的时间。读文件内容会更新访问时间 <code>atime</code>，写文件内容会更新修改时间 <code>mtime</code>。inode 的状态（如文件大小，block 表等元数据）发生变化时更新 <code>ctime</code>，例如给文件增加一个硬链接，链接计数就会变化。</p>
+<p><code>open()</code> 成功后返回一个整数，叫作文件描述符（fd）。进程把 fd 交给 <code>read()</code>、<code>write()</code> 或 <code>close()</code>，内核就能找到这次打开的文件。这样既省去了每次读写时重新查路径的开销，也把 inode 指针和磁盘块号留在内核里。用户程序只能按打开时取得的权限操作文件。</p>
+<p>fd 属于进程。一般情况下，0、1、2 分别对应标准输入、标准输出和标准错误。其他文件的访问操作拿到的 fd 从 3 开始，且规定每一次取新 fd 时都必须取当前<strong>最小</strong>的空闲 fd。</p>
+<blockquote>
+<p>C 标准库的 <code>fopen()</code> 在 Windows 和 Linux 上都能用，返回的是 <code>FILE *</code>。在 UNIX 上，底层的 <code>open()</code> 返回 fd。用 <code>fopen()</code> 打开的流可以在用户态缓冲数据，多次小写入可以合并成一次系统调用。</p>
+</blockquote>
+<h3 id="fd-和-cursor">fd 和 cursor</h3>
+<p>两次 <code>read(fd, buf, n)</code> 怎样接着读？内核为每次打开的文件记录一个以字节为单位的 offset，也叫文件游标（file cursor）。读写后游标前移，<code>lseek()</code> 可以直接改变它的位置。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113739249.png" alt="游标指向下次读写的位置"></p>
+<p>每个进程有一张 <code>fd_table</code>，用 fd 查到系统打开文件表 <code>file_table</code> 的下标。后者的一项记录 inode number、游标，以及有多少个 fd 引用这一项。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113739702.png" alt="A、B、C 的 fd 3 如何映射到打开文件表"></p>
+<p>图中 A 和 B 分别打开 inode 23，各自拿到 fd 3。A 的 3 指向表项 115，游标在 128，B 的 3 指向表项 116，游标在 240。B 调用 <code>fork()</code> 后，子进程 C 继承了 B 的 fd 3，也指向 116。假设 C 成功读取 8 字节，B 下次就从 248 开始读，A 仍从 128 开始读。父子进程向同一个已打开的输出文件写数据时，会共用这个游标。</p>
+<h3 id="OPEN-和-READ">OPEN 和 READ</h3>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113741904.png" alt="OPEN 的课件原始伪代码"></p>
+<p><code>OPEN</code> 先用文件名和当前目录 <code>wd</code> 查 inode number。找不到且设置了创建标志时，就按给定的 mode 创建文件。创建失败或权限检查失败就返回错误。检查通过后在 <code>file_table</code> 中增加一项，再从当前进程的 <code>fd_table</code> 中找一个空位，把新表项的下标填进去。返回给进程的 fd 就是这个空位的编号。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113742333.png" alt="READ 的课件原始伪代码"></p>
+<p><code>READ</code> 用 fd 找到游标和 inode，再决定能读多少。例如文件有 100 字节，游标在 80，这次请求读 32 字节，实际只能读到剩下的 20 字节。内核根据 offset 查找 data block，从块内对应的位置把数据复制到 <code>buf</code>，遇到块边界就接着读下一块。伪代码第 4 行记录访问时间 <code>atime</code>。读完后游标移到 100，返回 20。此时再请求读数据，就到了文件末尾，UNIX 的 <code>read()</code> 返回 0。</p>
+<h3 id="磁盘读写">磁盘读写</h3>
+<p>下面用一个只有 64 个 block 的文件系统来看这些操作要访问哪些块。块 0 是 superblock（S），块 1、2 分别是 inode bitmap（i）和 data bitmap（d），块 3 至 7 放 inode table，块 8 至 63 共 56 块放数据。挂载时通过 superblock 中的 magic number 识别文件系统类型，还可以读到 inode 总数（本例为 80）、数据块数量和 inode table 的起始块号。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113740668.png" alt="64 个 block 的磁盘布局"></p>
+<p>下表按时间从上往下读，每一列对应一种元数据或一个数据块。先忽略缓存。打开已有的 <code>/foo/bar</code> 要读 5 次，依次是根目录的 inode、根目录的数据块、<code>foo</code> 的 inode、<code>foo</code> 的目录数据块，以及 <code>bar</code> 的 inode。到这里进程已经拿到了 fd，<code>bar</code> 的内容要等到 <code>READ</code> 才会读入。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113741516.png" alt="打开 /foo/bar 并依次读取三个数据块"></p>
+<p>表中每次 <code>read()</code> 读一个块，共有 2 读 1 写。先读 <code>bar</code> 的 inode 找到块号，再读对应的数据块，最后写回 <code>bar</code> 的 inode，更新 <code>atime</code>。三次调用依次读到 <code>data[0]</code>、<code>data[1]</code>、<code>data[2]</code>。表中把 <code>foo</code> 计作路径查找时的目录读取，更新访问时间的那次写入计在实际读取的文件 <code>bar</code> 上。</p>
+<p>如果 <code>bar</code> 还不存在，创建它又需要哪些 I/O？图中的父目录有空间增加一个目录项。先读根目录和 <code>foo</code> 各自的 inode、目录数据，再读写 inode bitmap 分配一个 inode（此处必须先读 inode 再写 inode，应为读写的最小单位是 block，即使只修改一个 inode 的元数据，也要读下来再写回）。随后在 <code>foo</code> 的数据块里加入 <code>bar</code> 这个名字，读写新 inode 所在的块以初始化文件，更新父目录的 inode。新文件此时为空，还用不到 data bitmap。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113738647.png" alt="创建 /foo/bar 并连续写入三个新块"></p>
+<p>接下来的三次 <code>write()</code> 各写入一个新块。每次先读文件的 inode，读写 data bitmap 以分配一块，写入数据，再把新块号、文件大小和 <code>mtime</code> 写回 inode，共 2 读、3 写。覆盖已有块时可以沿用原块号。<code>WRITE</code> 从当前游标写起，<code>APPEND</code> 则在每次写入时取当时的文件末尾作为起点。</p>
+<blockquote>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110124249592.png" alt=""></p>
+<ul>
+<li>
+<p><strong>位图 → 数据 → inode（推荐）</strong><br>
+先把块标为已占用，再写入内容，最后更新 inode 的指针和大小。若在更新 inode 前断电，可能留下“已占用但无人引用”的块，造成空间泄漏，可通过 <code>fsck</code> 回收；文件不会引用尚未写好的数据。</p>
+</li>
+<li>
+<p><strong>位图 → inode → 数据</strong><br>
+若更新 inode 后、写入数据前断电，文件大小和指针已经更新，但新块的内容尚未写好。读取文件新增部分时，可能读到磁盘残留的旧数据。</p>
+</li>
+<li>
+<p><strong>inode → 位图 → 数据（风险最大）</strong><br>
+若更新 inode 后、更新位图前断电，文件已经引用该块，位图却仍将它标为空闲。该块可能被再次分配给其他文件，导致数据相互覆盖；此外，也存在第二种顺序中的旧数据问题。</p>
+</li>
+</ul>
+</blockquote>
+<p>实际读写会经过 block cache，读过的块可以直接从内存中取，多次修改同一块也可以合并后再写盘（以及同一批次的修改中， atime 这类元数据的值可以只在最后修改一次，而不是每次读写都改）。因此上面两张表中的块访问次数和磁盘实际收到的 I/O 次数可能不同。<code>write()</code> 返回时，改动可能还在缓存里。程序需要等某个文件的数据和元数据写回存储设备时，可以对它的 fd 调用 <code>fsync()</code>。系统范围的 <code>sync()</code> 会安排待写回的文件系统改动一并写出。</p>
+<h3 id="关闭与删除">关闭与删除</h3>
+<p><code>CLOSE</code> 先清除本进程 <code>fd_table</code> 中的条目，再把对应 <code>file_table</code> 表项的引用计数减 1。回到前面的图，C 关闭 fd 3 后，表项 116 仍由 B 使用。B 也关闭它，116 的计数才降到 0，这一项就可以释放。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113739702.png" alt="A、B、C 的 fd 3 如何映射到打开文件表"></p>
+<p>这里有两个计数。inode 的硬链接计数记录有几个目录项指向这个文件，打开文件表中的计数记录有几个 fd 指向这次打开记录。在 UNIX 上，另一个进程可以在文件打开期间 <code>unlink</code> 它的最后一个名字。原路径随即消失，持有 fd 的进程仍能读写文件。等最后一个打开引用也释放，文件系统才回收 inode 和数据块。</p>
+<h3 id="跨目录重命名">跨目录重命名</h3>
+<p>看一次同一文件系统内的 <code>mv dir1/from.txt dir2/to.txt</code>。<code>ls -il</code> 输出的第一列是 inode number。操作前，<code>from.txt</code> 是 40978804，已有的 <code>to.txt</code> 是 40978827。操作后 <code>dir1</code> 为空，<code>dir2/to.txt</code> 变成了 40978804。这个过程中先将要覆盖的文件 <code>to.txt</code> （40978827）解除链接，然后将释放出来的名字链接到 <code>from.txt</code> （40978804）上，然后解除旧链接。因此后面打开的 <code>to.txt</code> 实际是指向了原来的 inode 40978804。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113741076.png" alt="跨目录 mv 前后的命令、输出与 inode number"></p>
+<p>编辑器把修改后的内容写入临时文件 <code>.a.txt.swp</code>。保存时用它替换原来的 <code>a.txt</code>，就要让名字 <code>a.txt</code> 指向临时文件的 inode。左边的方案先删目标名，再建立新链接。若第一步刚写盘就断电，原来的 <code>a.txt</code> 已经消失。右边先把目标目录项改为指向源 inode，再移除源目录项。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113742723.png" alt="课件中两种重命名操作的伪代码"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113743112.png" alt="用 from.txt 和 to.txt 比较两种写入顺序的断电结果"></p>
+<p>按右图的顺序，中途断电时 <code>to.txt</code> 仍然存在，但两个名字可能同时指向源 inode。恢复时需要让硬链接计数与实际留下的目录项一致，并在被替换的旧文件没有其他引用时回收它。</p>
+<h2 id="Remote-Procedure-Call">Remote Procedure Call</h2>
+<p>生成网页时，应用服务器需要读一张图片，图片存在另一台文件服务器上。本地的 <code>READ</code> 可以沿着 inode 找到磁盘块，两台机器之间还要多走一趟网络。应用服务器把“读哪张图片”发过去，文件服务器在本机执行 <code>READ</code>，再把图片内容传回来。把这次交互封装成一次函数调用，就是远程过程调用（RPC）。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131719898.png" alt="应用服务器向文件服务器发出读取请求并等待结果"></p>
+<p>RPC 可以建立在 socket 之上。直接用 socket 时，每项服务都要写一遍 <code>read()</code>、<code>write()</code> 或 <code>sendmsg()</code>，还得约定对方怎样解释收到的字节。RPC 把这些工作交给封装好的公共代码，应用按函数签名传参、取返回值。调用者不需要知道目标文件系统的 API 实现细节就能使用同一封装的函数访问文件系统。</p>
+<h3 id="Stub">Stub</h3>
+<p>考虑给客户端校时。准确的时钟在服务器上，客户端想执行 <code>t ← GET_TIME(SECONDS)</code>，再用 <code>SET_CLOCK(t)</code> 设置本地时间。如果两个函数就在一个进程里，<code>GET_TIME</code> 直接读取 <code>CLOCK</code>，按 <code>units</code> 换算并返回。把它移到服务器以后，跨网络传送的是时间单位和算出的时间，设置时钟仍由客户端完成。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131714982.png" alt="校时程序、GET_TIME 的实现及跨机器调用的方向"></p>
+<p>先看手写 socket 的版本。客户端连到 <code>TimeServiceAddr</code>，发送操作名和编码后（不同机器上时间的存储方式不同，如不同系统可能采用大端/小端存储，因此需要 <code>CONVERT2EXTERNAL</code> 来转换）的 <code>SECONDS</code>，等到回复再还原时间。服务端监听端口，接受连接，逐条读取请求。操作名为 <code>&quot;Get time&quot;</code> 且单位为秒或分钟时，服务端返回 <code>&quot;OK&quot;</code> 和换算后的时间，否则返回 <code>&quot;Bad request&quot;</code>。真正与校时有关的只有读取、换算和设置时间，标黄的部分，即与矫时无关，可以复用的过程，就可以用 RPC 封装起来。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131721688.png" alt="客户端与服务端手写 socket 的原始伪代码，黄色标出可由 stub 承担的部分"></p>
+<p>把这些通信代码封装起来，就得到两端的 stub（存根）。客户端 stub 提供一个同名的 <code>GET_TIME</code>。调用者传入 <code>units</code>，stub 把参数装进请求，发送后等待回复，再检查状态、解码返回值。这样 <code>SYNC_CLOCK</code> 就可以沿用单机时的写法。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131714626.png" alt="客户端的 SYNC_CLOCK 和 GET_TIME stub"></p>
+<p>服务端 stub 做相反的工作。它从请求中取出操作名和参数，检查后调用本机的 <code>GET_TIME(arg)</code>，再把结果装进回复。处理网络请求的 <code>TIME_SERVICE</code> 和实际读时钟的 <code>GET_TIME</code> 因此可以分开写。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131721330.png" alt="服务端 TIME_SERVICE 解码、分派和回复的原始伪代码"></p>
+<p>沿图从左往右看，一次调用经过客户端、客户端 stub、服务端 stub 和服务函数。只有 <code>REQUEST</code>、<code>RESPONSE</code> 两个箭头跨过网络。客户端在请求发出后等待，服务函数返回给服务端 stub 后，经过回程网络回到调用者手里。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131714246.png" alt="GET_TIME 从客户端发起到收到时间的完整时序"></p>
+<h3 id="请求与回复">请求与回复</h3>
+<p>socket 上传的是字节。两个 stub 除了要认出参数，还要约定这是什么操作、要调用哪个版本，以及回复该交给谁。图中的 <code>&quot;Get time&quot;</code> 就是一个最简单的操作标识。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131717849.png" alt="两个 stub 如何通过 socket 交换请求和回复"></p>
+<p>以 Sun RPC 的报文为例，请求和回复带有下面这些信息。</p>
+<table>
+<thead>
+<tr>
+<th>报文</th>
+<th>主要字段</th>
+<th>接收方用它做什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>请求</td>
+<td><code>xid</code>、调用标记、RPC 版本、程序号、程序版本、过程号、认证信息、参数</td>
+<td>先检查协议和身份，再用程序号、版本、过程号找到服务函数</td>
+</tr>
+<tr>
+<td>回复</td>
+<td>原请求的 <code>xid</code>、回复标记、接受或拒绝的状态，以及相应的认证、执行状态或结果</td>
+<td>客户端先找到对应调用，再判断能否取出返回值</td>
+</tr>
+</tbody>
+</table>
+<p>假设两个线程共用一条连接，线程 1 请求 <code>page.html</code>，线程 2 请求 <code>logo.png</code>。服务端并发处理，图片先读完，先回到客户端的接收缓冲区。此时若线程 1 取走第一条回复，就会把 PNG 当网页，因此需要为请求添加可唯一标识的编号，即 <code>xid</code>。给两个请求分别标上 1、2，服务端在回复中原样带回编号，客户端就能把 2 号回复交给正在等图片的线程。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131722987.png" alt="两个线程复用连接，上图按到达顺序取错回复，下图按 xid 匹配"></p>
+<blockquote>
+<p>为什么不为每个 Thread 独立维护一个 buffer 来解决拿错响应的问题？</p>
+<p>请求和回复的传递需要通过网卡。网卡上并没有并发控制，会对每一个 buffer 建立一个物理队列。但是实际上网卡的物理资源是很有限的，支持的并发数量有限（量级最多到千级别），因此为了可拓展性和易维护性使用一个公用的 buffer。</p>
+</blockquote>
+<h3 id="参数编码">参数编码</h3>
+<p>整数可以按值发送，但发送一个指针会怎样？指针里存的是客户端进程的虚拟地址，服务端有自己的地址空间。若参数里有一个指向字符串的指针，客户端可以把字符串长度和内容装进消息，服务端收到后在本地分配空间，再建立指针。把程序中的值转成约定的字节表示叫作序列化（marshal），从字节还原成值叫作反序列化（unmarshal）。</p>
+<p>即使只传一个整数，也要约定字节顺序。同一个参数 <code>0x89abcdef</code>，大端机器从低地址起存为 <code>89 AB CD EF</code>，小端机器则存为 <code>EF CD AB 89</code>。整数宽度、浮点表示、结构体对齐和字符编码也可能不同。比如“中”在 GBK 中占两个字节 <code>D6 D0</code>，在 UTF-8 中占三个字节 <code>E4 B8 AD</code>。另外，不同机器上，相同的数据类型可能占不同的字节数，按照相同的规则进行编解码就会出现对齐问题。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131716458.png" alt="同一个整数在大端和小端机器上的内存布局"></p>
+<p>两端可以约定一种独立于语言的格式，例如 Sun RPC 使用的 XDR、ASN.1 的编码规则、JSON、XML 或 Protocol Buffers。用 JSON 表示请求时，查看消息就能读到 <code>xid</code>、<code>call</code> 和 <code>rpc_version</code>，抓包调试很方便，读取对人类友好。XML、YAML、TOML 和 CSV 也使用文本表示。代价是字段名或标签占用空间，数字精度取决于双方的类型约定，任意二进制数据放进 JSON 字符串还要另行编码，例如转成 Base64，如果涉及大模型参数等大量数据的传递时转换和传递的效率很低。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131716784.png" alt="请求字段写成 JSON 的课件示例"></p>
+<h3 id="二进制编码">二进制编码</h3>
+<p>考虑同一条 <code>Person</code> 记录。用户名是 <code>Martin</code>，喜欢的数字是 1337，兴趣是两个字符串。图中最下方的 JSON 去掉空格后共 81 B。Thrift 和 Protobuf 先用接口定义语言（IDL）写下 schema，给三个字段分别分配编号 1、2、3。这样接收端已经知道字段名和声明的类型，发送端可以在消息里用编号表示字段。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131720972.png" alt="Thrift 与 Protobuf 的 Person 定义，以及同一条记录的 JSON 表示"></p>
+<p>Thrift 的 BinaryProtocol 用 1 B 表示字段类型，2 B 表示字段编号，整数采用定长大端编码。看第一行，<code>0b</code> 表示字符串，<code>00 01</code> 表示字段 1，接下来的 4 B 表示长度 6，最后 6 B 才是 <code>Martin</code>，这一项共 13 B。第二项把 1337 存为 8 B 的 <code>i64</code>。第三项还要记录列表的元素类型、元素个数和每个字符串的长度。算上最后的结束标记 <code>00</code>，整条记录为 59 B。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131713480.png" alt="Thrift BinaryProtocol 中每个字段的类型、编号、长度与数据"></p>
+<p>换成 CompactProtocol，相邻字段的编号差很小，可以把差值和字段类型合在一个字节里。整数则用变长编码（varint），每字节的低 7 位装数据，最高位为 1 表示后面还有一个字节。Thrift 先用 ZigZag 把有符号的 1337 映射成 2674，再按低位在前分组，得到 <code>F2 14</code>。图中第二个字段的值从 8 B 降到 2 B，整条记录降到 34 B。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131715360.png" alt="同一条 Person 记录使用 Thrift CompactProtocol 后的字节布局"></p>
+<p>gRPC 常用 Protobuf 编码。同样是字段 2，图中声明的类型为 <code>int64</code>，正数 1337 直接按 varint 编码。因为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1337</mn><mo>=</mo><mn>10</mn><mo>×</mo><mn>128</mn><mo>+</mo><mn>57</mn></mrow><annotation encoding="application/x-tex">1337=10\times128+57</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1337</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">10</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">128</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">57</span></span></span></span>，低 7 位是 57（<code>0x39</code>），设置最高位得到 <code>B9</code>，剩余的 10 编成 <code>0A</code>。前面的 <code>0x10</code> 是字段 2 和 wire type 0 组成的 tag，因此这一个字段一共占 3 B。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131718696.png" alt="Protobuf 将 favorite_number 编码为 10 B9 0A"></p>
+<blockquote>
+<p>消息从 81 B 缩到 34 B，一次 RPC 就会按同样的比例变快吗？在相同带宽下，少传 47 B 可以缩短这条记录占用链路的时间（网络时间=负载大小/带宽）。一次调用还要花时间编码、解码、等待网络往返和执行函数。网络传输足够快时，这些 CPU 开销可能占去大部分时间。</p>
+</blockquote>
+<h3 id="版本兼容">版本兼容</h3>
+<p>客户端和服务端往往分批升级。假设旧的 <code>Msg</code> 只有 <code>id</code>，新版增加了 <code>priority</code>。新程序读旧消息时，把缺少的 <code>priority</code> 按约定取为 0，叫作向后兼容。旧程序读新消息时，仍能取出 <code>id</code>，并跳过不认识的 <code>priority</code>，叫作向前兼容。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131718305.png" alt="Msg 增加 priority 前后的定义和两个方向的读取结果"></p>
+<p>在 <code>Person</code> 的例子里，字段 1 和 2 保留原来的编号和类型，新加的可选字段 <code>interests</code> 使用编号 3。下图上半部分由新版 reader 读取旧消息，读到结束标记时，字段 3 保持未设置。下半部分的旧版 reader 根据字段类型和长度跳过整个列表，再继续解码。后续版本如果把原有编号改派给含义不同的字段，旧 reader 就可能把新数据当成自己认识的值。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131715698.png" alt="新旧 Person schema 互读，上图缺少可选字段，下图跳过未知字段"></p>
+<p>有了接口定义，RPC 编译器可以根据函数编号、参数和返回类型生成两端的 stub，以及配套的序列化代码。调用时，客户端通过服务名或已配置的地址找到服务端，这一步叫作绑定（binding）。服务端框架按过程号分派请求，客户端框架按调用编号唤醒线程或触发回调。收发消息的实现也可以封装在框架内，应用沿用相同的服务接口，底层按框架及硬件支持选择 TCP、UDP 或 RDMA。</p>
+<h3 id="超时与重试">超时与重试</h3>
+<p>调用本地函数时，调用者和被调用者通常处在同一进程里。跨机器以后，客户端可能仍在运行，服务器却已崩溃，或者只有中间的网络出了问题。参数错误可以由服务端直接返回。超时只表示客户端在规定时间内没有收到回复。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131722357.png" alt="同一次超时可能来自请求丢失或排队、服务端崩溃或暂停、回复丢失或排队"></p>
+<p>第一行中，请求可能在路上丢失，也可能只是排在队列里。第二行中，服务器可能崩溃，也可能正在做垃圾回收，暂停后还能继续执行。第三行中，函数已经执行，丢失或延迟的是回复。六种情况下客户端都可能超时，重发请求的后果却不同（如 Server 已执行未返回则会导致恢复时重复执行；如果服务端 crash 则会只运行一次）。</p>
+<p>在 gRPC 示例里，<code>SayHelloAgain</code> 返回 <code>Status</code>。只有 <code>status.ok()</code> 才读取 <code>reply.message()</code>，失败分支读取错误码和错误信息。要不要重试，还得看这个函数多执行一次会发生什么。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131722037.png" alt="gRPC 客户端检查 Status 的原始代码"></p>
+<h3 id="执行次数">执行次数</h3>
+<p>设 B 的余额原本为 0，客户端发出编号为 7 的请求，要求给 B 转入 100 美元。如果回复丢了，客户端可能重发同一个请求。服务端如何处理第二份请求，决定了这次调用对余额的影响。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131722670.png" alt="同一笔转账在重复执行、重发回复和服务端崩溃时的结果"></p>
+<ul>
+<li><strong>至少一次（at-least-once）</strong>。客户端持续重传，在通信和服务最终恢复的条件下，请求会执行一次或多次。第一幅图中，两次请求都执行了加款，客户端最终收到成功，余额却是 200 美元。</li>
+<li><strong>至多一次（at-most-once）</strong>。同一个逻辑调用最多执行一次。第二幅图中，服务端认出编号 7，重发上次的回复，余额为 100 美元。Birrell 和 Nelson 的 RPC 中，成功返回表示执行了一次。如果探测发现服务器已经崩溃，调用者可能只得到 <code>CRASH</code>。第三幅图中，B 的余额可能是 0，也可能是 100，调用者要查询这笔转账的记录才能判断。</li>
+</ul>
+<p>什么操作可以直接重试？看下面的 <code>ReadTime</code>。两个客户端各发一次请求，第二个客户端的回复丢失，于是它重试，服务端总共读了三次时钟。第三次读到的时间可能更晚，但多读一次不会修改服务端的状态。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131719170.png" alt="ReadTime 的原始代码及两次调用、三次读取的时序"></p>
+<p>重复执行同一操作，产生的效果与执行一次相同，称为幂等。例如重复执行 <code>i = 1</code>，结果仍为 1。重复执行 <code>i++</code> 则会多加一次。下图中的 <code>Like()</code> 也是如此，两个用户各点一次赞，一次重试就让计数从预期的 2 变成了 3。投票、入账等操作都需要区分“用户又做了一次”和“上次请求又送到了一次”。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131717440.png" alt="Like 的原始代码及重试让 counter 增至 3 的过程"></p>
+<h3 id="请求去重">请求去重</h3>
+<p>客户端为每次新的逻辑操作分配一个调用 ID，重试时带回原 ID。在 Birrell 和 Nelson 的设计中，同一客户端活动依次发起调用，服务端可以按活动保存最近的调用序号。图中 C0 的第 1 次点赞和 C1 的第 1 次点赞来自不同客户端，因此要分别计数。C1 重发的仍是 <code>C1:#1</code>，服务端认出它已经处理过，直接返回已有结果，计数停在 2。如果重复请求在第一次调用还没结束时就到达，服务端也要认出它正在执行，避免两个线程同时进入 <code>counter++</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131716090.png" alt="按客户端身份和调用序号区分两次点赞与一次重传"></p>
+<p>Sun RPC 的数据报实现可以启用回复缓存。服务端根据调用标识等信息找回原回复，直接发给客户端，随后返回。缓存项被淘汰或随重启丢失后，再来的旧请求就可能重新执行。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131720273.png" alt="Sun RPC 回复缓存命中时跳过 handler 的课件伪代码"></p>
+<p>要让一次点赞的效果在服务端重启后仍然恰好发生一次（exactly-once），服务端得把“计数加一”和“这条请求已完成、回复是什么”一起持久化。如果先更新计数，还没记录调用 ID 就崩溃，恢复后重试会再加一次。如果只存了“已完成”，计数却没写入，重试又会漏掉这次点赞。在故障最终修复、客户端持续重试的前提下，让业务修改和去重记录一起生效（即作为一个事务），才能同时避免漏做和重复做。</p>
+<p>实际的重试策略通常有次数限制。<code>ReadTime</code> 配置的 <code>maxAttempts: 3</code> 包括第一次调用，因此最多再试两次。如果三次请求都没送到，服务端可能一次也没执行。只有遇到 <code>UNAVAILABLE</code> 才按这项策略重试，初始退避为 0.1 秒，之后按 2 倍增长，上限为 1 秒。这样的配置能让一次短暂故障后的读请求再试一次。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131720620.png" alt="gRPC 为 ReadTime 配置可重试状态、尝试次数与退避时间"></p>
+<h2 id="分布式文件系统">分布式文件系统</h2>
+<p>通过终端登录远程机器、打开网盘选文件都需要显式选择远端资源。换成挂载好的文件系统，程序可以直接调用 <code>open(&quot;/home/paul/image.png&quot;, O_RDONLY)</code>。程序传入的是普通路径，客户端负责判断数据在哪台机器上，并用 RPC 完成访问。</p>
+<h3 id="NFS">NFS</h3>
+<p>Sun 在 1980 年代为工作站设计了 NFS（Network File System）。一台机器可以把自己的目录共享给别的机器，也可以挂载别人的目录。这样，没有本地磁盘的工作站也能访问文件，两端可以使用不同的硬件、操作系统和本地文件系统。</p>
+<p>假设服务器 <code>192.168.1.100</code> 要共享 <code>/users/paul</code>。管理员在服务器的 <code>/etc/exports</code> 中配置共享目录和访问范围，客户端执行图中的 <code>mount</code> 命令，把它挂到本机的 <code>/home/paul</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143114204.png" alt="服务器导出目录，客户端将远端目录挂载到 /home/paul 的原始命令"></p>
+<p>挂载时，客户端向服务器申请访问这个目录，取得目录的文件句柄（file handle，简写为 <code>fh</code>）。内核的虚拟文件系统（VFS）把挂载点关联到远端目录。之后解析路径，一旦走到 <code>/home/paul</code>，剩下的名字就交给 NFS 客户端查询。服务器则通过自己的文件系统查目录、读 inode、访问磁盘。</p>
+<h4 id="打开和读取">打开和读取</h4>
+<p>应用看到的接口和网络上实际发送的请求有些差别。看 <code>OPEN</code> 和 <code>READ</code> 两行，应用使用路径和 fd，服务器收到的是目录句柄、文件名，或文件句柄和偏移。中间的转换由 NFS client 进行。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143115305.png" alt="本地文件系统 API 与 NFS RPC 的参数对照表"></p>
+<p>沿着下图读一次文件 <code>f</code>。</p>
+<ol>
+<li>应用调用 <code>OPEN(&quot;f&quot;, 0)</code>。NFS 客户端向服务器发送 <code>LOOKUP(dirfh, &quot;f&quot;)</code>，取得文件的 <code>fh</code> 和属性，在本地建立打开记录，把 fd 返回给应用。</li>
+<li>应用调用 <code>READ(fd, buf, n)</code>。客户端通过 fd 找到 <code>fh</code> 和当前游标。第一次从偏移 0 开始，网络请求就是 <code>READ(fh, 0, n)</code>。服务器返回数据和属性，客户端将数据复制到本地的 <code>buf</code>，并按实际读取的字节数推进游标。</li>
+<li><code>SEEK</code> 在客户端调整游标。应用关闭这个只读文件时，<code>CLOSE</code> 释放本地打开记录。服务器没有对应的打开记录需要释放。</li>
+</ol>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143115718.png" alt="一次 open、read、close 在应用、NFS 客户端与服务器之间的时序"></p>
+<p>同样，<code>WRITE</code> 要把待写的字节带上网络，客户端的内存地址 <code>buf</code> 只在本进程中有效。<code>STAT</code> 可以对句柄调用 <code>GETATTR</code>。创建目录、删除名字或重命名时，客户端把路径拆成“父目录句柄和名字”，跨目录的 <code>RENAME</code> 则要带上两组。</p>
+<p>为什么由客户端保存游标？假设客户端 A、B 都拿到了 fd 3，但 A 打开的是 <code>f</code>，B 打开的是 <code>g</code>。按图中上半部分的做法，服务器得记住每个客户端的 fd 对应哪个 inode、cursor 在哪里。随着连接的用户增长这张表也会线性增长，增大维护压力。而且一旦 server 崩溃，所有的 API call 都是失败的，维护的 fd table 也会丢失，需要在所有的 client 重新 open 并记录状态。因此这里将由 fd table 的状态分别存在各个用户的 NFS Client 中，这样的服务端就是<strong>无状态</strong>（与客户端数量无关）的。将状态移动到 client 端，在 Server 崩溃时，用户端会进行 retry，Server 恢复时文件的访问状态不依赖服务端的状态也可以恢复。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143109806.png" alt="由服务器保存各客户端的打开表，以及由请求携带句柄与偏移的对照"></p>
+<p>在无状态的实现下，客户端每次都发送 <code>fh</code>、<code>offset</code> 和 <code>count</code>，服务器仅凭当前请求和磁盘上的文件就能完成读取。早期 NFS 常用 UDP，客户端超时后可以重新发送请求。遇到重复请求，服务器还可以用 <code>xid</code> 查回复缓存，命中时重发已有结果，避免重复执行。缓存被清空后，这层去重保护也就失效了。</p>
+<blockquote>
+<p>对话接口也可以采用类似的设计。图中客户端每次在 <code>input</code> 里带上前几条消息，服务端便知道这一轮所需的上下文。如果只传 <code>previous_response_id</code>，服务端就得能凭这个 ID 找回上一次的内容。NFS 把句柄和游标带在请求里，也是为了让服务器能从当前请求继续工作。<br>
+<img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143118640.png" alt="对话请求携带完整消息历史的原始代码，以及与 NFS 的对照表"></p>
+</blockquote>
+<h4 id="文件句柄">文件句柄</h4>
+<p>fd 是 Application 视角使用的标识符，client 会将这个标识符翻译成句柄，用来标识先前打开的是哪个文件。把路径直接存进句柄，会遇到下面的问题。客户端 1 进入 <code>dir1</code> 并打开 <code>f</code>。客户端 2 随后把 <code>dir1</code> 改名为 <code>dir2</code>，再把另一个目录 <code>dir3</code> 改名为 <code>dir1</code>。此时客户端 1 用旧 fd 读文件，应该读到原先打开的对象，也就是现在的 <code>dir2/f</code>。如果重新解析字符串 <code>dir1/f</code>，就会走进另一个目录。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143117556.png" alt="打开文件后，另一个客户端连续两次重命名目录的调用顺序"></p>
+<p>用 inode number 可以避开改名，但 inode number 会复用。下图中客户端 2 打开旧的 <code>f</code>，句柄包含 inode 7、代次 1。客户端 1 删掉 <code>f</code> 后又创建同名文件，新文件恰好也分到 inode 7。这次分配把代次（generation number）增为 2。服务器再收到旧句柄 <code>(7, 1)</code>，检查出代次不同，就返回句柄失效错误。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143110650.png" alt="删除并重建 f 后，服务器用 generation number 区分两次分配的 inode 7"></p>
+<p>客户端只需把 <code>fh</code> 原样传回，具体格式由服务器决定。典型句柄能标识所属文件系统、inode number 和该 inode 的分配代次。同一个文件修改内容时仍可沿用句柄，编号被分配给新文件时才需要新代次。本地 UNIX 会为已经打开的 fd 保留被删除的文件。这个 NFS 例子中，服务器没有记录客户端 2 的打开状态，因此旧读请求可能报错，但不会读到新文件。</p>
+<h4 id="客户端缓存">客户端缓存</h4>
+<p>读取远端文件时，一次网络往返可能比读数据本身还慢。NFS 客户端会缓存文件数据、文件属性，以及“目录中的名字对应哪个句柄”的查找结果。于是再次执行 <code>READ</code>、<code>GETATTR</code>、<code>LOOKUP</code>、<code>READLINK</code> 或 <code>READDIR</code> 时，有机会直接用本地结果。服务器自己的 block cache 也能减少磁盘访问。对于顺序读取，客户端还可以把下一段提前读进来。课件以早期常用的 8 KB 为一次传输的例子，后续几次小读取就可能直接命中缓存。</p>
+<p>有了两份缓存，客户端 2 什么时候能看到客户端 1 的修改？图中服务器原有 <code>v1</code>。客户端 1 写入 <code>v2</code> 后，新内容暂时只在本地缓存中，这个块被标记为脏块。客户端 2 此时打开并读取文件，仍可能得到 <code>v1</code>。等客户端 1 关闭文件、把脏块写回服务器，客户端 2 再次打开时检查文件属性，发现修改时间已经变化，就丢掉旧缓存并取得 <code>v2</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143107475.png" alt="写入方关闭文件前后，另一客户端分别读到 v1 和 v2"></p>
+<p>这种约定叫作 close-to-open consistency。它适合一个程序写完并关闭、另一个程序再打开的用法。若要求两个已打开文件的客户端在每次读写后都看到对方的最新结果，就需要更频繁地验证或协调缓存。客户端还可以给属性缓存设置有效期，如普通文件 3 秒、目录 30 秒，到期后重新检查。</p>
+<p>NFSv3 支持 64 位文件大小、大块传输和 <code>COMMIT</code>。例如服务器先接受一批尚未写入稳定存储的数据，客户端随后用 <code>COMMIT</code> 确认写回。也有锁管理器、NVRAM、动态重试和客户端磁盘缓存等配套机制。到了 NFSv4，协议开始维护打开等状态，支持缓存委托、统一的导出命名空间、ACL 和安全机制协商。多个连续操作还可以合成一次 RPC，减少网络往返。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143116073.png" alt="NFSv3 与 NFSv4 的功能及配套机制对照"></p>
+<h3 id="GFS">GFS</h3>
+<p>Google File System 面向网页归档、索引和 MapReduce 等批处理任务。单个文件常有数 GB，许多客户端同时读写。集群里有成千上万台普通机器，某台机器或某块磁盘停机属于系统日常要处理的情况。GFS 把客户端库链接到应用程序，提供创建、删除、打开、关闭和读写等接口，省去了 UNIX 的硬链接、软链接等操作，另外提供快照（snapshot）和记录追加（record append）。</p>
+<h4 id="分块与副本">分块与副本</h4>
+<p>GFS 把一个文件切成固定大小的 chunk，默认 64 MB。每个 chunk 创建时由 master 分配唯一的 64 位 handle，默认在三台 chunkserver 上各存一份。图中 1 TB 文件的第一个块 <code>C0</code> 在节点 1、2、3，第二个块 <code>C1</code> 在节点 2、3、4。master 保存文件到 chunk 的映射，以及各 chunk 当前有哪些副本。chunkserver 把每个 chunk 存成本地 Linux 文件，内部每 64 KB 数据配一个 32 位校验和，用来发现损坏。热门文件还可以增加副本来分担读取。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143108173.png" alt="一个大文件如何切成 chunk 并分布在四台 chunkserver 上"></p>
+<p>为什么选 64 MB？本地 ext4 常见的块大小是 4 KB，GFS 的 chunk 却是客户端向 master 查询位置的单位。chunk 越大，同一个文件需要的映射条目越少，顺序读也越容易复用位置和连接。图中要连续读 3 MB，每次读 1 MB。若三个小块分别位于三台机器，客户端需要与三台机器分别握手。若三次读取都落在同一个 64 MB chunk 上，和一台 chunkserver 建立一次 TCP 连接就够了。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143109405.png" alt="连续三次读取 1 MB 时，小块与大块的连接复用对照"></p>
+<p>使用较大的 chunk，单个 master 就可以在内存中存储查询这些元数据。名称和文件由哪些 chunk 组成的信息保存在操作日志与检查点中。哪台机器现在持有哪些 chunk 则可以在启动时向各台 chunkserver 查询，再根据周期性心跳更新。数据读写直接走 chunkserver，master 不用转发每一个数据块。</p>
+<h4 id="读-chunk">读 chunk</h4>
+<p>客户端先根据文件偏移算出 chunk 下标，把文件名和下标发给 master。master 找到 handle 和副本位置，一并返回。客户端缓存这份元数据，选一个副本，发送 handle 和块内的字节范围。下图第一次读时经过 master，第二次读取同一 chunk 时直接访问 chunkserver。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143111061.png" alt="第一次读先查 master，再读同一 chunk 时命中客户端的位置缓存"></p>
+<p>大文件往往顺序读一遍就换下一个，长期保留客户端数据缓存的收益较小。GFS 客户端主要缓存 chunk 的位置。chunkserver 读取本地文件时仍可利用操作系统的页缓存。</p>
+<h4 id="写入冲突">写入冲突</h4>
+<p>假设两个客户端同时覆盖同一 chunk 的同一段字节，一个写 A，另一个写 B。如果三个副本都按消息到达顺序各自写入，节点 1、2 先收到 A 再收到 B，最终为 B。节点 3 先收到 B 再收到 A，最终为 A。下一次读哪个副本就会得到哪个结果。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143116457.png" alt="并发写 A 和 B 在不同副本上按不同顺序到达"></p>
+<p>GFS 为每个 chunk 指定一个 primary，其余副本叫作 secondary。master 通过租约（lease）授权 primary 为该 chunk 的修改排序，初始租期为 60 秒，可以随心跳续租。一次写入分为两个阶段。</p>
+<ol>
+<li><strong>传数据。</strong> 客户端向 master 查询并缓存 primary 和各 secondary 的位置，再把待写字节沿副本链传下去。示例中先到 secondary 1，再到 primary 2，最后到 secondary 3。此时各节点只把数据放进缓冲区，收到数据的顺序不会决定最后的文件内容。data 在沿着链向下传输时，实际上是一次向下发 chunk 的一个小 piece，下一个 piece 过来时同时将上一个 piece 沿着链条传递给下一个 chunkserver。放到一个较大的文件传输过程来看，实际上和只传递到一个 chunkserver 使用的时间差距不大（可以类比 CPU 指令流水线）。</li>
+</ol>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143117194.png" alt="第一阶段只传数据，三个副本接收后先缓存在本地"></p>
+<ol start="2">
+<li><strong>执行写入。</strong> 收齐副本的接收确认后，客户端向 primary 发送写请求。primary 分配序号，在本地执行修改，再通知各 secondary 按同一顺序写入之前缓存的数据。各 secondary 完成后向 primary 确认，primary 再回复客户端。这个阶段传的是写入指令和确认，大块数据已经到位。</li>
+</ol>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143119006.png" alt="第二阶段由 primary 分配序号并收集 secondary 的写入确认"></p>
+<p>回到 A、B 同时覆盖的例子。如果 primary 确定的顺序是先 A 后 B，所有成功执行这两次写入的副本最终都是 B。序号解决本轮写入的先后问题。master 另外维护 chunk 的版本号，用来识别在故障期间错过更新的旧副本。旧副本要退出可读副本集合，再从有效副本补齐。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143116823.png" alt="primary 选定先 A 后 B，三个副本按相同顺序写入"></p>
+<p>GFS 常与任务调度器一起部署。一台普通 Linux 机器既运行 chunkserver，也能执行分配来的计算任务。课件列举的历史部署中，一个文件系统超过 4 PB，读写负载达到 40 GB/s，集群里可以同时运行数百至数千个作业。调度器若把任务安排到保存输入 chunk 的机器，读取时就能少走一段网络。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143500096.png" alt="同一台机器上的计算任务和 chunkserver，以及各自的管理节点"></p>
+<h3 id="HDFS">HDFS</h3>
+<p>Hadoop 的 HDFS 借鉴了这种分工，同样面向普通硬件上的大数据集、高吞吐和节点故障。对照下图，GFS 的 master 对应 HDFS 的 NameNode，chunkserver 对应 DataNode，chunk 在 HDFS 中叫作 block。NameNode 用 <code>FsImage</code> 保存命名空间快照，用 <code>EditLog</code> 记录后续变更。重启时结合两者恢复文件和块的映射，再根据 DataNode 的块报告得到副本位置。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143111868.png" alt="GFS 和 HDFS 的文件、块、副本及持久化元数据对照"></p>
+<h3 id="3FS">3FS</h3>
+<p>DeepSeek 的 Fire-Flyer File System（3FS）服务于 AI 训练和推理。数据准备阶段会产生许多中间文件，训练的 dataloader 要随机读样本，保存 checkpoint 时多个节点又会集中写入。checkpoint 的写入需求可超过每节点 10 GiB/s，推理侧读取 KV cache 的峰值达到 40 GiB/s。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143112371.png" alt="数据准备、随机读训练样本、写 checkpoint 与读取推理 KV cache"></p>
+<p>早期 GFS 的一台存储机有两块 80 GB 磁盘和 100 Mbps 以太网。3FS 节点有 16 块 NVMe SSD 和两条 200 Gbps RDMA 链路。按标称速率相加，网络带宽相差 4000 倍。与此同时，访问从大文件上的顺序读，变成了遍布许多文件的 KB 至 MB 级随机读。此时每读一个新块都去问元数据服务，查询本身就可能先成为瓶颈。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143111470.png" alt="GFS 与 3FS 示例中的每节点硬件配置和文件访问方式"></p>
+<h4 id="元数据与目录">元数据与目录</h4>
+<p>3FS 有四类参与者。客户端替应用打开文件、提交读写。元数据服务处理名称、inode、属性和文件布局。存储服务保存分块及其副本，直接与客户端传输数据。集群管理器通过心跳和租约维护节点状态及配置。沿图中的两条实线看，查名字走元数据服务，读文件内容走存储服务。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143117900.png" alt="3FS 客户端、元数据服务、存储服务及集群管理器"></p>
+<p>3FS 把目录项和 inode 放在 FoundationDB 中。它是一个支持事务的分布式键值存储。元数据服务实例都访问同一份记录，所以可以增减实例，某个实例崩溃后也可以由其他实例继续处理。对照 GFS，单 master 要把全部元数据放在自己的内存里，同时处理所有元数据请求。右侧的 3FS 可以把查询分给多个前端，共享记录的并发修改则由数据库协调。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143113858.png" alt="GFS 的单 master 与 3FS 共享事务存储的多个元数据服务"></p>
+<p>用前面讲过的跨目录改名来看事务有什么用。假设 <code>/x</code>、<code>/y</code> 的 inode 号分别为 2、5，<code>/x/a.txt</code> 的 inode 号为 7。在课件的简化表示中，键 <code>DENT|2|a.txt</code> 对应值 7，键 <code>INOD|7</code> 则保存文件属性和布局。将文件移到 <code>/y/a.txt</code>，要删除旧键 <code>DENT|2|a.txt</code>，再建立 <code>DENT|5|a.txt → 7</code>。两处修改在同一事务中提交，要么一起生效，要么都不生效。如果另一个服务同时删除源目录项，遇到冲突的一方需要重新读取后再决定怎样处理。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143112751.png" alt="3FS 示例中跨目录 rename 的事务伪代码与并发 unlink"></p>
+<h4 id="打开文件-2">打开文件</h4>
+<p>一个训练作业启动时，许多 worker 会同时打开样本文件。若每次只读打开都往数据库写一条会话记录，还要在关闭时删除，就会产生大量元数据写入。3FS 只在服务端记录写打开。图中 <code>s0001</code> 是只读样本，清理程序删除它后可以直接回收，原读者后续访问可能失败。<code>ckpt-7</code> 正被 worker 2 写入，删除名字后，数据要等写会话结束再回收。这样写入者不会在文件已经回收后继续留下新的数据块。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143118279.png" alt="只读训练样本和正在写入的 checkpoint 被删除时的处理"></p>
+<h4 id="定位-chunk">定位 chunk</h4>
+<p>在 GFS 中，客户端换到一个位置尚未缓存的 chunk，通常要向 master 查询。3FS 在打开文件时把布局给客户端，包括 chunk 大小、条带宽度和复制链列表。复制链是一组共同保存副本的存储目标。客户端拿到布局后，就能算出要访问哪条链，再按集群配置找到链上的存储节点。</p>
+<p>图中 <code>a.txt</code> 的 inode 号为 7，条带宽度为 3，链列表依次为 1、2、3。给定字节偏移，先除以 chunk 大小取整得到块号 <code>index</code>，余数是块内偏移。chunk ID 由 inode 号和块号组成。图里的简化布局按 <code>chains[index % stripe]</code> 选链，因此第 3 块的 ID 是 <code>(7, 3)</code>，余数 0，对应 chain 1。第 4 块是 <code>(7, 4)</code>，余数 1，对应 chain 2。两次读取都可以直接联系存储服务。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143113119.png" alt="open 时取得文件布局，随后直接读取 chain 1 和 chain 2 上的块"></p>
+<h4 id="计算与存储分离">计算与存储分离</h4>
+<p>MapReduce 通常把计算安排到持有输入块的节点。图左侧要处理 <code>C2</code>，调度器就把 map task 放到保存 <code>C2</code> 的机器。3FS 把 GPU 和 SSD 分别部署在计算节点、存储节点上，GPU 可以通过高带宽 RDMA 网络读取不同节点上的样本。调度训练任务时无需按样本所在磁盘挑 GPU，这就是 locality-oblivious。计算不足时加 GPU，容量不足时加存储，两类资源可以分别扩展。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143113494.png" alt="MapReduce 把任务安排在数据附近，3FS 的 GPU 通过网络访问独立存储节点"></p>
+<h4 id="FUSE-与原生-I-O">FUSE 与原生 I/O</h4>
+<p>普通程序可以挂载 3FS 后直接调用 <code>open()</code>、<code>read()</code>。FUSE（Filesystem in Userspace）让 3FS 的文件系统逻辑运行在用户态。按图中的箭头，应用的读请求先进入内核 VFS，再由 FUSE 放入共享请求队列。用户态的 3FS daemon 取出请求，通过 RDMA 访问存储服务，再把结果经内核交给应用。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143110235.png" alt="普通 read 如何经过 VFS、FUSE 请求队列和用户态的 3FS daemon"></p>
+<p>当 SSD 和网络都很快，小块读的成本就可能主要花在本机。多个线程进出 FUSE 队列要竞争自旋锁，数据在应用、内核和 daemon 之间也要复制，造成大量的 I/O 读写。</p>
+<p>需要更高吞吐的程序可以先经 FUSE 打开文件，再走原生异步 I/O 接口。图中的 <code>Ior</code> 是共享内存中的请求环，记录要读写哪个文件、哪个位置。<code>Iov</code> 是共享数据缓冲区，保存实际字节。应用把请求放入环，daemon 取出后访问远端存储，并把完成状态交回应用。这种方式借鉴了 <code>io_uring</code>，每次读写都能绕过 FUSE 的内核请求队列，省去了这条路径上的数据复制。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143114545.png" alt="原生 I/O 通过共享的 Ior 请求环和 Iov 数据缓冲区提交读写"></p>
+<p>经典 NFS 客户端把文件句柄和偏移发给导出目录的服务器。GFS 客户端向 master 询问副本位置，再到 chunkserver 读指定范围。3FS 客户端在打开时取得布局，后续随机读取直接算出目标复制链。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143108979.png" alt="NFS、GFS 与 3FS 在负载、硬件、接口、元数据和分块定位上的对照"></p>
+<h2 id="一致性模型">一致性模型</h2>
+<p>Alice 在群里发了一份 <code>Chap_01.pdf</code>，随后引用它问“是这个文件吗？”。Bob 先看到了这句话，点开引用却提示“引用内容不存在”，过了一会儿文件才出现。图中两个人最终收到了同样的两条消息，但在 Bob 点开引用的那一刻，他看到的聊天记录里还没有文件。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162930946.png" alt="Alice 先发文件再引用，Bob 却先收到引用"></p>
+<p>把聊天记录看成一个列表，发送文本或文件就是向列表追加一项，记作 <code>Update</code>。打开聊天窗口查看当前列表，记作 <code>Read</code>。一致性模型约定不同用户以什么顺序看到这些更新，以及每次读允许返回什么结果。前面 NFS 的 close-to-open consistency 也是这样的约定，写入者关闭文件之后，另一个客户端再打开它，就应当看到已经写回的内容。</p>
+<h3 id="中心化服务器">中心化服务器</h3>
+<p>先把整个群的聊天记录放在一台服务器上。客户端通过 RPC 发送消息，服务器把消息追加到列表末尾再回复 ACK。读聊天记录时，服务器返回当前列表。如果 Alice 等文件的 ACK 到达后才发引用，那么她发出第二个请求时，文件已经在服务器的列表里了。Bob 向这台服务器读取历史，可以暂时只读到文件，也可以同时读到文件和引用。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162927045.png" alt="单台服务器依次追加文件和引用，再向读取方返回列表"></p>
+<p>这种实现有两个地方要等。写入时，即使消息只有“收到”两个字，发送者也要等一次网络往返。读取时，如果每次打开窗口都传回整份历史，聊天越久，要传的数据就越多。下图的例子里，历史增至原来的四倍，按相同速率传输，传数据的时间也从 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span></span></span></span> 增至约 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>4</mn><mi>t</mi></mrow><annotation encoding="application/x-tex">4t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">4</span><span class="mord mathnormal">t</span></span></span></span>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162935174.png" alt="发送者等待 ACK，以及每次读都取回完整历史的开销"></p>
+<p>手机断网后，连自己刚发过的消息都要等重新联网才能查。服务器一旦停机，所有人的读写都要等它恢复。给每台设备保留一份聊天记录，可以让本地读写继续进行，但接下来要决定各份记录怎样同步。</p>
+<h3 id="副本与同步">副本与同步</h3>
+<p>假设手机、服务器和平板各有一个副本。手机发出“你好”后，可以先追加到自己的列表。什么时候向用户显示“发送成功”，取决于要等哪些副本确认。</p>
+<table>
+<thead>
+<tr>
+<th>何时确认写入</th>
+<th>用户需要等多久</th>
+<th>此时其他设备看到了什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>本地追加完就确认</td>
+<td>无需等待网络</td>
+<td>消息暂时可能只有手机上有</td>
+</tr>
+<tr>
+<td>手机和服务器各保存一份就确认</td>
+<td>等服务器回复</td>
+<td>平板可以稍后补收</td>
+</tr>
+<tr>
+<td>全部副本确认后才返回</td>
+<td>等最慢的副本回复</td>
+<td>各副本都已收到，但任意一个离线就会挡住这次确认</td>
+</tr>
+</tbody>
+</table>
+<p>图里两次都在发“你好”。上半部分等两条 ACK 都回来才结束。下半部分收到服务器的 ACK 就返回，等平板恢复连接后再补发。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162926109.png" alt="等待全部 ACK 与等待部分副本确认的时序对照"></p>
+<p>读操作可以直接取本地列表。比如平板断网时，手机又发了“谢谢”和“再见”，平板这段时间仍能打开聊天，只看到原有的“你好”。它可以定期向服务器拉取缺少的消息，也可以收到推送通知后批量同步。设定一定间隔的心跳，平板恢复连接，下一次同步就补上两条消息。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162929501.png" alt="平板离线时读取本地历史，重新联网后补收两条消息"></p>
+<p>同步解决了消息能否送到，但是要处理<strong>到达顺序</strong>。回到开头的例子，手机先发文件，再发引用。文件传得慢，服务器先收到短小的引用并转给平板。平板此时读到的就是一条指向缺失文件的消息。即使文件随后送到，若每个副本都只往末尾追加，手机上的顺序仍是“文件、引用”，平板上却是“引用、文件”。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162931279.png" alt="文件比引用晚到，按到达顺序追加会使副本记录不同"></p>
+<p>两个副本也可能在同一份历史上分别写入。假设两边原来都是 <code>[你好, 谢谢]</code>，手机追加“好的”，平板追加“收到”。此时任选一份完整列表去覆盖另一份，都会丢掉一条消息。同步时要交换各自新增的操作，按消息 ID 去重，保留这两条更新。至于“好的”和“收到”谁在前面，无论最终选哪一种顺序，至少一边已经显示过的列表要调整。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162927620.png" alt="两个副本在相同历史后分别追加消息，合并时其中一端的显示顺序发生变化"></p>
+<h3 id="最终一致性">最终一致性</h3>
+<p>聊天应用可以允许设备离线时照常读写，等到恢复通信后再补齐历史。系统在后台传播更新。这个列表按同一规则合并后，拥有同一组更新的副本应得到相同状态。如果没有新的写入，经过同步，各副本最终会返回相同的列表。这就是最终一致性（eventual consistency）。</p>
+<p>图中的 <code>0 RTT</code> 表示用户提交本地更新时无需等网络往返。后台可以由设备之间互相传消息，也可以通过服务器中转。使用至少一次 RPC 重试时，同一条消息可能收到多次，所以副本需要凭更新 ID 识别重传。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162930228.png" alt="本地写立即返回，后台通过设备互传或服务器转发进行同步"></p>
+<p>对于这个列表，一种做法是保留更新日志。副本 1 的到达顺序为 <code>[X, Y]</code>，副本 2 为 <code>[Y, X]</code>。两边收齐更新后，用同一个规则排序，再从相同的初始列表按序重放。如果两端都排成 <code>[X, Y]</code>，重放后就得到相同结果。这里能保证的是最后收敛，用户在同步完成前读到的结果仍可能不同。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162933051.png" alt="同一组更新在两端按同一规则排序并重放"></p>
+<p>最终一致性对同步过程中的可见顺序约束较少。若应用还要求“先看到文件，才能看到引用”，就要进一步约束读操作。图中从左到右列出的模型对容错和易用性有不同要求。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162933379.png" alt="最终一致性、因果一致性、顺序一致性、线性一致性与严格一致性的顺序要求"></p>
+<h3 id="给更新排序">给更新排序</h3>
+<p>先尝试用设备时间作为排序键。两个设备调用 <code>getTimeOfDay()</code>，都可能取得 <code>1755419200.123</code>。只比较时间，两个键相等，保留原有到达顺序就可能让两个副本各排各的。图中改用 <code>(时间, 节点 ID)</code>，时间相同再比较 <code>R1</code> 和 <code>R2</code>，两边都把 X 排在 Y 前。若同一设备也能在一个时钟刻度内发出多条更新，还可以用本地递增序号把它们区分开。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162934063.png" alt="两条更新具有相同时间戳，加入节点 ID 后两端得到相同的排列"></p>
+<p>能把任意两个不同事件排出先后，称为全序。先按节点 ID 再按本地序号也能得到全序，但这样会把同一节点的消息排在一起，连问答都可能前后颠倒。即使用时间作第一排序键，两台机器的时钟也有偏差。机器通过计算振荡器周期来计时，经过的时间约为周期数除以频率。各台设备独立计数，晶振的实际频率还会受温度等因素影响。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162930572.png" alt="用于计时的石英晶振及其在电路板上的位置"></p>
+<p>看下面两个具体的时间戳。R1 在本机时间 <code>1755419200.123</code> 发出 <code>file_a</code>。R2 收到文件后才引用它，但 R2 的时钟偏慢，给引用标上了 <code>1755419199.987</code>。按数值从小到大排，两台机器最终都把引用排在文件前面。它们达成了一致，却把“先收到文件，后发出引用”这个已知顺序排反了。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162932660.png" alt="两台设备的时钟有偏差，按物理时间排序会颠倒文件与引用"></p>
+<h3 id="因果与逻辑时钟">因果与逻辑时钟</h3>
+<p>用 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">X \to Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span> 表示事件 X 在因果上先于 Y（happened-before）。在同一个单线程执行流中，先执行的事件在前。跨节点时，一条消息的发送在它的接收之前。这个关系还可以传递。图中 R1 发文件是 X，R2 收到文件后发引用是 Z，之后又发“看完了”是 Y。消息建立了 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Z</mi></mrow><annotation encoding="application/x-tex">X \to Z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">Z</span></span></span></span>，R2 的本地顺序给出 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Z</mi><mo>→</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">Z \to Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">Z</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span>，因此 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo>→</mo><mi>Y</mi></mrow><annotation encoding="application/x-tex">X \to Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.07847em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span></span></span></span>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162926685.png" alt="文件传输和本地执行先后如何建立 X 到 Z 再到 Y 的因果关系"></p>
+<p>Lamport 时钟用一个整数记录这种先后关系。每个节点维护一个计数器 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi></mrow><annotation encoding="application/x-tex">T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span></span></span></span>，每发生一个本地事件或发送事件就递增，发送消息时带上当前值。收到时间戳为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>T</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup></mrow><annotation encoding="application/x-tex">T&#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7519em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7519em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span></span></span></span> 的消息时，用 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>T</mi><mo>←</mo><mi>max</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>T</mi><mo separator="true">,</mo><msup><mi>T</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup><mo stretchy="false">)</mo><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">T \leftarrow \max(T,T&#x27;)+1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">←</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0019em;vertical-align:-0.25em;"></span><span class="mop">max</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7519em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> 给接收事件编号。这样接收既晚于本机的上一事件，又晚于这条消息的发送。如果本地计数已经为本次接收加过一，接下来只需把它与 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>T</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup><mo>+</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">T&#x27;+1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8352em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7519em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> 取最大值。</p>
+<p>见下图如果没有使用逻辑时钟，假如 R2 收到 <code>&lt;file_a, 10&gt;</code> 的时候立即按照本设备时间戳发出 <code>&lt;ref, 9&gt;</code>，就会导致另一台设备同步后，引用跑到了文件前。</p>
+<p>图中 R1 给文件标上 10，R2 收到时本地计数为 9，于是接收事件取 11。随后 R2 发引用，再加一得到 12。各端按“逻辑时间、节点 ID”排序，文件 10 就会排在引用 12 前。这些数字表示事件顺序，实际经过的秒数要用物理时钟计量。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162928413.png" alt="R2 收到时间戳 10 后将时钟推到 11，再为引用分配 12"></p>
+<p>对有因果依赖的更新，<strong>因果一致性</strong>要求读者看见后续更新时，也已经能看到它依赖的更新。若引用先到、文件还在路上，要满足这一要求，接收端就得暂缓展示引用，等文件补齐。只在最后按 Lamport 时间排好列表，仍可能让同步期间打开窗口的人碰到缺失的引用。</p>
+<h3 id="接龙与向量时钟">接龙与向量时钟</h3>
+<p>假设群接龙已排到第 17 人。Alice 和 Bob 都读到同一份名单，分别在本地填上自己是第 18 人。这两次报名之间没有消息依赖，称为并发。用“Lamport 时间、节点 ID”可以选定其中一个排在前面。如果第 18 名有奖，按节点 ID 打破平局的结果却不能说明谁先按下按钮。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162932309.png" alt="两人并发接龙时，可以规定一个排列，也可以把冲突报告给应用"></p>
+<p>应用也可以把两条报名标为冲突，请参与者重新确认。这要求系统能区分 X 先于 Y、Y 先于 X，以及两者在因果上不可比这三种情况。允许有些事件不可比的关系叫作偏序。Lamport 时间能保留已经存在的因果先后，要从时间戳本身识别并发，可以用向量时钟（vector clock）。</p>
+<p>每个节点维护一个向量，每一项对应一个节点。本地发生事件时只增加自己的分量，发消息时附上整个向量。收到消息后，先把两个向量的对应分量分别取最大值，再增加自己的分量。以 R1、R2 各占一项为例，按下图推一遍。</p>
+<ol>
+<li>两端从 <code>[0, 0]</code> 出发。R1 独立产生 X，时间戳为 <code>[1, 0]</code>。R2 独立产生 Y，时间戳为 <code>[0, 1]</code>。第一项 X 大，第二项 Y 大，所以两者不可比。</li>
+<li>R1 收到 Y，先将 <code>[1, 0]</code> 和 <code>[0, 1]</code> 逐项取最大值得到 <code>[1, 1]</code>。接收也是 R1 上的一个事件，第一项再加一，得到 <code>[2, 1]</code>。</li>
+<li>R1 随后引用 Y，时间戳为 <code>[3, 1]</code>。拿 Y 的 <code>[0, 1]</code> 和它比较，Y 的每项都小于或等于引用的对应项，且第一项严格更小，因此 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Y</mi><mo>→</mo><mrow><mi mathvariant="normal">r</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">f</mi></mrow><mo stretchy="false">(</mo><mi>Y</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">Y \to \mathrm{ref}(Y)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathrm" style="margin-right:0.07778em;">ref</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mclose">)</span></span></span></span>。</li>
+</ol>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162934798.png" alt="向量时钟区分独立更新，并在收到消息后记录引用对 Y 的依赖"></p>
+<p>向量时钟能告诉应用“两人各自报了第 18 名”。怎么分配这个名额仍由应用决定。如果业务要求报名成功后一律保留已经确认的名次，就需要在确认前协调顺序。</p>
+<h3 id="严格一致性">严格一致性</h3>
+<p>对于同一份接龙名单，可以要求所有读写都像在一份逻辑副本上依次执行。图中上方的两个写和一个读在不同副本上有重叠，下方把它们排成一个序列。这个序列必须能解释每一次读具体看到了谁，不能只看最后名单里有没有这两个人。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162931984.png" alt="用一份逻辑名单上的串行执行解释多个副本上的并发操作"></p>
+<p>按讲义中严格一致性（strict consistency）的要求，操作按真实的发起时间排序。假设 Alice 先按按钮，Bob 后按，即使 Bob 的请求先到服务器，名单也应当先记 Alice。服务器光看到达顺序无法判断是谁先发，客户端附上本机时间又会遇到时钟偏差。</p>
+<p>即使两台机器的时钟完全同步，服务器先收到时间戳为 7 的 B，也无法知道时间戳为 5 的 A 是否还在路上。若消息延迟没有上界，就没有一个固定的等待时长，可以保证所有更早的请求都已到达。把存储集中在一台机器上解决了“由谁排序”，仍解决不了“更早发出的请求是否都到齐了”。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162933702.png" alt="按按钮的发起时间排列接龙，以及较早请求晚到造成的等待"></p>
+<h3 id="线性一致性">线性一致性</h3>
+<p>线性一致性（linearizability，也称可线性化）给每次操作留出了从发起到返回的一段区间。只要能在各自区间内为每个操作选一个生效点，使所有返回值都符合这一个串行顺序，就满足要求。<strong>若 A 已经返回，B 才发起，A 就必须排在 B 前面。</strong> 两个区间有重叠时，可以选择其中任一顺序，前提是它能解释实际返回的结果。</p>
+<p>图中 Alice 先发起 A，Bob 稍后发起 B，但两次更新有重叠，服务器先追加了 B，再追加 A。最后一次读取发生在两次更新都返回之后，因此它读到 <code>[B, A]</code> 符合线性一致性。若只知道 B 已经返回、A 还在进行，随后发起的读至少应看到 B，是否已看到 A 则取决于 A 的生效位置。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162929117.png" alt="B 先完成追加，稍后发起的读取得包含 B 的名单"></p>
+<p>一种实现是给每个对象指定主副本（primary），由它决定这个对象的读写顺序。客户端可以联系任意副本，备副本收到请求后转给主副本。图中的 P0 收到 <code>Write(x, 1)</code> 后，先把更新转给 P1，待 P1 更新并确认，再完成本地写入并回复客户端。读请求也经过主副本，按已确定的顺序读取，备副本尚未完成协调的状态不会提前返回给读者。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162929887.png" alt="P0 转发写入并等待 P1 确认，发到 P1 的后续写请求转交 P0"></p>
+<p>只有主副本决定顺序还不够，这个顺序得随写请求一起到达备副本。看下图，P0 先写 1 再写 2。如果 P1 按消息到达顺序执行，收到 2 再收到 1，最终就会停在 1。解决办法与前面 GFS 的 primary 类似。P0 给每个写分配递增的序号 <code>seq</code>，P1 只能按号执行。先收到 <code>seq=2</code> 就暂存，等到 <code>seq=1</code> 完成，再执行 2。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162931633.png" alt="同样的两次写，按消息到达顺序执行与按 seq 执行的区别"></p>
+<p>这种简化方案每次写都要多等主备之间的一轮通信。主副本失效后需要安全地选出接替者。若规定所有备副本都必须 ACK，任何一台备副本失联也会挡住写入。复制解决了数据有多份的问题，故障时由谁继续决定顺序，还需要单独的协议。</p>
+<h3 id="顺序一致性">顺序一致性</h3>
+<p>能不能让每个副本直接用本地值回答读请求，省掉读操作的转发？看 <code>x</code> 从 1 改成 2 的例子。写请求还没返回，P1 已经更新为 2，第一个读在 P1 得到 2。这个读完成之后，另一个客户端才在尚未更新的 P0 发起第二个读，得到 1。期间只有这一次写。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162928754.png" alt="第一个读返回 2 并完成后，另一个客户端才发起第二个读，却得到 1"></p>
+<p>若第一个读能看到 2，串行历史中写 2 就必须排在它前面。实时先后又要求第二个读排在第一个读之后，因此第二个读也应看到 2。实际返回的 1 与这个要求矛盾，这段执行无法满足线性一致性。</p>
+<p>**顺序一致性（sequential consistency）**也要求存在一个能解释所有返回值的全局串行顺序，同时必须保留每个进程自己的程序顺序。它允许不同进程的操作在这个序列中的先后与实际时间不同。假设这一次写和两次读分别来自三个进程，每个进程各发出一个操作，那么“读到 1 → 写入 2 → 读到 2”就能解释这些结果。如果两个读来自同一个进程，并且它先读到 2、再读到 1，就不能把两次读取互换位置。允许本地读能省去往返，要对所有执行保证顺序一致性，实现还须维护每个进程的操作顺序。</p>
+<p>回到聊天和接龙，同样是往列表里追加一项，用户依赖的保证却不同。离线发一条普通消息，可以先在本地显示，等设备联网后再合并。引用一份文件，需要保留文件与引用的因果顺序。发放唯一名额时，还可以由一个权威服务按处理顺序原子地登记，登记成功后再向用户确认。若业务坚持比较两人按按钮的物理时刻，线性一致性本身也不能替它裁决重叠的两次报名。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162934436.png" alt="本地读写与协调读写在可扩展性、性能、容错和编程上的定性对照"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/11/09/BLOG004/">https://acannedfish.github.io/2026/11/09/BLOG004/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/background6.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/11/03/BLOG003/" title="Re：从0开始的图形渲染"><img class="cover" src="/img/background5.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Re：从0开始的图形渲染</div></div></div></a><a class="pagination-related  no-desc" href="/2026/11/12/BLOG005/" title="Vulkan 学习日志"><img class="cover" src="/img/background7.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Vulkan 学习日志</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><div class="site-data-item"><div class="headline">文章</div><div class="length-num">123</div></div><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.</span> <span class="toc-text">本地文件系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Block-Layer"><span class="toc-number">1.1.</span> <span class="toc-text">Block Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File-Layer"><span class="toc-number">1.2.</span> <span class="toc-text">File Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#inode-Number-Layer"><span class="toc-number">1.3.</span> <span class="toc-text">inode Number Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File-Name-Number"><span class="toc-number">1.4.</span> <span class="toc-text">File Name Number</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Path-Name-Layer"><span class="toc-number">1.5.</span> <span class="toc-text">Path Name Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Absolute-Path-Name-Layer"><span class="toc-number">1.6.</span> <span class="toc-text">Absolute Path Name Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Symbolic-Link-Layer"><span class="toc-number">1.7.</span> <span class="toc-text">Symbolic Link Layer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F-API"><span class="toc-number">2.</span> <span class="toc-text">文件系统 API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6"><span class="toc-number">2.1.</span> <span class="toc-text">打开文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fd-%E5%92%8C-cursor"><span class="toc-number">2.2.</span> <span class="toc-text">fd 和 cursor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OPEN-%E5%92%8C-READ"><span class="toc-number">2.3.</span> <span class="toc-text">OPEN 和 READ</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A3%81%E7%9B%98%E8%AF%BB%E5%86%99"><span class="toc-number">2.4.</span> <span class="toc-text">磁盘读写</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%97%AD%E4%B8%8E%E5%88%A0%E9%99%A4"><span class="toc-number">2.5.</span> <span class="toc-text">关闭与删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%A8%E7%9B%AE%E5%BD%95%E9%87%8D%E5%91%BD%E5%90%8D"><span class="toc-number">2.6.</span> <span class="toc-text">跨目录重命名</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Remote-Procedure-Call"><span class="toc-number">3.</span> <span class="toc-text">Remote Procedure Call</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Stub"><span class="toc-number">3.1.</span> <span class="toc-text">Stub</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E4%B8%8E%E5%9B%9E%E5%A4%8D"><span class="toc-number">3.2.</span> <span class="toc-text">请求与回复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E7%BC%96%E7%A0%81"><span class="toc-number">3.3.</span> <span class="toc-text">参数编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%BC%96%E7%A0%81"><span class="toc-number">3.4.</span> <span class="toc-text">二进制编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%85%BC%E5%AE%B9"><span class="toc-number">3.5.</span> <span class="toc-text">版本兼容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B6%85%E6%97%B6%E4%B8%8E%E9%87%8D%E8%AF%95"><span class="toc-number">3.6.</span> <span class="toc-text">超时与重试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%AC%A1%E6%95%B0"><span class="toc-number">3.7.</span> <span class="toc-text">执行次数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E5%8E%BB%E9%87%8D"><span class="toc-number">3.8.</span> <span class="toc-text">请求去重</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">4.</span> <span class="toc-text">分布式文件系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#NFS"><span class="toc-number">4.1.</span> <span class="toc-text">NFS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E5%92%8C%E8%AF%BB%E5%8F%96"><span class="toc-number">4.1.1.</span> <span class="toc-text">打开和读取</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%8F%A5%E6%9F%84"><span class="toc-number">4.1.2.</span> <span class="toc-text">文件句柄</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%BC%93%E5%AD%98"><span class="toc-number">4.1.3.</span> <span class="toc-text">客户端缓存</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS"><span class="toc-number">4.2.</span> <span class="toc-text">GFS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%9D%97%E4%B8%8E%E5%89%AF%E6%9C%AC"><span class="toc-number">4.2.1.</span> <span class="toc-text">分块与副本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%BB-chunk"><span class="toc-number">4.2.2.</span> <span class="toc-text">读 chunk</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%99%E5%85%A5%E5%86%B2%E7%AA%81"><span class="toc-number">4.2.3.</span> <span class="toc-text">写入冲突</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HDFS"><span class="toc-number">4.3.</span> <span class="toc-text">HDFS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3FS"><span class="toc-number">4.4.</span> <span class="toc-text">3FS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%83%E6%95%B0%E6%8D%AE%E4%B8%8E%E7%9B%AE%E5%BD%95"><span class="toc-number">4.4.1.</span> <span class="toc-text">元数据与目录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6-2"><span class="toc-number">4.4.2.</span> <span class="toc-text">打开文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D-chunk"><span class="toc-number">4.4.3.</span> <span class="toc-text">定位 chunk</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E4%B8%8E%E5%AD%98%E5%82%A8%E5%88%86%E7%A6%BB"><span class="toc-number">4.4.4.</span> <span class="toc-text">计算与存储分离</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FUSE-%E4%B8%8E%E5%8E%9F%E7%94%9F-I-O"><span class="toc-number">4.4.5.</span> <span class="toc-text">FUSE 与原生 I&#x2F;O</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E6%A8%A1%E5%9E%8B"><span class="toc-number">5.</span> <span class="toc-text">一致性模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E5%BF%83%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-number">5.1.</span> <span class="toc-text">中心化服务器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%AF%E6%9C%AC%E4%B8%8E%E5%90%8C%E6%AD%A5"><span class="toc-number">5.2.</span> <span class="toc-text">副本与同步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.3.</span> <span class="toc-text">最终一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%99%E6%9B%B4%E6%96%B0%E6%8E%92%E5%BA%8F"><span class="toc-number">5.4.</span> <span class="toc-text">给更新排序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%A0%E6%9E%9C%E4%B8%8E%E9%80%BB%E8%BE%91%E6%97%B6%E9%92%9F"><span class="toc-number">5.5.</span> <span class="toc-text">因果与逻辑时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E9%BE%99%E4%B8%8E%E5%90%91%E9%87%8F%E6%97%B6%E9%92%9F"><span class="toc-number">5.6.</span> <span class="toc-text">接龙与向量时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A5%E6%A0%BC%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.7.</span> <span class="toc-text">严格一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.8.</span> <span class="toc-text">线性一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.9.</span> <span class="toc-text">顺序一致性</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (false) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'aCannedFish/giscus',
+      'data-repo-id': 'R_kgDOTFuj9Q',
+      'data-category-id': 'DIC_kwDOTFuj9c4C_64q',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script src="/js/site-navigation.js" defer></script><script src="/js/site-motion.js" defer></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js" defer="defer"></script><script>document.addEventListener('DOMContentLoaded', () => {
+  const pjaxSelectors = ["meta[property=\"og:image\"]","meta[property=\"og:title\"]","meta[property=\"og:url\"]","meta[property=\"og:description\"]","link[rel=\"canonical\"]","head > title","#config-diff","#route-state","#page-header","#route-content","#aside-content","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+  const navigationSwitches = window.SiteNavigation ? window.SiteNavigation.switches : {}
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    switches: navigationSwitches,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: true,
+    // Route switches position new pages before their first painted frame.
+    scrollTo: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => {
+      try {
+        fn()
+      } catch (err) {
+        console.debug('Pjax callback failed:', err)
+      }
+    })
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      false
+        ? pjax.loadUrl('/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
