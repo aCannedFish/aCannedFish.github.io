@@ -7,7 +7,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://acannedfish.github.io/img/background6.png">
 <meta property="article:published_time" content="2026-11-09T13:58:00.000Z">
-<meta property="article:modified_time" content="2026-11-12T14:10:47.808Z">
+<meta property="article:modified_time" content="2026-11-14T15:36:01.836Z">
 <meta property="article:author" content="aCannedFish">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://acannedfish.github.io/img/background6.png"><script type="application/ld+json">{
@@ -17,7 +17,7 @@
   "url": "https://acannedfish.github.io/2026/11/09/BLOG004/",
   "image": "https://acannedfish.github.io/img/background6.png",
   "datePublished": "2026-11-09T13:58:00.000Z",
-  "dateModified": "2026-11-12T14:10:47.808Z",
+  "dateModified": "2026-11-14T15:36:01.836Z",
   "author": [
     {
       "@type": "Person",
@@ -174,7 +174,7 @@
   display: block !important;
 }
 </style>
-</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><div class="site-data-item"><div class="headline">文章</div><div class="length-num">123</div></div><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/search/"><i class="fa-fw fas fa-search"></i><span> 搜索</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;文件系统与一致性&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/search/"><i class="fa-fw fas fa-search"></i><span> 搜索</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><div class="nav-search-page" id="search-button"><a class="site-page" href="/search/" aria-label="搜索"><i class="fas fa-search fa-fw" aria-hidden="true"></i></a></div><!-- 移动端汉堡菜单按钮--><button id="toggle-menu" type="button" aria-label="打开导航菜单" aria-controls="sidebar-menus"><span class="site-page"><i class="fas fa-bars fa-fw" aria-hidden="true"></i></span></button></div></nav><div id="post-info"><h1 class="post-title">文件系统与一致性</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-09T13:58:00.000Z" title="发表于 2026-11-09 21:58:00">2026-11-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-12T14:10:47.808Z" title="更新于 2026-11-12 22:10:47">2026-11-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Blog/">Blog</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="本地文件系统">本地文件系统</h2>
+</head><body><div class="bg-animation" id="web_bg" style="background-image: url(https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20260509114249129.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><div class="site-data-item"><div class="headline">文章</div><div class="length-num">124</div></div><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/search/"><i class="fa-fw fas fa-search"></i><span> 搜索</span></a></div></div></div></div><div class="post" id="body-wrap"><div id="route-state" hidden data-body-class="post" data-layout-class="layout" data-site-config="{&quot;title&quot;:&quot;文件系统与一致性&quot;,&quot;isHighlightShrink&quot;:false,&quot;isToc&quot;:true,&quot;pageType&quot;:&quot;post&quot;}"></div><header class="post-bg fixed" id="page-header"><nav id="nav"><!-- 左侧博客信息区域--><span id="blog-info"><a class="nav-site-title" href="/"></a></span><!-- 新增的导航菜单容器（居中布局关键）--><div id="nav-menus-container"><!-- 菜单主体部分--><div id="menus"><!-- 菜单项--><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/friends/"><i class="fa-fw fas fa-external-link-square"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/search/"><i class="fa-fw fas fa-search"></i><span> 搜索</span></a></div></div></div></div><!-- 右侧功能区域（新增容器）--><div id="nav-right-container"><!-- 搜索按钮（移动到右侧）--><div class="nav-search-page" id="search-button"><a class="site-page" href="/search/" aria-label="搜索"><i class="fas fa-search fa-fw" aria-hidden="true"></i></a></div><!-- 移动端汉堡菜单按钮--><button id="toggle-menu" type="button" aria-label="打开导航菜单" aria-controls="sidebar-menus"><span class="site-page"><i class="fas fa-bars fa-fw" aria-hidden="true"></i></span></button></div></nav><div id="post-info"><h1 class="post-title">文件系统与一致性</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-11-09T13:58:00.000Z" title="发表于 2026-11-09 21:58:00">2026-11-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-11-14T15:36:01.836Z" title="更新于 2026-11-14 23:36:01">2026-11-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Blog/">Blog</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="route-content"><div id="post"><article class="container post-content" id="article-container"><h2 id="本地文件系统">本地文件系统</h2>
 <p>磁盘可以看作一个巨大的数组。文件系统通过几层抽象，提供了诸如 <code>READ</code>，<code>WRITE</code> 等 API，让我们能够访问，修改磁盘中的数据。</p>
 <p>考虑一个 naive 的文件系统，这个 FS 中只有一个巨大的数组，每个数组索引指向一个 block。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261109220822668.png" alt=""></p>
@@ -287,9 +287,9 @@
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113739702.png" alt="A、B、C 的 fd 3 如何映射到打开文件表"></p>
 <p>图中 A 和 B 分别打开 inode 23，各自拿到 fd 3。A 的 3 指向表项 115，游标在 128，B 的 3 指向表项 116，游标在 240。B 调用 <code>fork()</code> 后，子进程 C 继承了 B 的 fd 3，也指向 116。假设 C 成功读取 8 字节，B 下次就从 248 开始读，A 仍从 128 开始读。父子进程向同一个已打开的输出文件写数据时，会共用这个游标。</p>
 <h3 id="OPEN-和-READ">OPEN 和 READ</h3>
-<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113741904.png" alt="OPEN 的课件原始伪代码"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113741904.png" alt="OPEN 的伪代码"></p>
 <p><code>OPEN</code> 先用文件名和当前目录 <code>wd</code> 查 inode number。找不到且设置了创建标志时，就按给定的 mode 创建文件。创建失败或权限检查失败就返回错误。检查通过后在 <code>file_table</code> 中增加一项，再从当前进程的 <code>fd_table</code> 中找一个空位，把新表项的下标填进去。返回给进程的 fd 就是这个空位的编号。</p>
-<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113742333.png" alt="READ 的课件原始伪代码"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113742333.png" alt="READ 的伪代码"></p>
 <p><code>READ</code> 用 fd 找到游标和 inode，再决定能读多少。例如文件有 100 字节，游标在 80，这次请求读 32 字节，实际只能读到剩下的 20 字节。内核根据 offset 查找 data block，从块内对应的位置把数据复制到 <code>buf</code>，遇到块边界就接着读下一块。伪代码第 4 行记录访问时间 <code>atime</code>。读完后游标移到 100，返回 20。此时再请求读数据，就到了文件末尾，UNIX 的 <code>read()</code> 返回 0。</p>
 <h3 id="磁盘读写">磁盘读写</h3>
 <p>下面用一个只有 64 个 block 的文件系统来看这些操作要访问哪些块。块 0 是 superblock（S），块 1、2 分别是 inode bitmap（i）和 data bitmap（d），块 3 至 7 放 inode table，块 8 至 63 共 56 块放数据。挂载时通过 superblock 中的 magic number 识别文件系统类型，还可以读到 inode 总数（本例为 80）、数据块数量和 inode table 的起始块号。</p>
@@ -326,7 +326,7 @@
 <p>看一次同一文件系统内的 <code>mv dir1/from.txt dir2/to.txt</code>。<code>ls -il</code> 输出的第一列是 inode number。操作前，<code>from.txt</code> 是 40978804，已有的 <code>to.txt</code> 是 40978827。操作后 <code>dir1</code> 为空，<code>dir2/to.txt</code> 变成了 40978804。这个过程中先将要覆盖的文件 <code>to.txt</code> （40978827）解除链接，然后将释放出来的名字链接到 <code>from.txt</code> （40978804）上，然后解除旧链接。因此后面打开的 <code>to.txt</code> 实际是指向了原来的 inode 40978804。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113741076.png" alt="跨目录 mv 前后的命令、输出与 inode number"></p>
 <p>编辑器把修改后的内容写入临时文件 <code>.a.txt.swp</code>。保存时用它替换原来的 <code>a.txt</code>，就要让名字 <code>a.txt</code> 指向临时文件的 inode。左边的方案先删目标名，再建立新链接。若第一步刚写盘就断电，原来的 <code>a.txt</code> 已经消失。右边先把目标目录项改为指向源 inode，再移除源目录项。</p>
-<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113742723.png" alt="课件中两种重命名操作的伪代码"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113742723.png" alt="两种重命名操作的伪代码"></p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110113743112.png" alt="用 from.txt 和 to.txt 比较两种写入顺序的断电结果"></p>
 <p>按右图的顺序，中途断电时 <code>to.txt</code> 仍然存在，但两个名字可能同时指向源 inode。恢复时需要让硬链接计数与实际留下的目录项一致，并在被替换的旧文件没有其他引用时回收它。</p>
 <h2 id="Remote-Procedure-Call">Remote Procedure Call</h2>
@@ -380,7 +380,7 @@
 <p>即使只传一个整数，也要约定字节顺序。同一个参数 <code>0x89abcdef</code>，大端机器从低地址起存为 <code>89 AB CD EF</code>，小端机器则存为 <code>EF CD AB 89</code>。整数宽度、浮点表示、结构体对齐和字符编码也可能不同。比如“中”在 GBK 中占两个字节 <code>D6 D0</code>，在 UTF-8 中占三个字节 <code>E4 B8 AD</code>。另外，不同机器上，相同的数据类型可能占不同的字节数，按照相同的规则进行编解码就会出现对齐问题。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131716458.png" alt="同一个整数在大端和小端机器上的内存布局"></p>
 <p>两端可以约定一种独立于语言的格式，例如 Sun RPC 使用的 XDR、ASN.1 的编码规则、JSON、XML 或 Protocol Buffers。用 JSON 表示请求时，查看消息就能读到 <code>xid</code>、<code>call</code> 和 <code>rpc_version</code>，抓包调试很方便，读取对人类友好。XML、YAML、TOML 和 CSV 也使用文本表示。代价是字段名或标签占用空间，数字精度取决于双方的类型约定，任意二进制数据放进 JSON 字符串还要另行编码，例如转成 Base64，如果涉及大模型参数等大量数据的传递时转换和传递的效率很低。</p>
-<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131716784.png" alt="请求字段写成 JSON 的课件示例"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131716784.png" alt="用 JSON 表示 RPC 请求字段"></p>
 <h3 id="二进制编码">二进制编码</h3>
 <p>考虑同一条 <code>Person</code> 记录。用户名是 <code>Martin</code>，喜欢的数字是 1337，兴趣是两个字符串。图中最下方的 JSON 去掉空格后共 81 B。Thrift 和 Protobuf 先用接口定义语言（IDL）写下 schema，给三个字段分别分配编号 1、2、3。这样接收端已经知道字段名和声明的类型，发送端可以在消息里用编号表示字段。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131720972.png" alt="Thrift 与 Protobuf 的 Person 定义，以及同一条记录的 JSON 表示"></p>
@@ -420,7 +420,7 @@
 <p>客户端为每次新的逻辑操作分配一个调用 ID，重试时带回原 ID。在 Birrell 和 Nelson 的设计中，同一客户端活动依次发起调用，服务端可以按活动保存最近的调用序号。图中 C0 的第 1 次点赞和 C1 的第 1 次点赞来自不同客户端，因此要分别计数。C1 重发的仍是 <code>C1:#1</code>，服务端认出它已经处理过，直接返回已有结果，计数停在 2。如果重复请求在第一次调用还没结束时就到达，服务端也要认出它正在执行，避免两个线程同时进入 <code>counter++</code>。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131716090.png" alt="按客户端身份和调用序号区分两次点赞与一次重传"></p>
 <p>Sun RPC 的数据报实现可以启用回复缓存。服务端根据调用标识等信息找回原回复，直接发给客户端，随后返回。缓存项被淘汰或随重启丢失后，再来的旧请求就可能重新执行。</p>
-<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131720273.png" alt="Sun RPC 回复缓存命中时跳过 handler 的课件伪代码"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131720273.png" alt="Sun RPC 回复缓存命中时跳过 handler 的伪代码"></p>
 <p>要让一次点赞的效果在服务端重启后仍然恰好发生一次（exactly-once），服务端得把“计数加一”和“这条请求已完成、回复是什么”一起持久化。如果先更新计数，还没记录调用 ID 就崩溃，恢复后重试会再加一次。如果只存了“已完成”，计数却没写入，重试又会漏掉这次点赞。在故障最终修复、客户端持续重试的前提下，让业务修改和去重记录一起生效（即作为一个事务），才能同时避免漏做和重复做。</p>
 <p>实际的重试策略通常有次数限制。<code>ReadTime</code> 配置的 <code>maxAttempts: 3</code> 包括第一次调用，因此最多再试两次。如果三次请求都没送到，服务端可能一次也没执行。只有遇到 <code>UNAVAILABLE</code> 才按这项策略重试，初始退避为 0.1 秒，之后按 2 倍增长，上限为 1 秒。这样的配置能让一次短暂故障后的读请求再试一次。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110131720620.png" alt="gRPC 为 ReadTime 配置可重试状态、尝试次数与退避时间"></p>
@@ -456,7 +456,7 @@
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143110650.png" alt="删除并重建 f 后，服务器用 generation number 区分两次分配的 inode 7"></p>
 <p>客户端只需把 <code>fh</code> 原样传回，具体格式由服务器决定。典型句柄能标识所属文件系统、inode number 和该 inode 的分配代次。同一个文件修改内容时仍可沿用句柄，编号被分配给新文件时才需要新代次。本地 UNIX 会为已经打开的 fd 保留被删除的文件。这个 NFS 例子中，服务器没有记录客户端 2 的打开状态，因此旧读请求可能报错，但不会读到新文件。</p>
 <h4 id="客户端缓存">客户端缓存</h4>
-<p>读取远端文件时，一次网络往返可能比读数据本身还慢。NFS 客户端会缓存文件数据、文件属性，以及“目录中的名字对应哪个句柄”的查找结果。于是再次执行 <code>READ</code>、<code>GETATTR</code>、<code>LOOKUP</code>、<code>READLINK</code> 或 <code>READDIR</code> 时，有机会直接用本地结果。服务器自己的 block cache 也能减少磁盘访问。对于顺序读取，客户端还可以把下一段提前读进来。课件以早期常用的 8 KB 为一次传输的例子，后续几次小读取就可能直接命中缓存。</p>
+<p>读取远端文件时，一次网络往返可能比读数据本身还慢。NFS 客户端会缓存文件数据、文件属性，以及“目录中的名字对应哪个句柄”的查找结果。于是再次执行 <code>READ</code>、<code>GETATTR</code>、<code>LOOKUP</code>、<code>READLINK</code> 或 <code>READDIR</code> 时，有机会直接用本地结果。服务器自己的 block cache 也能减少磁盘访问。对于顺序读取，客户端还可以把下一段提前读进来。例如，客户端一次预读 8 KB，应用随后分几次读取这段数据时，就可以直接从缓存取。</p>
 <p>有了两份缓存，客户端 2 什么时候能看到客户端 1 的修改？图中服务器原有 <code>v1</code>。客户端 1 写入 <code>v2</code> 后，新内容暂时只在本地缓存中，这个块被标记为脏块。客户端 2 此时打开并读取文件，仍可能得到 <code>v1</code>。等客户端 1 关闭文件、把脏块写回服务器，客户端 2 再次打开时检查文件属性，发现修改时间已经变化，就丢掉旧缓存并取得 <code>v2</code>。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143107475.png" alt="写入方关闭文件前后，另一客户端分别读到 v1 和 v2"></p>
 <p>这种约定叫作 close-to-open consistency。它适合一个程序写完并关闭、另一个程序再打开的用法。若要求两个已打开文件的客户端在每次读写后都看到对方的最新结果，就需要更频繁地验证或协调缓存。客户端还可以给属性缓存设置有效期，如普通文件 3 秒、目录 30 秒，到期后重新检查。</p>
@@ -488,7 +488,7 @@
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143119006.png" alt="第二阶段由 primary 分配序号并收集 secondary 的写入确认"></p>
 <p>回到 A、B 同时覆盖的例子。如果 primary 确定的顺序是先 A 后 B，所有成功执行这两次写入的副本最终都是 B。序号解决本轮写入的先后问题。master 另外维护 chunk 的版本号，用来识别在故障期间错过更新的旧副本。旧副本要退出可读副本集合，再从有效副本补齐。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143116823.png" alt="primary 选定先 A 后 B，三个副本按相同顺序写入"></p>
-<p>GFS 常与任务调度器一起部署。一台普通 Linux 机器既运行 chunkserver，也能执行分配来的计算任务。课件列举的历史部署中，一个文件系统超过 4 PB，读写负载达到 40 GB/s，集群里可以同时运行数百至数千个作业。调度器若把任务安排到保存输入 chunk 的机器，读取时就能少走一段网络。</p>
+<p>GFS 常与任务调度器一起部署。一台普通 Linux 机器既运行 chunkserver，也能执行分配来的计算任务。在 Google 早期的集群部署中，单个 GFS 文件系统的容量曾超过 4 PB，读写负载达到 40 GB/s，集群里可以同时运行数百至数千个作业。调度器若把任务安排到保存输入 chunk 的机器，读取时就能少走一段网络。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143500096.png" alt="同一台机器上的计算任务和 chunkserver，以及各自的管理节点"></p>
 <h3 id="HDFS">HDFS</h3>
 <p>Hadoop 的 HDFS 借鉴了这种分工，同样面向普通硬件上的大数据集、高吞吐和节点故障。对照下图，GFS 的 master 对应 HDFS 的 NameNode，chunkserver 对应 DataNode，chunk 在 HDFS 中叫作 block。NameNode 用 <code>FsImage</code> 保存命名空间快照，用 <code>EditLog</code> 记录后续变更。重启时结合两者恢复文件和块的映射，再根据 DataNode 的块报告得到副本位置。</p>
@@ -503,7 +503,7 @@
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143117900.png" alt="3FS 客户端、元数据服务、存储服务及集群管理器"></p>
 <p>3FS 把目录项和 inode 放在 FoundationDB 中。它是一个支持事务的分布式键值存储。元数据服务实例都访问同一份记录，所以可以增减实例，某个实例崩溃后也可以由其他实例继续处理。对照 GFS，单 master 要把全部元数据放在自己的内存里，同时处理所有元数据请求。右侧的 3FS 可以把查询分给多个前端，共享记录的并发修改则由数据库协调。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143113858.png" alt="GFS 的单 master 与 3FS 共享事务存储的多个元数据服务"></p>
-<p>用前面讲过的跨目录改名来看事务有什么用。假设 <code>/x</code>、<code>/y</code> 的 inode 号分别为 2、5，<code>/x/a.txt</code> 的 inode 号为 7。在课件的简化表示中，键 <code>DENT|2|a.txt</code> 对应值 7，键 <code>INOD|7</code> 则保存文件属性和布局。将文件移到 <code>/y/a.txt</code>，要删除旧键 <code>DENT|2|a.txt</code>，再建立 <code>DENT|5|a.txt → 7</code>。两处修改在同一事务中提交，要么一起生效，要么都不生效。如果另一个服务同时删除源目录项，遇到冲突的一方需要重新读取后再决定怎样处理。</p>
+<p>用前面讲过的跨目录改名来看事务有什么用。假设 <code>/x</code>、<code>/y</code> 的 inode 号分别为 2、5，<code>/x/a.txt</code> 的 inode 号为 7。把目录项和 inode 简写成键值对，键 <code>DENT|2|a.txt</code> 对应值 7，键 <code>INOD|7</code> 则保存文件属性和布局。将文件移到 <code>/y/a.txt</code>，要删除旧键 <code>DENT|2|a.txt</code>，再建立 <code>DENT|5|a.txt → 7</code>。两处修改在同一事务中提交，要么一起生效，要么都不生效。如果另一个服务同时删除源目录项，遇到冲突的一方需要重新读取后再决定怎样处理。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110143112751.png" alt="3FS 示例中跨目录 rename 的事务伪代码与并发 unlink"></p>
 <h4 id="打开文件-2">打开文件</h4>
 <p>一个训练作业启动时，许多 worker 会同时打开样本文件。若每次只读打开都往数据库写一条会话记录，还要在关闭时删除，就会产生大量元数据写入。3FS 只在服务端记录写打开。图中 <code>s0001</code> 是只读样本，清理程序删除它后可以直接回收，原读者后续访问可能失败。<code>ckpt-7</code> 正被 worker 2 写入，删除名字后，数据要等写会话结束再回收。这样写入者不会在文件已经回收后继续留下新的数据块。</p>
@@ -591,42 +591,1078 @@
 <p>见下图如果没有使用逻辑时钟，假如 R2 收到 <code>&lt;file_a, 10&gt;</code> 的时候立即按照本设备时间戳发出 <code>&lt;ref, 9&gt;</code>，就会导致另一台设备同步后，引用跑到了文件前。</p>
 <p>图中 R1 给文件标上 10，R2 收到时本地计数为 9，于是接收事件取 11。随后 R2 发引用，再加一得到 12。各端按“逻辑时间、节点 ID”排序，文件 10 就会排在引用 12 前。这些数字表示事件顺序，实际经过的秒数要用物理时钟计量。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162928413.png" alt="R2 收到时间戳 10 后将时钟推到 11，再为引用分配 12"></p>
+<blockquote>
+<p>节点 1 上的事件 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>e</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">e_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 和节点 2 上的事件 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>e</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">e_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 的 Lamport 时间戳分别为 3 和 7。根据 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>&lt;</mo><mn>7</mn></mrow><annotation encoding="application/x-tex">3&lt;7</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6835em;vertical-align:-0.0391em;"></span><span class="mord">3</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">7</span></span></span></span>，下列判断哪些成立？</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113151513105.png" alt="5.14 两个节点的 Lamport 时间戳"></p>
+<ol>
+<li><strong>“事件 1 在物理时间上一定更早”——不成立。</strong> 假设节点 2 先独立执行到第 7 个事件，过了一秒，节点 1 才执行到第 3 个事件。此时仍有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>3</mn><mo>&lt;</mo><mn>7</mn></mrow><annotation encoding="application/x-tex">3&lt;7</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6835em;vertical-align:-0.0391em;"></span><span class="mord">3</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">7</span></span></span></span>，物理时间上却是事件 2 先发生。</li>
+<li><strong>“两个节点一定通信过”——不成立。</strong> 上面的例子中，两台机器各自递增本地计数器就能得到 3 和 7，全程可以没有消息往来。</li>
+<li><strong>“若事件 1 已同步到节点 2，事件 1 就一定更早”——不一定成立。</strong> Lamport 时钟可以保证在两台设备之间有同步的情况下，有因果关系事件之间的先后顺序。但是在并发时并不能确保没有因果关系的时间的物理时间戳顺序是可信的。</li>
+</ol>
+</blockquote>
 <p>对有因果依赖的更新，<strong>因果一致性</strong>要求读者看见后续更新时，也已经能看到它依赖的更新。若引用先到、文件还在路上，要满足这一要求，接收端就得暂缓展示引用，等文件补齐。只在最后按 Lamport 时间排好列表，仍可能让同步期间打开窗口的人碰到缺失的引用。</p>
 <h3 id="接龙与向量时钟">接龙与向量时钟</h3>
 <p>假设群接龙已排到第 17 人。Alice 和 Bob 都读到同一份名单，分别在本地填上自己是第 18 人。这两次报名之间没有消息依赖，称为并发。用“Lamport 时间、节点 ID”可以选定其中一个排在前面。如果第 18 名有奖，按节点 ID 打破平局的结果却不能说明谁先按下按钮。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162932309.png" alt="两人并发接龙时，可以规定一个排列，也可以把冲突报告给应用"></p>
-<p>应用也可以把两条报名标为冲突，请参与者重新确认。这要求系统能区分 X 先于 Y、Y 先于 X，以及两者在因果上不可比这三种情况。允许有些事件不可比的关系叫作偏序。Lamport 时间能保留已经存在的因果先后，要从时间戳本身识别并发，可以用向量时钟（vector clock）。</p>
+<p>应用也可以把两条报名标为冲突，请参与者重新确认。这要求系统能区分 X 先于 Y、Y 先于 X，以及两者在因果上不可比这三种情况。允许有些事件不可比的关系叫作偏序。Lamport 时间能保留已经存在的因果先后，但是并不能反映真实的时间戳顺序。要从时间戳本身识别并发，可以用向量时钟（vector clock）。</p>
 <p>每个节点维护一个向量，每一项对应一个节点。本地发生事件时只增加自己的分量，发消息时附上整个向量。收到消息后，先把两个向量的对应分量分别取最大值，再增加自己的分量。以 R1、R2 各占一项为例，按下图推一遍。</p>
 <ol>
-<li>两端从 <code>[0, 0]</code> 出发。R1 独立产生 X，时间戳为 <code>[1, 0]</code>。R2 独立产生 Y，时间戳为 <code>[0, 1]</code>。第一项 X 大，第二项 Y 大，所以两者不可比。</li>
+<li>两端从 <code>[0, 0]</code> 出发。R1 独立产生 X，时间戳为 <code>[1, 0]</code>。R2 独立产生 Y，时间戳为 <code>[0, 1]</code>。第一项 X 大，第二项 Y 大，所以两者不可比（因此此处同步时会产生冲突，需要一个逻辑来处理二者的先后顺序）。</li>
 <li>R1 收到 Y，先将 <code>[1, 0]</code> 和 <code>[0, 1]</code> 逐项取最大值得到 <code>[1, 1]</code>。接收也是 R1 上的一个事件，第一项再加一，得到 <code>[2, 1]</code>。</li>
 <li>R1 随后引用 Y，时间戳为 <code>[3, 1]</code>。拿 Y 的 <code>[0, 1]</code> 和它比较，Y 的每项都小于或等于引用的对应项，且第一项严格更小，因此 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Y</mi><mo>→</mo><mrow><mi mathvariant="normal">r</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">f</mi></mrow><mo stretchy="false">(</mo><mi>Y</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">Y \to \mathrm{ref}(Y)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathrm" style="margin-right:0.07778em;">ref</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.22222em;">Y</span><span class="mclose">)</span></span></span></span>。</li>
 </ol>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162934798.png" alt="向量时钟区分独立更新，并在收到消息后记录引用对 Y 的依赖"></p>
-<p>向量时钟能告诉应用“两人各自报了第 18 名”。怎么分配这个名额仍由应用决定。如果业务要求报名成功后一律保留已经确认的名次，就需要在确认前协调顺序。</p>
 <h3 id="严格一致性">严格一致性</h3>
-<p>对于同一份接龙名单，可以要求所有读写都像在一份逻辑副本上依次执行。图中上方的两个写和一个读在不同副本上有重叠，下方把它们排成一个序列。这个序列必须能解释每一次读具体看到了谁，不能只看最后名单里有没有这两个人。</p>
+<p>对于同一份接龙名单，要求对于几个并发的事件，实际最终都会暴露出来一个确定的事件先后顺序。不同的场景对于并发的时间最终排出的先后顺序会有不同的要求，因此有不同的一致性模型。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162931984.png" alt="用一份逻辑名单上的串行执行解释多个副本上的并发操作"></p>
-<p>按讲义中严格一致性（strict consistency）的要求，操作按真实的发起时间排序。假设 Alice 先按按钮，Bob 后按，即使 Bob 的请求先到服务器，名单也应当先记 Alice。服务器光看到达顺序无法判断是谁先发，客户端附上本机时间又会遇到时钟偏差。</p>
-<p>即使两台机器的时钟完全同步，服务器先收到时间戳为 7 的 B，也无法知道时间戳为 5 的 A 是否还在路上。若消息延迟没有上界，就没有一个固定的等待时长，可以保证所有更早的请求都已到达。把存储集中在一台机器上解决了“由谁排序”，仍解决不了“更早发出的请求是否都到齐了”。</p>
+<p>严格一致性（strict consistency）要求操作按真实的发起时间排序。假设 Alice 先按按钮，Bob 后按，即使 Bob 的请求先到服务器，名单也应当先记 Alice。服务器由于网络的传输延迟等因素，光看到达顺序无法判断是谁先发，客户端附上本机时间又会遇到时钟偏差。</p>
+<p>严格一致性是定义的最强的一致性。但是实际上由于不同的设备之间即使有同步，也不能确保事件和物理时间是完全一致的，所以严格一致性可以认为是无法实现的。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162933702.png" alt="按按钮的发起时间排列接龙，以及较早请求晚到造成的等待"></p>
 <h3 id="线性一致性">线性一致性</h3>
-<p>线性一致性（linearizability，也称可线性化）给每次操作留出了从发起到返回的一段区间。只要能在各自区间内为每个操作选一个生效点，使所有返回值都符合这一个串行顺序，就满足要求。<strong>若 A 已经返回，B 才发起，A 就必须排在 B 前面。</strong> 两个区间有重叠时，可以选择其中任一顺序，前提是它能解释实际返回的结果。</p>
-<p>图中 Alice 先发起 A，Bob 稍后发起 B，但两次更新有重叠，服务器先追加了 B，再追加 A。最后一次读取发生在两次更新都返回之后，因此它读到 <code>[B, A]</code> 符合线性一致性。若只知道 B 已经返回、A 还在进行，随后发起的读至少应看到 B，是否已看到 A 则取决于 A 的生效位置。</p>
+<p>线性一致性（linearizability）给每次操作留出了从发起到返回的一段区间。只要能在各自区间内为每个操作选一个生效点，使所有返回值都符合这一个串行顺序，就满足要求。<strong>若 A 已经返回，B 才发起，A 就必须排在 B 前面。</strong> 两个区间有重叠时，可以选择其中任一顺序，前提是它能解释实际返回的结果。</p>
+<p>图中 Alice 先发起 A，Bob 稍后发起 B，但两次更新有重叠，服务器先追加了 B，再追加 A。最后一次读取发生在两次更新都返回之后，因此它读到 <code>[B, A]</code> 符合线性一致性。只要收到了 server 完成的消息，那么做下一步操作一定可以看到在 ACK 消息之前完成的任务。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162929117.png" alt="B 先完成追加，稍后发起的读取得包含 B 的名单"></p>
-<p>一种实现是给每个对象指定主副本（primary），由它决定这个对象的读写顺序。客户端可以联系任意副本，备副本收到请求后转给主副本。图中的 P0 收到 <code>Write(x, 1)</code> 后，先把更新转给 P1，待 P1 更新并确认，再完成本地写入并回复客户端。读请求也经过主副本，按已确定的顺序读取，备副本尚未完成协调的状态不会提前返回给读者。</p>
+<p>一种实现是给每个对象指定主副本（primary），由它决定这个对象的读写顺序。客户端可以联系任意副本，备副本收到请求后转给主副本。图中的 P0 收到 <code>Write(x, 1)</code> 后，先把更新转给 P1，待 P1 更新并确认，再完成本地写入并回复客户端。读请求也经过主副本，按已确定的顺序读取，备副本尚未完成协调的状态不会提前 返回给读者。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162929887.png" alt="P0 转发写入并等待 P1 确认，发到 P1 的后续写请求转交 P0"></p>
-<p>只有主副本决定顺序还不够，这个顺序得随写请求一起到达备副本。看下图，P0 先写 1 再写 2。如果 P1 按消息到达顺序执行，收到 2 再收到 1，最终就会停在 1。解决办法与前面 GFS 的 primary 类似。P0 给每个写分配递增的序号 <code>seq</code>，P1 只能按号执行。先收到 <code>seq=2</code> 就暂存，等到 <code>seq=1</code> 完成，再执行 2。</p>
+<p>只有主副本决定顺序还不够，这个顺序得随写请求一起到达备副本。下图中，P0 先写 1 再写 2。如果 P1 按消息到达顺序执行，收到 2 再收到 1，最终就会停在 1。解决办法与前面 GFS 的 primary 类似。P0 给每个写分配递增的序号 <code>seq</code>，P1 只能按号执行。先收到 <code>seq=2</code> 就暂存，等到 <code>seq=1</code> 完成，再执行 2。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162931633.png" alt="同样的两次写，按消息到达顺序执行与按 seq 执行的区别"></p>
 <p>这种简化方案每次写都要多等主备之间的一轮通信。主副本失效后需要安全地选出接替者。若规定所有备副本都必须 ACK，任何一台备副本失联也会挡住写入。复制解决了数据有多份的问题，故障时由谁继续决定顺序，还需要单独的协议。</p>
 <h3 id="顺序一致性">顺序一致性</h3>
 <p>能不能让每个副本直接用本地值回答读请求，省掉读操作的转发？看 <code>x</code> 从 1 改成 2 的例子。写请求还没返回，P1 已经更新为 2，第一个读在 P1 得到 2。这个读完成之后，另一个客户端才在尚未更新的 P0 发起第二个读，得到 1。期间只有这一次写。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162928754.png" alt="第一个读返回 2 并完成后，另一个客户端才发起第二个读，却得到 1"></p>
 <p>若第一个读能看到 2，串行历史中写 2 就必须排在它前面。实时先后又要求第二个读排在第一个读之后，因此第二个读也应看到 2。实际返回的 1 与这个要求矛盾，这段执行无法满足线性一致性。</p>
-<p><strong>顺序一致性（sequential consistency）</strong> 也要求存在一个能解释所有返回值的全局串行顺序，同时必须保留每个进程自己的程序顺序。它允许不同进程的操作在这个序列中的先后与实际时间不同。假设这一次写和两次读分别来自三个进程，每个进程各发出一个操作，那么“读到 1 → 写入 2 → 读到 2”就能解释这些结果。如果两个读来自同一个进程，并且它先读到 2、再读到 1，就不能把两次读取互换位置。允许本地读能省去往返，要对所有执行保证顺序一致性，实现还须维护每个进程的操作顺序。</p>
+<p>顺序一致性（sequential consistency） 也要求存在一个能解释所有返回值的全局串行顺序，同时必须保留每个进程自己的程序顺序。它允许不同进程的操作在这个序列中的先后与实际时间不同。假设这一次写和两次读分别来自三个进程，每个进程各发出一个操作，那么“读到 1 → 写入 2 → 读到 2”就能解释这些结果。如果两个读来自同一个进程，并且它先读到 2、再读到 1，就不能把两次读取互换位置。允许本地读能省去往返，要对所有执行保证顺序一致性，实现还须维护每个进程的操作顺序。</p>
 <p>回到聊天和接龙，同样是往列表里追加一项，用户依赖的保证却不同。离线发一条普通消息，可以先在本地显示，等设备联网后再合并。引用一份文件，需要保留文件与引用的因果顺序。发放唯一名额时，还可以由一个权威服务按处理顺序原子地登记，登记成功后再向用户确认。若业务坚持比较两人按按钮的物理时刻，线性一致性本身也不能替它裁决重叠的两次报名。</p>
 <p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261110162934436.png" alt="本地读写与协调读写在可扩展性、性能、容错和编程上的定性对照"></p>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/11/09/BLOG004/">https://acannedfish.github.io/2026/11/09/BLOG004/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/background6.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/11/03/BLOG003/" title="Re：从0开始的图形渲染"><img class="cover" src="/img/background5.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Re：从0开始的图形渲染</div></div></div></a><a class="pagination-related  no-desc" href="/2026/11/12/BLOG005/" title="Vulkan 学习日志"><img class="cover" src="/img/background7.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Vulkan 学习日志</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><div class="site-data-item"><div class="headline">文章</div><div class="length-num">123</div></div><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.</span> <span class="toc-text">本地文件系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Block-Layer"><span class="toc-number">1.1.</span> <span class="toc-text">Block Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File-Layer"><span class="toc-number">1.2.</span> <span class="toc-text">File Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#inode-Number-Layer"><span class="toc-number">1.3.</span> <span class="toc-text">inode Number Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File-Name-Number"><span class="toc-number">1.4.</span> <span class="toc-text">File Name Number</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Path-Name-Layer"><span class="toc-number">1.5.</span> <span class="toc-text">Path Name Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Absolute-Path-Name-Layer"><span class="toc-number">1.6.</span> <span class="toc-text">Absolute Path Name Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Symbolic-Link-Layer"><span class="toc-number">1.7.</span> <span class="toc-text">Symbolic Link Layer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F-API"><span class="toc-number">2.</span> <span class="toc-text">文件系统 API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6"><span class="toc-number">2.1.</span> <span class="toc-text">打开文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fd-%E5%92%8C-cursor"><span class="toc-number">2.2.</span> <span class="toc-text">fd 和 cursor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OPEN-%E5%92%8C-READ"><span class="toc-number">2.3.</span> <span class="toc-text">OPEN 和 READ</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A3%81%E7%9B%98%E8%AF%BB%E5%86%99"><span class="toc-number">2.4.</span> <span class="toc-text">磁盘读写</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%97%AD%E4%B8%8E%E5%88%A0%E9%99%A4"><span class="toc-number">2.5.</span> <span class="toc-text">关闭与删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%A8%E7%9B%AE%E5%BD%95%E9%87%8D%E5%91%BD%E5%90%8D"><span class="toc-number">2.6.</span> <span class="toc-text">跨目录重命名</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Remote-Procedure-Call"><span class="toc-number">3.</span> <span class="toc-text">Remote Procedure Call</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Stub"><span class="toc-number">3.1.</span> <span class="toc-text">Stub</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E4%B8%8E%E5%9B%9E%E5%A4%8D"><span class="toc-number">3.2.</span> <span class="toc-text">请求与回复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E7%BC%96%E7%A0%81"><span class="toc-number">3.3.</span> <span class="toc-text">参数编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%BC%96%E7%A0%81"><span class="toc-number">3.4.</span> <span class="toc-text">二进制编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%85%BC%E5%AE%B9"><span class="toc-number">3.5.</span> <span class="toc-text">版本兼容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B6%85%E6%97%B6%E4%B8%8E%E9%87%8D%E8%AF%95"><span class="toc-number">3.6.</span> <span class="toc-text">超时与重试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%AC%A1%E6%95%B0"><span class="toc-number">3.7.</span> <span class="toc-text">执行次数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E5%8E%BB%E9%87%8D"><span class="toc-number">3.8.</span> <span class="toc-text">请求去重</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">4.</span> <span class="toc-text">分布式文件系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#NFS"><span class="toc-number">4.1.</span> <span class="toc-text">NFS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E5%92%8C%E8%AF%BB%E5%8F%96"><span class="toc-number">4.1.1.</span> <span class="toc-text">打开和读取</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%8F%A5%E6%9F%84"><span class="toc-number">4.1.2.</span> <span class="toc-text">文件句柄</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%BC%93%E5%AD%98"><span class="toc-number">4.1.3.</span> <span class="toc-text">客户端缓存</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS"><span class="toc-number">4.2.</span> <span class="toc-text">GFS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%9D%97%E4%B8%8E%E5%89%AF%E6%9C%AC"><span class="toc-number">4.2.1.</span> <span class="toc-text">分块与副本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%BB-chunk"><span class="toc-number">4.2.2.</span> <span class="toc-text">读 chunk</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%99%E5%85%A5%E5%86%B2%E7%AA%81"><span class="toc-number">4.2.3.</span> <span class="toc-text">写入冲突</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HDFS"><span class="toc-number">4.3.</span> <span class="toc-text">HDFS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3FS"><span class="toc-number">4.4.</span> <span class="toc-text">3FS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%83%E6%95%B0%E6%8D%AE%E4%B8%8E%E7%9B%AE%E5%BD%95"><span class="toc-number">4.4.1.</span> <span class="toc-text">元数据与目录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6-2"><span class="toc-number">4.4.2.</span> <span class="toc-text">打开文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D-chunk"><span class="toc-number">4.4.3.</span> <span class="toc-text">定位 chunk</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E4%B8%8E%E5%AD%98%E5%82%A8%E5%88%86%E7%A6%BB"><span class="toc-number">4.4.4.</span> <span class="toc-text">计算与存储分离</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FUSE-%E4%B8%8E%E5%8E%9F%E7%94%9F-I-O"><span class="toc-number">4.4.5.</span> <span class="toc-text">FUSE 与原生 I&#x2F;O</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E6%A8%A1%E5%9E%8B"><span class="toc-number">5.</span> <span class="toc-text">一致性模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E5%BF%83%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-number">5.1.</span> <span class="toc-text">中心化服务器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%AF%E6%9C%AC%E4%B8%8E%E5%90%8C%E6%AD%A5"><span class="toc-number">5.2.</span> <span class="toc-text">副本与同步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.3.</span> <span class="toc-text">最终一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%99%E6%9B%B4%E6%96%B0%E6%8E%92%E5%BA%8F"><span class="toc-number">5.4.</span> <span class="toc-text">给更新排序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%A0%E6%9E%9C%E4%B8%8E%E9%80%BB%E8%BE%91%E6%97%B6%E9%92%9F"><span class="toc-number">5.5.</span> <span class="toc-text">因果与逻辑时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E9%BE%99%E4%B8%8E%E5%90%91%E9%87%8F%E6%97%B6%E9%92%9F"><span class="toc-number">5.6.</span> <span class="toc-text">接龙与向量时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A5%E6%A0%BC%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.7.</span> <span class="toc-text">严格一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.8.</span> <span class="toc-text">线性一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.9.</span> <span class="toc-text">顺序一致性</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+<h2 id="原子性与故障恢复">原子性与故障恢复</h2>
+<p>假设账户 <code>a</code>、<code>b</code> 的余额都是 10，要从 <code>a</code> 向 <code>b</code> 转 10。程序先扣款，再入账。如果系统里只有转账操作，那么无论执行多少次，两个账户的余额之和都应当保持为 20。这个在每笔交易前后都要成立的条件，称为不变量（invariant）。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161714642.png" alt="银行转账的扣款和入账代码"></p>
+<p>先只看一台服务器，假设它依次处理请求。即使两笔转账完全不并发，一笔转账自身也要写两个位置。假设断电时整台机器一起停止，内存随之丢失，重启后只能看到已经持久化的内容。这是本节使用的 fail-stop 故障模型。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113162152769.png" alt="机器停止执行后，从已落盘的状态恢复"></p>
+<h3 id="一次未完成的转账">一次未完成的转账</h3>
+<p>把账户存在文件 <code>bank</code> 里，通过 <code>mmap</code> 映射到内存。下面两次赋值先改到页缓存（page cache），<code>fsync</code> 再要求系统把修改写回磁盘。程序等 <code>fsync</code> 成功返回，才通知用户转账完成。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161719199.png" alt="通过 mmap 修改账户，用 fsync 同步后通知用户的原始代码"></p>
+<blockquote>
+<p>如果在 <code>fsync</code> 执行到一半时断电，会留下什么？</p>
+</blockquote>
+<p>按图从左到右看，两个账户分属不同的页。开始时磁盘上是 <code>(10, 10)</code>，内存改完后变成 <code>(0, 20)</code>。假设此前还没有后台写回，若此时就断电，重启后仍是旧余额。接下来系统先写回 <code>a</code> 所在的页，还没来得及写 <code>b</code> 就断电，磁盘上留下的却是 <code>(0, 10)</code>。用户没有收到成功通知，钱已经少了 10。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161720618.png" alt="页缓存中已完成两次修改，磁盘只写回账户 a 时断电"></p>
+<p>这里需要的保证叫作全有或全无原子性（all-or-nothing atomicity）。恢复结束后，这笔转账只能保留旧余额 <code>(10, 10)</code>，或完成转账得到 <code>(0, 20)</code>。这个要求允许磁盘在写入途中暂时处于中间状态，前提是系统知道怎样从那里恢复。</p>
+<h3 id="影子副本">影子副本</h3>
+<p>可以把修改放在另一个文件里。先把 <code>bank</code> 复制成 <code>bank_temp</code>，在副本上完成扣款和入账，再用 <code>fsync(bank_temp)</code> 持久化副本，最后用 <code>rename(bank_temp, bank)</code> 替换原文件。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161721814.png" alt="转账只修改 bank_temp，完成后再替换 bank 的原始代码"></p>
+<blockquote>
+<p>在 <code>fcopy</code> 或同步临时文件时崩溃，应该用哪个文件？如果崩溃发生在 <code>rename</code> 中间呢？</p>
+</blockquote>
+<p>复制或同步期间，名字 <code>bank</code> 仍然指向完整的旧文件，重启后可以丢弃未发布的临时副本。进入 <code>rename</code> 时，新文件的数据也已经准备好。现在需要保证的是，文件系统能把名字和 inode 一起恢复到一次完整替换之前或之后。若应用还要确认替换后的名字已经持久化，在常见 UNIX 文件系统上还要同步相应的父目录。</p>
+<p>图中原先 <code>bank → 12</code>，<code>bank_temp → 13</code>，两个 inode 的硬链接数均为 1。替换时，先把 <code>bank</code> 改指向 13，此时两个名字都指向 13。再给 inode 13 的链接数加一，把 inode 12 的链接数减一，最后删除临时名字并扣掉它对 13 的引用。完成后只剩 <code>bank → 13</code>，inode 13 的链接数为 1。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161723000.png" alt="rename 各步对应的目录项与两个 inode 的引用计数"></p>
+<p>如果刚改完 <code>bank</code> 的目录项就断电，inode 13 有两个名字，磁盘上的链接数却仍为 1。这时直接删除 <code>bank_temp</code> 就可能把计数减为 0，回收仍被 <code>bank</code> 引用的 inode。与此同时，inode 12 已经没有名字，旧计数却仍为 1。即使余额文件本身完整，文件系统的元数据也已经出错。文件系统需要自行恢复目录项与计数的对应关系，应用可能永远不会再启动，无法指望它来清理。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161723506.png" alt="第一步后崩溃，两个目录项指向 inode 13，但链接数仍为 1"></p>
+<h3 id="文件系统日志">文件系统日志</h3>
+<p>文件系统可以在磁盘上留一片区域作为 journal。修改原位置之前，先把这次操作要改哪些块、各块应变成什么写进 journal。所有记录持久化后，再写入提交标记 <code>COMMITTED</code>。有了这份完整记录，文件系统才开始修改原位置。等原位置也全部写稳，就可以回收这段 journal。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161723888.png" alt="journal 的记录、提交与写回阶段，以及两个断电位置"></p>
+<p>仍看 <code>rename</code>。看图右侧的黄色区域，恢复后应当满足以下条件。<code>bank</code> 指向 13，删除临时名字，inode 12 的计数为 0，inode 13 的计数为 1。提交标记把这几项归作一次修改。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161724329.png" alt="将 rename 涉及的目录项和 inode 计数写入 journal 后提交"></p>
+<blockquote>
+<p>用了 journal 之后，如果仍在“目录项已改、引用计数还没改”的位置断电，重启时怎么办？</p>
+</blockquote>
+<p>先查提交标记。若 journal 还没完整提交，原位置应当还保留旧状态，可以忽略这批记录。下图的故障发生在提交之后，原位置只写了一部分，右侧却还保存着完整的新值。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161724724.png" alt="journal 已有 COMMITTED，原位置只改完一个目录项时崩溃"></p>
+<p>恢复程序按 journal 把目标块重新写一遍，这叫重做（redo）。已经写过的字段会再次得到同一个值，漏掉的字段也会补齐。下图中，临时名字已删除，两个引用计数分别为 0、1。只有此时确认目标块已落盘，才可回收这批记录。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161725051.png" alt="重放已提交的 journal 后，目录和引用计数恢复一致"></p>
+<h4 id="追加一个块">追加一个块</h4>
+<p>给 inode 13 的文件追加一块也涉及多个磁盘位置。原文件占用块 6、7、8，准备追加块 9。文件系统需要把 data bitmap 的第 9 位设为已占用，写入块 9 的数据，把 <code>ptr[3]</code> 指向 9，并更新文件大小。图中以块为单位表示大小，因此从 3 变为 4。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161725373.png" alt="追加块 9 所需的位图、数据、指针和大小四条记录"></p>
+<p>如果连文件内容都记入 journal，新数据要先写日志，再写回文件所在的块。以图中 231 GB 的游戏安装为例，若全部内容都走这条路径，仅这两份数据写入就约为 462 GB，还没算元数据。文件系统因此可以只记录位图、inode 等元数据，再单独安排文件内容的写入顺序。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161725689.png" alt="231 GB 游戏安装包的大小"></p>
+<p>ext4 的三种数据模式可以用同一次追加来区分。看下面三张图时，先找到黄色的 <code>COMMIT</code>，再看块 9 的新内容此时在哪里。</p>
+<ul>
+<li><code>data=writeback</code> 只记录元数据，允许数据块稍后写回。若在图中断电，重放后 inode 会指向块 9，文件大小也是 4 块，但新数据可能还没写进去。元数据结构正确，新增部分的内容却可能是旧的。</li>
+</ul>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161725993.png" alt="writeback 模式下元数据先提交、块 9 仍未写好的故障窗口"></p>
+<ul>
+<li><code>data=ordered</code> 也只记录元数据，但要求这次追加的数据先写到块 9，再提交使它可见的元数据。若恢复后文件已有第 4 块，块里也已有本次追加的内容。这个顺序保证针对新块的发布，不能把任意多次应用写入自动组合成一笔事务。</li>
+</ul>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161726352.png" alt="ordered 模式先写块 9，再提交相关元数据"></p>
+<ul>
+<li><code>data=journal</code> 把块 9 的新内容也放进日志。提交前，恢复程序可以忽略这一批。提交后，数据和元数据都能通过重放补齐。代价是块 9 的内容要写两遍。</li>
+</ul>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161726704.png" alt="journal 模式将新数据和元数据一起记录并提交"></p>
+<blockquote>
+<p>如果连 <code>COMMITTED</code> 自己都只写了一半，恢复程序凭什么相信它？</p>
+</blockquote>
+<p>假设设备对一个扇区提供原子写，例如设备可以用电容储备的电量完成正在进行的扇区写入。小的提交标记可以放进这个原子写单位。整个事务可以横跨多个扇区。先写齐日志内容并确保其持久化，最后才发布提交标记。恢复时检查记录边界、长度和校验和，只有内容完整且提交有效时才重放。校验和帮助识别残缺记录，写入顺序则保证提交标记不会抢在它要证明的内容之前落盘。</p>
+<h4 id="并发修改副本">并发修改副本</h4>
+<p>即使 <code>rename</code> 本身已经原子化，两个客户端同时用影子副本转账，仍可能出错。图中四个账户原来各有 100。客户端 0 从 <code>a</code> 向 <code>b</code> 转 100，客户端 1 从 <code>c</code> 向 <code>d</code> 转 100。两笔转账涉及的账户没有重叠，代码却都在替换整份 <code>bank</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161727042.png" alt="两笔修改不同账户的转账共用影子文件名的原始代码"></p>
+<p>客户端 0 只把 <code>a</code> 改成 0 就被切走，此时 <code>b</code> 仍为 100。客户端 1 在同一份临时内容上完成自己的转账，同步后执行替换。于是正式文件成了 <code>(0, 100, 0, 200)</code>，总额从 400 变成 300。即使两个客户端各用不同的临时文件，从同一旧版本出发再各自替换整份文件，也可能让后一次替换覆盖前一次转账。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161727512.png" alt="客户端 1 发布副本时把客户端 0 只扣款未入账的中间值一起发布"></p>
+<p>要安全地更新同一份文件，还得串行化复制到替换的过程，或在发布前检查版本冲突。跨多个文件时，一次 <code>rename</code> 只能切换一个名字，通常还要用一个共同的目录或根指针来发布整批变更。即使只改两个余额，按这种整文件复制法也要复制整份账本。日志可以把代价缩小到本次真正修改的数据。</p>
+<h3 id="事务与提交点">事务与提交点</h3>
+<p>首先需要区分 journal 和 log。journal 是 all-or-nothing 的，保证的是文件系统中的任何一个 API 操作的原子性，而 log 则在应用层进一步区分哪些操作需要保证原子性，哪些操作不需要严格原子性，记录可能影响数据正确性的点。</p>
+<p>把扣款和入账放进同一个事务（transaction），用 <code>TX.begin()</code> 和 <code>TX.commit()</code> 标出边界。事务日志按顺序追加修改。一旦有足够的持久信息保证重启后能完成整笔事务，就越过了提交点（commit point），此后才可以向用户确认成功。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161728101.png" alt="日志末尾追加一个条目"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161728548.png" alt="事务包含两次余额修改，成功通知位于提交点之后"></p>
+<h4 id="只重做日志">只重做日志</h4>
+<p>先看 redo-only。程序先用局部变量 <code>new_a</code>、<code>new_b</code> 算出两个新余额。事务提交前，这些变量只在进程内存中，共享的 <code>records</code> 还保留旧值，操作系统即使写回文件页，也不会把半笔转账写进账本。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161729014.png" alt="把新余额暂存在局部变量，整笔追加日志，再更新共享页的代码"></p>
+<p>提交时，把两个新余额装进同一个条目，执行 <code>log.append(entry).sync()</code>。条目要有边界和校验和。若追加时断电，只留下前半条记录，恢复程序就跳过它。完整有效的事务条目一旦持久化，即已提交。<code>sync()</code> 成功返回后，应用能确认已经过了这个点。如果磁盘已经写完、回复却还没返回就断电，恢复程序仍以磁盘上的记录为准。</p>
+<blockquote>
+<p>还要立即调用 <code>fsync(bank)</code>，才能向用户报告成功吗？</p>
+</blockquote>
+<p>这里可以稍后再同步账本。提交点已有完整的新值，即使 <code>records[a]</code> 已落盘、<code>records[b]</code> 还在页缓存中，也能在重启后把两者都重做到目标值。前提是保留这条日志，直到账本本身已写稳。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161729444.png" alt="redo-only 提交后是否需要立即调用 fsync(bank)"></p>
+<p>图中前三笔事务的日志分别是 <code>(8,12)</code>、<code>(5,15)</code>、<code>(3,17)</code>，第四笔只写到 <code>a=2</code>，缺少完整的 <code>b</code> 和有效校验。重启后从前向后重放前三笔，跳过残缺的第四笔，恢复结果为 <code>(3,17)</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161729769.png" alt="从头扫描 redo-only 日志，重做三条完整记录并跳过残缺尾项"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161730108.png" alt="值日志用两个新余额把旧状态恢复到目标状态"></p>
+<h4 id="记值还是记操作">记值还是记操作</h4>
+<blockquote>
+<p>恢复程序重放到一半又断电。下一次启动时，从头再做一遍，会不会多转一次钱？</p>
+</blockquote>
+<p>若日志记的是 <code>a=3, b=17</code>，赋值执行几次，最后都是 <code>(3,17)</code>。若记的是 <code>transfer(a, b, 7)</code>，从 <code>(10,10)</code> 执行一次得到 <code>(3,17)</code>，再执行一次就成了 <code>(-4,24)</code>。操作日志要另行识别哪些操作已生效，才能避免重复扣款。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161730409.png" alt="值日志与操作日志在恢复中分别重放两次的结果"></p>
+<p>记录结果也能避免重新求值。例如重放 <code>UPDATE t SET id = UUID()</code> 会生成新的 UUID，用行值复制则可以直接记录当时生成的结果。值日志可能更大。例如，ext3 使用块日志时，即使只修改一位，也可能要记录整个块。</p>
+<h4 id="撤销与重做">撤销与重做</h4>
+<p>redo-only 的提交可以集中为一次顺序追加，但长事务要把全部未提交修改留在私有内存中。如果转而直接修改 <code>records</code>，操作系统便可以在内存紧张时把脏页写回磁盘。此时即使事务最终没有提交，磁盘上也可能已经出现新余额。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161730723.png" alt="直接更新映射页的转账代码，未提交的页可以被提前写回"></p>
+<p>允许提前写回，就需要能够撤销（undo）。下面左边是 <code>(10,10)</code>，右边是 <code>(3,17)</code>。日志同时保留旧值和新值，恢复程序可以用旧值撤回未提交的修改，也可以用新值补齐已提交的修改。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161731077.png" alt="同一份日志中的旧值用于 undo，新值用于 redo"></p>
+<p>先看只记旧值的版本。每次修改共享页之前，先把位置和旧值追加到日志并同步。这样哪怕新余额随后被刷到磁盘，也有办法找回旧余额。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161731387.png" alt="在两次扣款和入账更新前分别保存旧值的原始代码"></p>
+<blockquote>
+<p>有了旧值，为什么还要记录新值？</p>
+</blockquote>
+<p>如果只记旧值（undo-only），可以撤销未提交的事务，但一笔已经确认的转账若还缺一个新余额，日志无法重建它。因此提交前必须等这笔事务修改的所有数据页写稳。两个账户可能分散在不同磁盘位置，这些写入会拖长提交时间。</p>
+<p>undo-redo 则在一条更新记录中同时写下旧值与新值，最后追加并同步事务的提交记录。这样数据页可以较早写出，也可以晚于提交写出。图中两次更新各有对应的日志，末行的 <code>&lt;TX 1 commit&gt;</code> 表示整笔事务提交。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161731685.png" alt="同时记录每次修改的旧值、新值并追加 commit 的原始代码"></p>
+<p>redo-only 把一笔事务合在一个 entry 里。undo-redo 每次更新追加一条 record。不同事务的记录可以交错。下图的 <code>1, 2, 1, 2, 1</code> 是各条记录所属的事务编号，恢复时要把属于同一事务的记录关联起来。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161732011.png" alt="整个事务一条日志与不同事务的细粒度记录交错追加"></p>
+<p>每条记录带事务 ID、同一事务上一条记录的位置，以及本次改动的文件、偏移和新旧值。图中的 <code>TID=1</code> 表示事务 1，<code>PTR=80</code> 指向它的前一条记录，<code>old 3000 new 2000</code> 说明该位置可以恢复成哪两个值。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161732299.png" alt="同一事务的日志记录通过指针相连"></p>
+<p>这里有两条落盘顺序。第一，修改后的数据页写回原位置之前，对应的更新日志必须已经持久化，这就是预写日志（write-ahead logging，WAL）。第二，事务的更新日志完整之后，才能持久化它的提交记录并确认成功。图中黄色的 <code>C</code> 是其中一笔事务的提交标记，其他事务的日志即使排在它前面，也要按各自的事务 ID 查提交状态。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161732584.png" alt="磁盘日志中交错的事务编号与独立的提交标记"></p>
+<h4 id="崩溃后怎样恢复">崩溃后怎样恢复</h4>
+<p>在 undo-redo 算法中，先从有效日志末尾向前查提交记录。对崩溃时还没有提交的事务，按更新的逆序恢复旧值。例如余额曾从 10 改到 8、又从 8 改到 3，撤销要先把 3 改回 8，再把 8 改回 10。对已提交的事务，则从前向后重做，使同一位置最终保留最后一次有效写入。</p>
+<p>图中事务 T1 已经提交，把 <code>(10,10)</code> 改成 <code>(8,12)</code>。T2 接着把 <code>a</code> 从 8 改成 3，却没有提交。恢复时先撤销 T2 对 <code>a</code> 的修改，再重做 T1。最终磁盘上应为 <code>(8,12)</code>，既保住了已确认的转账，也消除了未完成的扣款。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161733174.png" alt="T1 有提交标记，T2 只有更新记录，恢复后余额为 8 和 12"></p>
+<h3 id="检查点">检查点</h3>
+<p>如果一直追加日志，恢复程序每次都要从开头读起，哪怕大部分更新早已写回账本，且会占用大量的磁盘空间。检查点（checkpoint）把某个边界之前的<strong>结果</strong>持久保存下来，同时丢弃这个 cehckpoint 之前的 log。重启时可以从这个结果继续，只处理还没被它覆盖的日志。训练时保存模型参数、暂停进程时保存内存与执行状态，以及给聊天更新日志保存已重放的列表，都用到了同一种做法。</p>
+<p>先考虑没有活跃事务的情况。图中共享页里的余额已经是 <code>(3,17)</code>。把这些脏页写稳，再持久记录检查点覆盖到哪里，就可以回收相应的旧日志。若同时又有新事务提交，它在边界之后追加的日志要保留到下一次检查点。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161733476.png" alt="账本写稳为 3 和 17 后，早期日志可以回收"></p>
+<h4 id="跨过检查点的事务">跨过检查点的事务</h4>
+<blockquote>
+<p>T4 正打算把 <code>(3,17)</code> 改为 <code>(1,19)</code>，检查点能直接刷页并清掉旧日志吗？</p>
+</blockquote>
+<p>在 redo-only 中，T4 提交前的两个新值是私有变量。检查点刷到磁盘的仍是 <code>(3,17)</code>，只回收边界内已经覆盖的日志。图中 T4 随后提交，把 <code>(1,19)</code> 作为新条目留在日志中。此时即使账本还没再写回，恢复时也能重做 T4。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161733756.png" alt="redo-only 中 T4 的私有值跨过检查点，提交后产生新日志"></p>
+<p>undo-redo 会允许提前写数据。假设 T4 只执行了第一步，已把共享页中的 <code>a</code> 从 3 改成 1，<code>b</code> 仍是 17。检查点刷出的是 <code>(1,17)</code>。如果此时保存 ckpt 并把 <code>a: 3 → 1</code> 的日志也删掉，T4 提交前再发生故障，恢复程序就无法撤回扣款，总额只剩 18。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161734049.png" alt="未提交的扣款被检查点刷盘，过早丢弃 undo 记录会留下总额 18"></p>
+<p>一种办法是暂停接收新事务，等已开始的事务全部提交或撤销，再刷页并截断日志。图中的 T4、T5 既要等 T2、T3 结束，还要等检查点写完。只要有一笔长事务，其他请求就可能等很久。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161734507.png" alt="等待活跃事务结束再做检查点时，新事务的阻塞区间"></p>
+<p>另一种办法是保留活跃事务的恢复记录，在一次短操作完成的边界协调检查点，把还在运行的事务及其所需日志保存到 <code>CKPT</code> 记录中。等数据页和 <code>CKPT</code> 都可靠落盘，才截断已覆盖的旧日志。这样 T4 可以跨过检查点继续执行。若它随后崩溃，恢复程序仍能从 <code>CKPT</code> 取出 <code>a: 3 → 1</code>，把磁盘上的 1 改回 3。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161734805.png" alt="CKPT 保留 T4 的旧值，恢复时撤销扣款，总额重新成为 20"></p>
+<blockquote>
+<p>下图中哪些事务要撤销，哪些要重做？先看它是否在崩溃前提交，再看恢复所需的记录位于检查点哪一侧。</p>
+</blockquote>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113161735092.png" alt="T1 至 T5 相对于检查点、提交和崩溃的时间线"></p>
+<table>
+<thead>
+<tr>
+<th>事务</th>
+<th>图中的执行情况</th>
+<th>重启后的处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1</td>
+<td>检查点之前已经提交，修改已被检查点覆盖</td>
+<td>ckpt 前事务已经完成并提交，直接使用检查点中的结果</td>
+</tr>
+<tr>
+<td>T2</td>
+<td>检查点时仍在执行，崩溃前提交</td>
+<td>ckpt 后的 log 已经提交，重做。把 CKPT 中的早期记录与后续日志接起来</td>
+</tr>
+<tr>
+<td>T3</td>
+<td>检查点后开始并提交</td>
+<td>ckpt 后的 log 已经提交，按顺序重做检查点后的记录</td>
+</tr>
+<tr>
+<td>T4</td>
+<td>跨过检查点，崩溃时仍未提交</td>
+<td>ckpt 后的 log 未提交，无法重放，撤销。先撤销检查点后的修改，再沿 CKPT 回到事务开始前</td>
+</tr>
+<tr>
+<td>T5</td>
+<td>检查点后开始，崩溃时仍未提交</td>
+<td>ckpt 后的 log 未提交，逆序撤销检查点后的修改</td>
+</tr>
+</tbody>
+</table>
+<h4 id="三种日志的取舍">三种日志的取舍</h4>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>未提交的新值放在哪里</th>
+<th>确认提交前要写稳什么</th>
+<th>崩溃后怎样处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Redo-only</td>
+<td>暂存在事务的私有内存</td>
+<td>包含整笔事务所有新值的有效条目</td>
+<td>正向重做完整条目</td>
+</tr>
+<tr>
+<td>Undo-only</td>
+<td>可以写到数据页，旧值日志必须先落盘</td>
+<td>这笔事务的全部数据页，再加上提交标记</td>
+<td>逆序撤销未提交事务</td>
+</tr>
+<tr>
+<td>Undo-redo</td>
+<td>可留在缓存，也可在更新日志落盘后写回</td>
+<td>新旧值日志和提交标记</td>
+<td>撤销未提交事务，重做已提交事务</td>
+</tr>
+</tbody>
+</table>
+<p>在这套银行实现里，如果一笔事务的修改能装进内存，redo-only 提交时集中顺序追加，恢复时也只需正向扫描。事务大到需要提前刷页时，undo-redo 可以靠旧值撤回尚未提交的修改，代价是执行时要写更多日志，恢复时也多一个撤销步骤。undo-only 省去了重做，但每次提交都要等分散的数据页写稳。</p>
+<p>这些做法依赖的是故障后仍能取回的、有明确提交边界的日志。磁盘文件是一种实现。如果多个服务器在约定的故障范围内共同保证日志可恢复，复制的内存日志也可以承担这个角色。</p>
+<h2 id="并发控制与两阶段锁">并发控制与两阶段锁</h2>
+<p>前面的日志能在断电后把一笔转账完整地恢复或撤销。现在假设机器始终正常，只让两个客户端同时向银行发请求。即使两笔事务最后都提交，执行顺序也可能让一笔存款消失，或让查账的人看到一个从未在任何一笔交易结束时出现过的余额。</p>
+<h3 id="为什么要并发">为什么要并发</h3>
+<p>假设银行只有一个服务线程，收到 RPC 后逐个处理。若处理一次请求平均需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">S</span></span></span></span> 秒，一个始终有请求可做的线程每秒至多完成 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi><mo>=</mo><mn>1</mn><mi mathvariant="normal">/</mi><mi>S</mi></mrow><annotation encoding="application/x-tex">\mu=1/S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">μ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1/</span><span class="mord mathnormal" style="margin-right:0.05764em;">S</span></span></span></span> 个请求。用户关心的是自己的请求多久能回来，但只要前面有人排队，这个时间就取决于服务器每秒能处理多少请求。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173123826.png" alt="多个银行客户端通过 RPC 访问同一服务"></p>
+<p>用户等待的时间等于排队时间加上实际处理时间。设每秒平均到达 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>λ</mi></mrow><annotation encoding="application/x-tex">\lambda</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">λ</span></span></span></span> 个请求。当 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>λ</mi><mo>&gt;</mo><mi>μ</mi></mrow><annotation encoding="application/x-tex">\lambda&gt;\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7335em;vertical-align:-0.0391em;"></span><span class="mord mathnormal">λ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">μ</span></span></span></span> 时，连续运行 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span></span></span></span> 秒后，积压的请求约增加 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>λ</mi><mo>−</mo><mi>μ</mi><mo stretchy="false">)</mo><mi>t</mi></mrow><annotation encoding="application/x-tex">(\lambda-\mu)t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal">λ</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">μ</span><span class="mclose">)</span><span class="mord mathnormal">t</span></span></span></span> 个。例如每秒到达 1200 个、最多完成 1000 个，持续一分钟就会多出约 12000 个待处理请求。</p>
+<p>当 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>λ</mi><mo>&gt;</mo><mi>μ</mi></mrow><annotation encoding="application/x-tex">\lambda&gt;\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7335em;vertical-align:-0.0391em;"></span><span class="mord mathnormal">λ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">μ</span></span></span></span> 持续下去，每秒留下的请求都会排到下一秒，新用户的等待时间也会越来越长。若长期平均 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>λ</mi><mo>&lt;</mo><mi>μ</mi></mrow><annotation encoding="application/x-tex">\lambda&lt;\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7335em;vertical-align:-0.0391em;"></span><span class="mord mathnormal">λ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">μ</span></span></span></span>，在这个模型下队列可以达到稳态。服务器在请求稀少时有余力消化积压，但某个具体用户仍可能正好赶上高峰。</p>
+<blockquote>
+<p>如果平均每秒能处理的请求比到达的多，队列就总是空的吗？</p>
+</blockquote>
+<p>看下图，平均负载较低时，也可能有三个请求几乎同时到达。第一个马上开始，后两个仍要排队。等它们全部处理完，服务器又可能空闲一段时间。只算一天的平均吞吐量，会把这两个时段混在一起。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173133158.png" alt="一个请求等待前一个请求完成，以及突发到达后的排队和空闲时段"></p>
+<p>若大量用户独立地、偶尔发起请求，可以用泊松过程描述到达。长度为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span></span></span></span> 的时间窗里，平均请求数为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>λ</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">\lambda t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">λ</span><span class="mord mathnormal">t</span></span></span></span>，恰好有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span></span></span></span> 个请求的概率为</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>P</mi><mo stretchy="false">(</mo><mi>N</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo>=</mo><mi>k</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mrow><mo stretchy="false">(</mo><mi>λ</mi><mi>t</mi><msup><mo stretchy="false">)</mo><mi>k</mi></msup><msup><mi>e</mi><mrow><mo>−</mo><mi>λ</mi><mi>t</mi></mrow></msup></mrow><mrow><mi>k</mi><mo stretchy="false">!</mo></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">P(N(t)=k)=\frac{(\lambda t)^k e^{-\lambda t}}{k!}.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mopen">(</span><span class="mord mathnormal">t</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.2121em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.5261em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mclose">!</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mopen">(</span><span class="mord mathnormal">λ</span><span class="mord mathnormal">t</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mathnormal mtight">λ</span><span class="mord mathnormal mtight">t</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord">.</span></span></span></span></span></p>
+<p>图中每个窗口平均有 2 个请求，实际既有 0 个的窗口，也有 5 个的窗口。后一个窗口里新到达的请求要和之前积压的请求一起等。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173130055.png" alt="多名用户独立发送请求，各窗口的到达数有时为 0、有时为 5"></p>
+<p>利用率 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>U</mi><mo>=</mo><mi>λ</mi><mi mathvariant="normal">/</mi><mi>μ</mi></mrow><annotation encoding="application/x-tex">U=\lambda/\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">U</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">λ</span><span class="mord">/</span><span class="mord mathnormal">μ</span></span></span></span> 表示服务器平均有多大比例的时间在忙。设 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>W</mi></mrow><annotation encoding="application/x-tex">W</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">W</span></span></span></span> 是一次请求从到达到完成的平均时间，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span></span></span></span> 是系统内的平均请求数，包括正在处理的一个。稳定运行时，Little 定律给出 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>=</mo><mi>λ</mi><mi>W</mi></mrow><annotation encoding="application/x-tex">L=\lambda W</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">λW</span></span></span></span>。按单服务台估算，若新请求到达时平均遇到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span></span></span></span> 个请求，每个平均还占用一个服务时间，连同自己这一份，就有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>W</mi><mo>≈</mo><mo stretchy="false">(</mo><mi>L</mi><mo>+</mo><mn>1</mn><mo stretchy="false">)</mo><mi mathvariant="normal">/</mi><mi>μ</mi></mrow><annotation encoding="application/x-tex">W\approx(L+1)/\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal">L</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mclose">)</span><span class="mord">/</span><span class="mord mathnormal">μ</span></span></span></span>。代入并移项得到</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>W</mi><mo>≈</mo><mi>U</mi><mi>W</mi><mo>+</mo><mfrac><mn>1</mn><mi>μ</mi></mfrac><mo separator="true">,</mo><mspace width="2em"/><mi>W</mi><mo>≈</mo><mfrac><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>μ</mi></mrow><mrow><mn>1</mn><mo>−</mo><mi>U</mi></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">W\approx UW+\frac1\mu,\qquad W\approx\frac{1/\mu}{1-U}.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">U</span><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:2.2019em;vertical-align:-0.8804em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">μ</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8804em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">≈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.1963em;vertical-align:-0.7693em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">U</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1/</span><span class="mord mathnormal">μ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.7693em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord">.</span></span></span></span></span></p>
+<p>这里用到两个不同的平均值。泊松到达的请求不会特意挑服务器忙或闲的时候来，因此，从到达者眼里看到的平均请求数，与在任意时刻观察系统得到的平均数相同。若服务时间还服从指数分布，正在处理的那一笔平均还要用 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">S</span></span></span></span> 秒，排在前面的每一笔也平均占 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">S</span></span></span></span> 秒。这就解释了为什么可以把前方的 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span></span></span></span> 笔和自己这一笔一起乘以 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.05764em;">S</span></span></span></span>。</p>
+<p>这个式子在泊松到达、服务时间独立且服从指数分布的单服务台模型中是精确的。仅知道平均到达率，还需要了解服务时间的波动才能精确计算等待时间。按图中的模型，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>U</mi><mo>=</mo><mn>0.5</mn></mrow><annotation encoding="application/x-tex">U=0.5</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">U</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0.5</span></span></span></span> 时平均响应时间是处理时间的 2 倍，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>U</mi><mo>=</mo><mn>0.9</mn></mrow><annotation encoding="application/x-tex">U=0.9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">U</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0.9</span></span></span></span> 时达到 10 倍。服务器留出一些空闲容量，就能在突发请求到达时更快消化积压。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113183031671.png" alt="从 Little 定律消去平均请求数，求得平均响应时间"></p>
+<p>例如每笔平均处理 1 毫秒，满负荷时每秒能完成 1000 笔。平均每秒来 800 笔时，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>U</mi><mo>=</mo><mn>0.8</mn></mrow><annotation encoding="application/x-tex">U=0.8</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">U</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0.8</span></span></span></span>，模型给出的平均响应时间是 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mn>0.8</mn><mo stretchy="false">)</mo><mo>=</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">1/(1-0.8)=5</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1/</span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">0.8</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">5</span></span></span></span> 毫秒，其中约 4 毫秒花在排队上。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173128240.png" alt="系统内的平均请求数与利用率接近 1 时急剧增长的平均延迟"></p>
+<p>2004 年前后，靠提高单核频率增加吞吐量的速度放缓了。可以在一台机器上用多个核和线程处理请求（scale up），也可以把工作分给多台机器（scale out）。两个请求在同一段时间内都有进展，就可能发生交错，即使线程只是在一个 CPU 上轮流执行，也要考虑下面的问题。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173130923.png" alt="在单机上使用更多计算资源与增加多台机器的对照"></p>
+<p>如果请求全程都要经过同一把锁，即使增加了 CPU 核心，持锁的那段工作也只能逐笔完成。增加执行资源能否提高吞吐量，取决于请求中有多少工作能真正同时进行。</p>
+<h3 id="丢失的存款">丢失的存款</h3>
+<p>Alice 初始余额为 0，两个线程各向她的账户存 10，正确结果应为 20。代码只写了一行 <code>bank[acct] += amt</code>。按下图的指令展开，线程要先把余额读进寄存器，在寄存器里加 10，再把结果写回。即使单次读和单次写各自都是原子的，这一整段仍可被另一个线程插入。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173125675.png" alt="两次存款的预期结果，以及 Deposit 的原始代码和读、加、写指令"></p>
+<p>如果 T0 读到 0 后被切走，T1 也会读到 0。两个线程各自在寄存器里算出 10，随后各自写回 10，最终余额只有 10。另一个合法的调度是先让 T0 写完，再让 T1 开始读。此时 T1 读到 10，最后写回 20。同样的输入得到不同结果，只取决于哪一步先执行，这就是竞态条件（race condition）导致的丢失更新。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173130619.png" alt="两个线程都读到 0 的交错执行，与第二个线程读到 10 的串行执行"></p>
+<p>这里竞争的是同一个内存位置，两个线程都要写它，而且从读到写的这段时间没有同步保护。如果两个线程只是读取同一份余额，那么交换这两次读的顺序不会造成丢失更新。</p>
+<p>并发程序要在每一种允许的调度下都正确。有问题的顺序可能很少出现，一条调试输出或一次断点就足以改变时机，问题随之消失，这类现象常叫作 Heisenbug。确定性多线程（DMT）让相同输入按同一调度执行，记录与重放（record and replay）则保存一次执行的顺序供事后复现。前者要限制调度，后者要捕捉影响执行的事件，两者都有成本。</p>
+<h4 id="竞态的实际影响">竞态的实际影响</h4>
+<p>有些竞态首先表现为界面显示的先后顺序异常，底层记录仍然正确。判断影响时，要分清用户看到了什么，以及系统实际保存或执行了什么。</p>
+<p>判断竞态的影响时，可以先确定要维持的业务条件。对于存款，这个条件是每笔款项都要计入余额。对于消息界面，如果异常只影响展示顺序，底层消息及其内容都保存正确，这类情况称为良性竞态（benign race）。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173124121.png" alt="界面上三条消息的显示顺序"></p>
+<p>Therac-25 是一台放射治疗设备。看下图的三幅束流示意图。左图是电子模式（E），设备用较低电流的电子束扫描治疗区域，金属靶移出束路。中图是 X 射线模式（X），设备把较高电流的电子束打在金属靶上，产生治疗用的 X 射线。右图红框里，束流仍按 X 模式设置，金属靶却已经移开，高电流电子束可能直接照射患者，造成严重过量照射。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113180642303.png" alt="Therac-25 设备及电子模式、X 射线模式和危险组合的对照"></p>
+<blockquote>
+<p>模式只有一个变量，为什么束流和金属靶会采用两种不同的设置？</p>
+</blockquote>
+<p>在这个简化模型中，键盘处理程序负责把所选模式写入共享变量 <code>mode</code>。另外两段代码分别读取它。设置程序根据读到的值配置束流和磁铁，位置控制程序根据读到的值移动金属部件。两次读取发生在不同的时刻，改写 <code>mode</code> 也不会自动撤销已经开始的硬件配置。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113180643937.png" alt="键盘处理程序写入 mode，设置程序和位置控制程序分别读取它"></p>
+<p>下图从左往右读，蓝色表示 X，绿色表示 E。开始时两段程序都读到 X，金属靶就位，设置程序开始按 X 模式调整磁铁。这项调整约需 8 秒。在它完成之前，操作员把模式改成 E。位置控制程序读到了新值，移开金属靶。设置程序却继续按先前读到的 X 完成工作。时间线末尾的 <code>still X</code> 表示束流设置仍是 X，此时共享变量 <code>mode</code> 的值已经是 E。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113180645798.png" alt="模式修改前后各程序读取的值，以及末尾的束流设置和金属靶位置"></p>
+<p>两次读取各自都读到了当时的值，危险来自系统把旧的束流设置和新的部件位置一起当成了可用配置。即使给每一次 <code>mode</code> 的读写单独加锁，上述顺序仍然可能发生。需要协调的是整次模式切换。设置过程中若选择发生变化，就让旧配置失效，等各部件的实际状态与同一次选择相符后，才允许出束。</p>
+<p>竞态也可能跨越多台服务器。2025 年 10 月，AWS 美国东部区域的一次 DynamoDB 故障影响了依赖它的服务。客户端通常先通过 DNS 查服务端点的 IP。图中的 DNS Planner 根据可用服务器生成不同版本的地址列表，三个可用区中的 DNS Enactor 负责将计划应用到 DNS。即使数据库内的数据仍然完好，端点的地址记录被清空后，需要重新解析的客户端也无法建立连接。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173126359.png" alt="客户端通过 DNS 找到服务地址，以及 Planner 与三个 Enactor 的分工"></p>
+<p>沿着简化时序看，两个执行器都在第 7 版基础上决定更新。第一个执行器的写入延迟，第二个先发布了第 12 版。随后延迟的第 8 版才生效，而清理程序按第 12 版的进度删除旧计划，第 8 版也在清理范围内。结果是当前正在使用的地址记录被清空。检查版本、发布计划、清理旧版本分别都能执行成功，组合起来却破坏了“正在使用的计划必须保留”这个条件。这次 DNS 故障的主要影响持续了约两个半小时。AWS 在事后报告中说明，当时已停用相关自动化，并计划修复竞态、增加错误计划的拦截检查。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173129767.png" alt="计划 7、8、12 的发布与清理顺序"></p>
+<p>这次故障涉及 2025 年 10 月 20 日的 DynamoDB 区域端点 <code>dynamodb.us-east-1.amazonaws.com</code>。部署多个 Enactor 本来是为了让一个可用区出故障时仍有人能更新地址，但它们最终修改的是同一个 Route 53 记录。“读出当前版本”“写入较新版”“清理旧版”是分开的远程操作。第一次比较版本的结果，到了实际写入时就可能已经失效。AWS 在全球范围暂停了这套 Planner 和 Enactor 自动化。</p>
+<h3 id="隔离的单位">隔离的单位</h3>
+<p>前面的一致性模型把一次 <code>Read</code> 或 <code>Write</code> 看成一个操作。即使每个操作都可线性化，一笔存款中的“读余额、加款、写回”仍可能和另一笔存款交错。看下图的方框。上半部分给单次读写排序，下半部分把同一项业务的几次读写放进一个方框，要求把整个方框放到串行顺序里的同一个位置。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173127345.png" alt="单次读写排成串行顺序，与按整项业务排成串行顺序的区别"></p>
+<p>这种保证称为 before-or-after atomicity。对调用者来说，两笔并发事务的效果可以解释为一笔完整地发生在另一笔之前或之后。数据库把事务之间互相看见哪些修改称为隔离（isolation），这里要求的隔离强度是可串行化。上一节的日志解决崩溃后应保留哪些修改，本节要解决的是正常运行时其他事务能够读到哪些值。</p>
+<p>把前面的例子连起来看，主备复制可以让应用观察到一份逻辑数据，事务日志可以在崩溃后恢复整笔转账。现在即使只有这一个逻辑账户、也没有任何故障，还须让并发调用者观察到某个完整的事务顺序，否则两次存款仍会相互覆盖。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113183032954.png" alt="并发动作在调用者看来各自完整地发生在另一个动作之前或之后"></p>
+<h3 id="从全局锁到记录锁">从全局锁到记录锁</h3>
+<p>互斥锁在同一时刻只允许一个线程持有。<code>acquire(lock)</code> 取得锁，遇到占用就等待，<code>release(lock)</code> 释放锁，例如 POSIX 线程的 mutex。先用一把全局锁包住整段存款代码。图中的 L、U 分别是加锁和解锁，中间是临界区。T1 在 T0 释放锁后才能读余额，因此一定能读到 T0 已写回的 10，最后得到 20。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113183033455.png" alt="互斥锁的取得、释放和 pthread_mutex 示例"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173129150.png" alt="Deposit 加全局锁前后的原始代码，以及两个临界区的执行顺序"></p>
+<p>若 T0 给 Alice 存款、T1 给 Bob 存款，两笔操作本来可以并行。共用一把全局锁后，T1 仍然要等 T0，额外还要付出申请锁、唤醒线程的成本。把锁本身实现得更快可以减少这部分开销，却不会让两个持有同一互斥锁的临界区同时运行。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173127031.png" alt="访问不同账户时，全局锁仍会挡住另一笔存款"></p>
+<blockquote>
+<p>临界区可以缩小到哪里？</p>
+</blockquote>
+<p>对单账户存款，需要一起保护的是同一余额从读到写的全过程。可以让每个账户各有一把锁，调用 <code>Deposit</code> 时只取 <code>locks[acct]</code>。Alice 和 Bob 各自的余额仍有互斥保护，两笔存款则可以同时执行。线程的局部计算和其他不访问这份共享状态的工作可以放在锁外。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173129469.png" alt="每账户一把锁的 Deposit 代码，以及两个不同账户并行存款的时序"></p>
+<h4 id="转账和审计">转账和审计</h4>
+<p>记录锁的粒度合适，还要看何时释放。让 <code>a</code> 和 <code>b</code> 初始各有 10，<code>Transfer</code> 从 <code>a</code> 向 <code>b</code> 转 10。按图中的代码，它先锁住 <code>b</code>、给 <code>b</code> 入账、解锁，再对 <code>a</code> 扣款。<code>Audit</code> 逐个锁住账户，读余额并累加。转账前后银行总额都是 20，所以无论串行时哪一笔先做，审计都应输出 20。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173123195.png" alt="逐个账户加锁和解锁的 Transfer、Audit 原始代码"></p>
+<blockquote>
+<p>图中的账户最终余额是否正确？审计打印的总额又是多少？</p>
+</blockquote>
+<p>转账先把 <code>b</code> 从 10 加到 20 并解锁。审计趁这时读出 <code>b=20</code>，又赶在扣款前读出 <code>a=10</code>，于是打印 30。随后转账把 <code>a</code> 改成 0，账户最终为 <code>(0,20)</code>，余额正确。问题出在第一次释放 <code>b</code> 的锁时。转账已经向别人公开了入账，却还没扣款。每次单独访问都有锁，审计依然看到了半笔转账。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173123530.png" alt="Audit 在入账和扣款之间读出 20 与 10，得到总额 30"></p>
+<h4 id="静态加锁">静态加锁</h4>
+<p>一种做法是在事务开始前拿齐所有需要的锁，事务结束后一起释放，称为静态加锁。图中的 <code>acquire_all</code> 表示先取得 <code>a</code> 和 <code>b</code> 的锁再访问数据。审计即使先尝试读 <code>b</code>，也只能等转账完成，最后读到 <code>b=20, a=0</code>，打印 20。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173131931.png" alt="静态加锁的转账代码和 Audit 等待到转账结束后的读数"></p>
+<p>代价是要预先知道事务会访问哪些记录。转账起初就知道两个账号。如果审计要边扫描边发现账户，静态做法就得提前确定全部账号，或保护整个扫描范围。图中的转账最后才访问 <code>a</code>，却从第 0 步就持有它的锁。两把锁各占 6 个时间格，加起来是 12 个“锁 × 时间”格。</p>
+<p>这里的“拿齐”还有一个实现细节。如果采用一次申请整组锁的方式，只要有一把被占用，就先等待整组可用。若改用多个普通的 <code>acquire</code> 逐一取得，则还要统一申请顺序，才能避免拿着一把锁等另一把锁的情况。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173128844.png" alt="静态加锁时两把锁各持有 6 格"></p>
+<p>但是静态加锁的问题在于，如果说需要访问的数据依赖于执行时线程取得的数据，就没法提前拿到要访问的数据的锁。</p>
+<h3 id="两阶段锁">两阶段锁</h3>
+<p>两阶段锁（two-phase locking，2PL）仍然可以每条记录一把锁。事务访问记录前先取得相应的锁，可以用到时再申请。额外的限制是，<strong>一旦释放第一把锁，这笔事务就不能再申请任何新锁</strong>。因此加锁集中在增长阶段，解锁集中在收缩阶段。已经拿在手里的锁可以继续使用。</p>
+<p>下图把一笔转账和一笔给 <code>a</code> 存款的事务放在一起。静态加锁时，转账先取得两把锁，存款要等到它结束。换成 2PL，转账可以先持有 <code>b</code> 的锁，存款趁这段时间把 <code>a</code> 从 10 加到 20。转账随后取得 <code>a</code> 的锁，再释放 <code>b</code> 的锁，并从 <code>a</code> 的新余额 20 中扣去 10。这个顺序的效果等价于先存款、再转账。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173132548.png" alt="静态加锁和 2PL 下，另一笔存款何时能取得 a 的锁"></p>
+<p>事务取得最后一把锁的时刻叫作锁点（lock point）。图中的 2PL 在这个位置短暂同时持有两把锁。按每一步持锁数量相加，得到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>+</mo><mn>1</mn><mo>+</mo><mn>1</mn><mo>+</mo><mn>2</mn><mo>+</mo><mn>1</mn><mo>+</mo><mn>1</mn><mo>=</mo><mn>7</mn></mrow><annotation encoding="application/x-tex">1+1+1+2+1+1=7</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">7</span></span></span></span> 格，其中 <code>b</code> 占 4 格、<code>a</code> 占 3 格。与前面的 12 格相比，其他事务就能更早取得转账尚未使用或已经用完的锁。</p>
+<p>判断一段执行是否遵守 2PL，可以先圈出第一次解锁，再向右检查有没有成功取得新锁。例如转账取得 <code>a</code> 后再释放 <code>b</code> 属于合法的阶段转换。反过来，先放掉 <code>b</code> 才去申请 <code>a</code>，就会重新出现审计读到 30 的窗口。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173128526.png" alt="锁点前后的增长和收缩阶段，以及 12 格与 7 格的对照"></p>
+<h3 id="可串行化">可串行化</h3>
+<p>怎样验证一张交错执行的时序图等价于串行执行？先确定每笔事务自己要做什么。下面两笔事务操作初值均为 0 的 <code>x</code>、<code>y</code>。T1 读 <code>x</code>，再读 <code>y</code> 并给它加 10。T2 把 <code>x</code> 写成 20、把 <code>y</code> 写成 30。把一次执行中所有读写的先后排列出来，称为一个调度（schedule）。调度必须保留每笔事务内部的程序顺序。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173132246.png" alt="事务 T1 和 T2 的完整读写代码"></p>
+<p>只有两笔事务，所以只有两种串行调度。T1 先执行时，它读到两个 0，把 <code>y</code> 写成 10，随后 T2 覆盖为 30。T2 先执行时，T1 读到 20 和 30，再把 <code>y</code> 写成 40。检查并发调度时，要同时对照这些读值和最后的写入。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173131300.png" alt="两种串行执行分别得到 (20,30) 和 (20,40)"></p>
+<h4 id="对照三种调度">对照三种调度</h4>
+<p>图中的调度 A 允许两笔事务重叠，但 T2 写完 <code>x</code> 后 T1 才读 <code>x</code>，T2 写完 <code>y</code> 后 T1 才读并更新 <code>y</code>。T1 因而读到 20 和 30，最终状态为 <code>(20,40)</code>，和串行的 T2 → T1 相同。调度 B 中，T1 先读到 <code>y=0</code>，T2 把它写成 30，T1 再用早先读到的 0 加 10 写回，最终为 <code>(20,10)</code>。两种串行顺序都得不到这个结果。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173122450.png" alt="调度 A 保留串行读值，调度 B 用旧 y 覆盖了 T2 的写入"></p>
+<blockquote>
+<p>调度 C 最终也是 <code>(20,40)</code>，能否说它等价于 T2 → T1？</p>
+</blockquote>
+<p>不能。T1 读到 <code>x=0</code>，要求它排在 T2 写 <code>x</code> 之前。T1 随后又读到 T2 写入的 <code>y=30</code>，要求它排在 T2 之后。两个条件无法同时成立。即使最后的余额碰巧相同，T1 已经读到了一组在串行执行中不可能同时读到的值。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173125046.png" alt="调度 C 中的两次读取跨过了 T2 的写入"></p>
+<table>
+<thead>
+<tr>
+<th>调度</th>
+<th>T1 读到的 (x, y)</th>
+<th>最后的 (x, y)</th>
+<th>能否找到等价的串行顺序</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>(20, 30)</td>
+<td>(20, 40)</td>
+<td>可以，T2 → T1</td>
+</tr>
+<tr>
+<td>B</td>
+<td>(0, 0)</td>
+<td>(20, 10)</td>
+<td>两种串行顺序都得不到最终值</td>
+</tr>
+<tr>
+<td>C</td>
+<td>(0, 30)</td>
+<td>(20, 40)</td>
+<td>两种串行顺序都解释不了 T1 的两次读</td>
+</tr>
+</tbody>
+</table>
+<h4 id="视图与冲突">视图与冲突</h4>
+<p>视图等价（view equivalence）比较每次读从哪里取得值，以及最后一次写由谁完成。对于相同的一组事务，若要把调度 S 换成 S′，读初值的操作在 S′ 中也要读初值，读到某笔事务写入值的操作仍要从同一笔写入取值，每个数据项的最后写者也要相同。若能找到一个与 S 视图等价的串行调度，就称 S 为视图可串行化。事务多起来，逐个尝试可能的串行排列代价很高，一般情形下判定视图可串行化是 NP 完全问题。</p>
+<p>对照视图时要给读值标上来源。例如 T1 和 T2 都曾把 <code>x</code> 写成 10，某次读在两个调度中都返回 10，仍须检查它读到的是哪一笔写。若有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> 笔事务，直接枚举串行顺序最多要考虑 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo stretchy="false">!</mo></mrow><annotation encoding="application/x-tex">n!</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">n</span><span class="mclose">!</span></span></span></span> 种排列，这也是下面改用冲突图判定的动机。</p>
+<p>另一种判据是冲突可串行化。两个操作访问同一数据项、来自不同事务，而且至少一个是写，它们就发生冲突。例如，两个事务同读 <code>x</code> 可以交换次序。各事务内部仍遵守程序顺序，跨事务则检查读写、写读和写写三类冲突。把这些冲突操作原有的顺序都保留下来，如果仍能把各事务排成串行顺序，就找到了与原调度冲突等价的串行执行。</p>
+<p>画冲突图时，每笔事务是一个节点。若 T2 的一个操作先于 T1 的某个冲突操作（二者之中至有一个是写，因为仅读操作没有 race），就连 T2 → T1。调度 A 的三对冲突分别是T2 写 <code>x</code> 与 T1 读 <code>x</code>，T2 写 <code>y</code> 与 T1 读 <code>y</code>，以及 T2 写 <code>y</code> 与 T1 写 <code>y</code>。三对都要求 T2 在前，图中只需一条 T2 → T1 的边。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173127651.png" alt="调度 A 的三对冲突及合并后的无环冲突图"></p>
+<p>再看调度 C，T1 先读 <code>x</code>，T2 后写 <code>x</code>，得到 T1 → T2。对 <code>y</code> 则有 T2 → T1，两条边闭合成环。一般地，图无环时，沿边做拓扑排序就能得到满足全部冲突顺序的串行历史。有环时，环上的事务会被要求排在自己前面。<strong>冲突图无环，当且仅当调度冲突可串行化。</strong></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173127946.png" alt="调度 C 的 x 与 y 分别要求两个相反的事务顺序"></p>
+<p>同样的方法也能检查调度 B。T1 读取 <code>y=0</code> 早于 T2 写 <code>y=30</code>，产生 T1 → T2。随后 T1 又把 <code>y=10</code> 写回，T2 的写在它前面，产生 T2 → T1。仅检查 <code>y</code> 就找到了环。</p>
+<h4 id="两种判据的范围">两种判据的范围</h4>
+<p>图中四个操作依次是 T1 读 <code>x</code>、T2 写 <code>x</code>、T1 写 <code>x</code>、T3 写 <code>x</code>。T1 先读初值，要求 T1 → T2；T2 的写排在 T1 的写之前，又要求 T2 → T1。因此这个调度不满足冲突可串行化。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173124435.png" alt="T1、T2 与 T3 访问 x，前两笔事务的冲突边构成环"></p>
+<p>但看视图，整个调度只有 T1 的一次读，它读的是初值，最终写 <code>x</code> 的是 T3。串行执行 T1 → T2 → T3 也满足这两点。T2 不读取 <code>x</code> 就写入，T3 最后又覆盖它，中间两次写的相对次序在本例中没有被任何读观察到。因此这一调度是视图可串行化的。</p>
+<blockquote>
+<p>既然这种执行也能解释为串行结果，系统为什么常用冲突可串行化？</p>
+</blockquote>
+<p>冲突可串行化覆盖的范围更小，但可以通过图的环检测高效判定，也可以用 2PL 在运行中直接保证。冲突可串行化是可见可串行化的一个子集，保留所有冲突次序，自然也保留了每次读的来源和每个数据项的最后写者。View 串行化的搜索空间更大，调度可以更加灵活；Conflict 更快，但是也更加严格，其没有可行的串行方法不代表不存在最终结果一致的串行方法。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173131633.png" alt="冲突可串行化是视图可串行化的子集"></p>
+<h4 id="2PL-的证明">2PL 的证明</h4>
+<p>假设这是一个 2PL 过程，且存在一个冲突的环。冲突图里有一条 T1 → T2 的边，来自它们对同一记录的冲突访问。T2 取得这把锁之前，T1 必须先释放它。再看各自的锁点，T1 释放任何锁之前已经取得了最后一把锁。T2 的锁点则在它取得这把锁时或之后。于是 T1 的锁点严格早于 T2 的锁点。</p>
+<p>沿着冲突图中的每一条边，都能推出同方向的锁点先后。若存在 T1 → T2 → … → Tk → T1 这样的环，沿环推一遍就会得到“T1 在释放锁之后拿了锁”，这不是一个 2PL 过程。因此 2PL 生成的调度一定冲突可串行化。原图用交锁过程表达同一个矛盾。走完一圈，T1 就得在已经释放一把锁后，又成功取得新锁，这违反了两阶段规则。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173130331.png" alt="假设存在冲突环，沿互斥交接与 2PL 规则推出矛盾"></p>
+<p>具体看图中的 T2。它可以先拿着 <code>x2</code> 等 <code>x1</code>，也可以先拿 <code>x1</code> 再拿 <code>x2</code>。两种顺序都满足同一个条件。T2 成功取得 <code>x1</code> 一定早于它释放 <code>x2</code>。沿假设的环串起来，T1 先释放 <code>x1</code>，T2 才能取得 <code>x1</code>，随后 T2 才能释放 <code>x2</code>。一直传到 Tk 释放最后一把争用的锁，T1 才能取得它。这就要求 T1 在第一次解锁之后再加锁，与 2PL 矛盾。</p>
+<p>可串行化保证的是整笔事务之间的执行效果。应用本身还得写对。图中的第二段转账代码给 <code>b</code> 加上 <code>2 × amt</code>，却只从 <code>a</code> 扣去 <code>amt</code>，单线程执行一次也会多出钱。若初态满足余额总和不变，并且每笔事务单独执行都维持这个不变量，那么按任意串行顺序执行后，不变量仍成立。可串行化才把这个推理推广到并发执行。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173124722.png" alt="正确转账与错误地给 b 加上双倍金额的代码对照"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113183032425.png" alt="每笔事务保持业务不变量时，从一致初态依次得到一致的后续状态"></p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">C_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3117em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 表示满足业务不变量的状态。从 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">C_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 开始，第一笔交易保住总额，便得到满足同一条件的 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">C_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>。再对下一笔交易用一次同样的推理，就能一直推到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">C_n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:-0.0715em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>。可串行化提供了一个可以这样逐笔检查的顺序。</p>
+<h3 id="死锁">死锁</h3>
+<p>2PL 在访问记录前先申请锁，遇到冲突就等待，因此属于悲观并发控制。下图里 <code>Transfer</code> 先取得 <code>b</code> 的锁，<code>Audit</code> 也从 <code>b</code> 开始，就在第一步等着。转账还能继续取得 <code>a</code> 的锁，做完扣款后放行审计。这里发生了等待，但最后两笔事务都能结束，审计得到 20。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173132856.png" alt="Transfer 与 Audit 的原始业务代码，以及审计在第一把锁处等待的执行"></p>
+<blockquote>
+<p>如果审计先拿到了 <code>a</code> 的锁，转账先拿到了 <code>b</code> 的锁，两边还能完成吗？</p>
+</blockquote>
+<p>往后各走一步就能看出区别。转账需要 <code>a</code>，只好等审计。审计需要 <code>b</code>，只好等转账。谁都无法走到释放锁的那一步，于是形成死锁。这里的等待图把边从等待者连到持锁者，作用是找出当前谁被谁挡住。前面的冲突图记录已经发生的操作顺序，用于判断可串行化。遵守 2PL 能排除冲突图中的环，仍可能在运行中遇到等待图中的环。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113173125374.png" alt="转账持有 b 等 a，审计持有 a 等 b，形成循环等待"></p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>在转账与审计的例子中怎样做</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>统一取锁顺序</td>
+<td>都按账号顺序先申请 <code>a</code> 再申请 <code>b</code>。拿不到 <code>a</code> 的事务不会占着 <code>b</code>，环就无法形成</td>
+<td>动态发现待访问记录时，维持全局顺序可能需要提前收集记录或重启事务</td>
+</tr>
+<tr>
+<td>检查等待图</td>
+<td>记录“转账等审计”“审计等转账”。发现环后中止其中一笔，撤销它的修改、释放锁，让另一笔继续</td>
+<td>需要维护图、检测环，并承担回滚与重试的开销</td>
+</tr>
+<tr>
+<td>提前中止</td>
+<td>按事务时间戳限制等待方向，例如只让较老事务等较新事务，遇到反方向的等待就让请求者回滚重试</td>
+<td>一些本来能顺利完成的事务也会被中止。重试若缺少公平安排，还可能反复回滚而没有进展</td>
+</tr>
+</tbody>
+</table>
+<p>最后一种方法还要考虑活锁（livelock）。如果两笔事务每次同时重试，又在相同位置反复回滚，线程一直在运行，却始终没有事务提交。可以让重试的事务保留原来的优先级，避免它每次重来都被当作最新的事务淘汰。</p>
+<h2 id="OCC、HTM-与-MVCC">OCC、HTM 与 MVCC</h2>
+<p>两阶段锁要求事务先取得锁再访问记录。若不同事务通常操作不同账户，一笔存款从计算到写回都持有锁，可能大部分时间都在为很少发生的冲突付费。乐观并发控制（optimistic concurrency control，OCC）允许事务先用自己读到的数据计算，等准备提交时，再检查这次计算的依据是否仍然成立。OCC 于 1981 年提出，后来也用于数据库和在线服务。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200823970.png" alt="采用乐观并发控制思想的系统实例"></p>
+<h3 id="OCC-的三个阶段">OCC 的三个阶段</h3>
+<ol>
+<li><strong>本地执行。</strong> <code>tx.begin()</code> 为本次事务建立读集和写集。读集记录“我根据哪些记录的哪个版本做了计算”，写集记录“提交时准备把哪些记录改成什么值”。调用 <code>tx.write(A)</code> 时先把新值放进私有写集，其他事务仍读已提交的数据。本事务随后再读 A，应先检查自己的写集，以便读到刚写的新值。</li>
+<li><strong>验证。</strong> 在 <code>tx.commit()</code> 时遍历读集，把先前记录的版本与共享记录的当前版本比较。若某项发生了冲突，就丢弃这次计算和私有写集，重新读取并计算。</li>
+<li><strong>写回。</strong> 验证通过才把写集中的新值安装到共享记录中，并更新版本。验证和写回要受到同一套同步机制保护，否则刚查过的记录就可能在写回之前发生变化。</li>
+</ol>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200822049.png" alt="tx.begin 初始化读写集，本地执行期间把更新暂存到写集"></p>
+<blockquote>
+<p>第一阶段可以在没有长时间持锁的情况下执行，为什么读一条记录时仍要把值和版本配成一对？</p>
+</blockquote>
+<p>假设 A 的值为 100，版本为 7。T1 刚读出 100，T2 就把 A 改成 110 并将版本增为 8。如果 T1 随后读到 8，便会把旧值 100 误记为第 8 版。到提交时版本仍是 8，验证也发现不了它用错了值。读记录的一种方式是先读版本，再复制数据，最后复查版本和锁状态。只有两次版本相同、期间没有写者使这次读取失效，才保留这份数据。读集要记住读取时的依据，写集里的暂存值则可以由本事务继续修改。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200819444.png" alt="验证读集、写回写集，以及需要共同保护的代码范围"></p>
+<h4 id="验证与写回">验证与写回</h4>
+<p>设 A、B 起初都是 1，T1 和 T2 都执行 <code>A += 1; B += 1</code>。如果两笔事务均先读到 <code>(1,1)</code>，都在对方写回之前完成验证，它们就都会算出 <code>(2,2)</code>，也都会把它写回。串行执行两次本应得到 <code>(3,3)</code>。图中的两个 V 都检查成功，问题出在检查通过后，两个事务都以为自己有权按旧值提交。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113201332562.png" alt="两个事务分别通过验证后都写回 2，丢失了一次增量"></p>
+<p>最直接的实现是给 <code>validate_and_commit()</code> 加一把全局锁。图中 T1 先拿锁，验证后写回 2，释放锁。T2 这才开始验证，发现自己读过的 A 已经变了，于是中止。它重试时读到 2，才有机会把结果写为 3。锁只包住提交阶段，两个事务前面的读取和业务计算仍可并发执行。中止路径需要释放已持有的锁。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200821096.png" alt="全局提交锁的伪代码，以及 T2 在 T1 提交后验证失败的时序"></p>
+<h4 id="数值与版本">数值与版本</h4>
+<blockquote>
+<p>验证时重新比较数值，和比较每次写入都会递增的版本号，会拒绝相同的调度吗？</p>
+</blockquote>
+<p>图中第一种做法保存读到的值，第二种保存读到的版本号。区别出现在一项数据被修改后又恢复原值时，这就是 ABA 问题。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113201332857.png" alt="按值验证和按版本号验证的两段伪代码"></p>
+<p>以 A 初值为 1 为例。T1 读出 1 后暂停。T2 也读 1，执行加一并提交，A 变成 2。T3 再把 A 写回 1。轮到 T1 验证时，比较数值会得到 <code>1 == 1</code>，于是它也把自己算好的 2 写回。按版本验证则会发现，T1 手里的 1 和此时的 1 来自两次不同的写入。只要版本号在这段时间内不会复用，就能识别中间的修改。看图下方的两条冲突边。T1 先读、T2 后写要求 T1 在前，T2 先读、T1 后写又要求 T2 在前。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113201332135.png" alt="A 经历 1、2、1 后，T1 的值比较仍通过，冲突图却有环"></p>
+<h4 id="缩小提交锁的范围">缩小提交锁的范围</h4>
+<p>全局锁让两个修改完全不同账户的事务也要排队提交。可以改用记录锁。第一种写法边扫描读集边加锁验证，再锁住要写的记录。两笔事务若分别拿着对方需要的锁，就可能死锁。第二种写法先把读集和写集取并集、去重，按统一顺序拿齐记录锁，再验证和写回。这样，不相交的事务可以同时提交，相交的事务也按同一个顺序申请锁。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200820393.png" alt="按访问顺序逐项加锁，以及按固定顺序锁住读写集的两种实现"></p>
+<blockquote>
+<p>可以进一步只锁写集吗？如果读集只比较版本号，会漏掉哪一种冲突？</p>
+</blockquote>
+<p>设初值 <code>A=B=1</code>，T1 做 <code>A += B</code>，T2 做 <code>B += A</code>。两笔事务都读到 <code>(1,1)</code>，T1 锁 A，T2 锁 B。此时双方虽已拿到写锁，却都还没修改对应的版本。T1 检查 B、T2 检查 A，都能通过，然后各自写回 2。最终得到 <code>(2,2)</code>。若 T1 先串行执行，结果应为 <code>(2,3)</code>，若 T2 先执行，则应为 <code>(3,2)</code>。两种串行结果都解释不了实际结果。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113201333169.png" alt="只锁写集且只比较版本时，两个事务会漏掉彼此正在进行的写入"></p>
+<p>修正后的协议先按固定顺序拿齐<strong>写集</strong>的锁，然后逐条检查读集。记录要保持原来的版本，也不能正被<strong>其他事务</strong>锁住准备写入。若 T2 已经取得 B 的锁，T1 会看到 B 上的写锁，或在 T2 已提交后看到 B 的新版本，因此不能带着旧读值通过验证。若 T1 先完成验证，T2 则会在 A 上发现冲突。若一条记录同时在自己的读集和写集里，应识别出自己的锁，并照常比较读到的版本。成功时安装全部新值和新版本再解锁，失败时释放已持有的锁、丢弃写集。实现还须让版本和锁状态的检查与写入协议配合，使读者能识别提交中的记录。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200822733.png" alt="按序锁住写集，验证读集的版本和锁状态，再安装新值"></p>
+<h3 id="加锁的成本">加锁的成本</h3>
+<p>只考虑事务读取一条记录，且本次没有中止。OCC 执行时读取数据，提交时再读取版本和锁状态，读者通常不必修改共享的锁标志。用互斥锁的 2PL 则要先取得锁、读取数据、再写锁标志释放锁。这些操作的代价，在多个核心同时访问同一条缓存行时尤其不同。</p>
+<p>设一把锁用 <code>flag=0</code> 表示可用。若加锁分成普通的“读出 0”和“写入 1”，两个线程就可能同时读出 0，又都以为自己拿到了锁。硬件提供比较并交换（CAS），把读旧值、比较和条件写入合为一个原子操作。图中的函数返回实际读到的旧值，仅在旧值等于 <code>expected</code> 时才写入 <code>new</code>。SPARC 称之为 compare-and-swap，x86 可用带 <code>lock</code> 前缀的 <code>cmpxchg</code> 对内存执行原子比较交换。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200818760.png" alt="CAS 的语义和 x86 的 lock cmpxchg 指令"></p>
+<p>自旋锁让线程反复尝试把 <code>flag</code> 从 0 改成 1。返回 0 的线程取得锁，返回 1 的继续等。释放锁时，持有者只需用具有释放语义的原子写把标志设回 0，无需再次比较。下图保留了标志初始化、加锁循环和解锁的完整示意代码。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200826808.png" alt="用 CompareAndSwap 实现自旋锁的完整示意代码"></p>
+<p>图中的一次 L1 缓存读取约 1 ns，一对 mutex 加锁、解锁约 17 ns。数值随处理器和争用情况变化。在低争用时，即使共读一条记录，读者也能各自读取缓存，省去争夺同一个锁标志的工作。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200821729.png" alt="缓存访问与 mutex 加锁、解锁的延迟对照"></p>
+<h4 id="为什么会误中止">为什么会误中止</h4>
+<p>初值 <code>A=B=100</code>。T1 读 A、B，准备写 <code>B=A+B=200</code>。T2 只读 A，准备写 <code>A=A×1.1=110</code>。T2 先验证，此时 A 仍为 100，因此它可以提交。T1 随后验证，发现 A 的版本已经变化，于是放弃暂存的 200。数据库此时为 <code>A=110, B=100</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200819747.png" alt="T2 先提交使 T1 验证失败，但冲突图允许 T1 先于 T2"></p>
+<p>如果单看两笔业务，其实可以按 T1 → T2 排列。T1 用旧 A 算出 B 为 200，T2 再把 A 改为 110。T2 没有读 B，两者之间只有 T1 读 A 在 T2 写 A 之前这一条依赖，图中没有环。这里的 OCC 按验证提交的顺序来解释执行，无法利用另一个合法顺序，所以中止了一笔本可串行化的事务，称为误中止（false abort）。</p>
+<p>事务执行越久、读集越大，验证时遇到某条记录被修改的机会就越多。即使每一条记录都很少发生冲突，一次扫描上千条记录也可能白做。高争用时，同一笔事务还可能一直重试却无法提交，形成活锁。下图横轴是并发事务数，纵轴是每秒成功提交的事务数。图中 OCC 在低争用时省下了加锁开销，争用增大后，大量重试反而使它的吞吐低于等待锁的 2PL。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200827436.png" alt="OCC 与 2PL 的吞吐量如何随并发争用变化"></p>
+<h3 id="硬件事务内存">硬件事务内存</h3>
+<p>硬件事务内存（HTM）让 CPU 直接跟踪一段内存访问。Intel 在 Haswell 一代引入的 RTM（Restricted Transactional Memory）和 ARM 的 TME 都属于这一类。对于支持 RTM 的处理器，程序用 <code>XBEGIN</code> 标记开始，用 <code>XEND</code> 尝试提交。成功时，这段代码的内存修改作为一个整体对其他核心可见。程序也可以主动执行 <code>XABORT</code> 中止。</p>
+<p>下图使用对应的编程接口。若 <code>_xbegin()</code> 返回 <code>_XBEGIN_STARTED</code>，就进入事务区执行普通的内存读写。中止会丢弃这次尝试的暂存修改，把控制交回开始处指定的回退路径，并提供中止状态。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200825221.png" alt="Haswell 与 RTM 代码框架，以及显式访问 x 的事务区"></p>
+<blockquote>
+<p>CPU 0 在事务里读过 x，此时 CPU 1 在事务外执行普通写 <code>x=1</code>，会发生什么？</p>
+</blockquote>
+<p>在图中的交错顺序里，x 已经进入 CPU 0 的读集。CPU 1 的写入与它冲突，硬件中止 CPU 0 的事务。CPU 1 的普通写可以完成，内存中的 x 变为 1，CPU 0 则转入回退路径。此前事务区里尚未提交的写入不会留给其他核心。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200824909.png" alt="事务外写 x 导致已读取 x 的 RTM 事务中止"></p>
+<h4 id="重试与回退">重试与回退</h4>
+<p>上半段代码中止后就跳回 <code>beginning</code>。若中止原因一直存在，每次重试还会在同一处失败。实际实现通常限制重试次数，再走一条能完成工作的路径，例如取得全局锁，执行同一段业务代码，最后释放锁。</p>
+<p>为什么硬件事务里面还要检查 <code>lock.held()</code>？因为另一个核心可能已经走了加锁回退路径。若锁已被持有，事务应主动中止。若刚读到锁空闲，锁标志所在的缓存行就已经进入事务读集，别的核心随后取锁会使硬件检测到冲突。这样两条路径才按同一把锁协调。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200824603.png" alt="无条件重试的代码，与检查回退锁的 RTM 写法"></p>
+<h4 id="硬件怎样验证">硬件怎样验证</h4>
+<p>RTM 可以看成由硬件执行的乐观并发控制。图中 CPU 0 读 x，缓存记录这条缓存行属于事务读集。CPU 1 要写同一行，需要通过缓存一致性协议取得独占权限。CPU 0 收到失效请求时发现这条行带有读集标记，于是中止事务。写集里的暂存修改也由硬件管理，软件省去了为每个变量显式构建集合的步骤。硬件按缓存行跟踪，同一行里两个不同变量也可能互相干扰。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200819070.png" alt="CPU 1 申请独占缓存行时，CPU 0 检测到读集失效"></p>
+<p>这种做法受缓存容量和地址分布限制。在图示 Intel 实现中，写集依赖 L1 容量，读集可以利用更大的缓存层级。小图里的测试标出写集约 31 KB、读集约 4 MB 的容量边界。写集更容易先装不下，具体上限要看处理器和访问模式。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200818438.png" alt="读集、写集大小与容量中止率的测量曲线"></p>
+<p>事务运行越久，遇到定时器中断、调度或其他外部事件的机会也越大。网络 I/O 等操作通常要移到事务区外。图中一次实验里，中止率随着执行时间上升，测得的最长执行时间约为 3.9 ms。程序不能据此假设所有短于 3.9 ms 的事务都会成功。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200821416.png" alt="RTM 执行时间与中止率的实验结果"></p>
+<p>SmallBank 和 TPC-C 展示了同一机制在不同工作量下的表现。图中黑线是 HTM，绿线是软件 OCC 系统 Silo。SmallBank 的短转账和审计事务上，黑线随线程数增加得更快。TPC-C 的订单事务要处理多条订单明细并更新多条库存记录，读写范围更大，图中 Silo 的吞吐随线程数上升，直接用 HTM 包住整笔事务的收益很小。硬件事务适合能在缓存中完成的短临界区，容量中止和回退成本都要计入执行时间。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200825895.png" alt="SmallBank 与 TPC-C 上 HTM 和 Silo 的吞吐量对照"></p>
+<h3 id="事务的保证">事务的保证</h3>
+<p>下单时，程序先判断库存是否大于 0，再扣减库存并把商品加入购物车。若两个买家同时读到最后一件库存，两人都可能通过检查。开发者需要把“检查、扣减、加入”定为一次业务操作，再由系统约束并发和故障时可以留下哪些结果。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200825551.png" alt="购买界面与检查库存、扣库存、加入购物车的代码"></p>
+<p>银行转账也是如此。客户收到转账成功的答复，就应能在故障恢复后查到一笔同时包含扣款和入账的记录。金融应用用事务把这两个动作绑定，并明确何时可以向客户确认成功。下图的余额显示争议说明用户关心的是恢复后账目是否一致，仅凭界面截图无法判断底层原因。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200820057.png" alt="用户在系统恢复后核对账户金额的例子"></p>
+<p>文件系统里，一次创建文件会修改目录项、inode 和分配位图，同样可以构成一个事务。TxOS（SOSP 2009）允许把支持的系统调用放进事务。TxFS（USENIX ATC 2018）利用 ext4 的 journal 实现文件事务。前面介绍的 3FS 则把事务用于元数据服务，例如 <code>lookup</code>、<code>listdir</code> 可使用只读事务，<code>create</code>、<code>unlink</code>、<code>rename</code> 等修改放进 FoundationDB 的读写事务，发生冲突后重试。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200820723.png" alt="3FS 元数据服务中只读事务与读写事务的用途"></p>
+<h4 id="ACID">ACID</h4>
+<p>事务划定一组应该一起处理的操作，ACID 描述系统为它们提供的保证。以一次训练 checkpoint 为例，保存会生成多份文件，恢复需要使用同一轮保存的完整结果。图中虚线是提交点，越过它之后，即使故障打断后续工作，恢复机制也要能完成已经承诺的修改。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200817794.png" alt="事务边界，以及提交点前可以撤回、提交后必须完成的两个阶段"></p>
+<table>
+<thead>
+<tr>
+<th>性质</th>
+<th>对调用者的保证</th>
+<th>对应实现或例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原子性（Atomicity）</td>
+<td>一笔操作完整生效，或不产生已提交结果</td>
+<td>所有 checkpoint 文件准备好后才发布这一轮，写到一半的 checkpoint 不供恢复使用</td>
+</tr>
+<tr>
+<td>一致性（Consistency）</td>
+<td>若初态满足业务约束，正确事务提交后仍满足约束</td>
+<td>转账前后两账户的总额相同，数据库还可检查唯一性等显式约束</td>
+</tr>
+<tr>
+<td>隔离性（Isolation）</td>
+<td>并发事务可以观察到哪些中间结果，由隔离级别规定。要求可串行化时，各事务的效果要能排成一个串行顺序</td>
+<td>恢复与清理需要协调，避免恢复到一半时仍需读取的 checkpoint 文件被删除</td>
+</tr>
+<tr>
+<td>持久性（Durability）</td>
+<td>在约定的故障范围内，已经提交的修改可以恢复</td>
+<td>若承诺能经受训练机器重启，就要等 checkpoint 写稳后再确认持久提交。异步保存调用返回也可能只表示请求已提交给后台</td>
+</tr>
+</tbody>
+</table>
+<p>图中正常转账从 <code>a</code> 扣去 <code>amt</code>，给 <code>b</code> 加上相同金额。如果把扣款误写成 <code>amt * 2</code>，即使单线程完整执行，总额也会减少。应用定义并维护业务不变量，系统可以检查已声明的约束。在单机数据库里，日志与恢复支撑原子性和持久性，2PL 或 OCC 等协议提供隔离。充分的隔离让开发者可以按完整事务逐笔推理。HTM 的提交让内存更新对其他核心可见，若要保证断电后仍能恢复，还需另外安排持久化。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200818123.png" alt="正常转账与错误地扣去双倍金额的代码"></p>
+<h3 id="多版本并发控制">多版本并发控制</h3>
+<p>用户可以不断浏览商品，却只偶尔购买一件。后台的报表或审计事务也可能读很多条记录才结束。对这种长读事务，2PL 要申请并持有许多锁，可能挡住写者。单版本 OCC 虽然能在执行阶段直接读取，但读集越大，就越容易在最后发现某个版本已经改变。图中的绿色线表示系统优化的目标：在增加并发时维持的吞吐趋势。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200827116.png" alt="2PL 与 OCC 争用时的吞吐趋势，以及以浏览为主的商品访问场景"></p>
+<h4 id="读同一个快照">读同一个快照</h4>
+<p>T1 想打印 <code>A+B</code>，T2 要将 A、B 一起改成新值。下面第一幅时序图中，T1 先读完旧 A 和旧 B，随后 T2 提交。原先的 OCC 验证会让 T1 中止，但它读到的本来就是完整旧状态，把它排在 T2 之前就可以解释结果。第二幅图中，T1 先读旧 A，等 T2 更新后再读新 B。两次读分别来自更新前后，求出的和可能从来没有在任何一个已提交状态中出现过。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200824287.png" alt="T1 读到两个旧值，或读到一个旧值和一个新值的两种执行"></p>
+<p>若写者保留旧版本，T1 即使在 T2 提交后才去读 B，也仍可取回旧 B，与先前读到的旧 A 配成一份快照。多版本并发控制（MVCC）采用这个办法。每次更新创建一个带版本号的新值，读事务按自己开始时选定的快照读完整笔事务。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200826504.png" alt="保留旧 B 后，T1 可以读完同一个旧快照"></p>
+<p>图左边的一条记录只有值和锁。右边把值换成版本列表，其中每一项包含数据和版本号。读取时可以从新到旧查找可见的版本。只读事务的工作由此变成“读取某个已经确定的状态”，即使其他事务提交了更新，也无需因为这些新版本而重新验证整个读集。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200828515.png" alt="单版本记录与包含值、版本号的版本链结构"></p>
+<h4 id="快照时间">快照时间</h4>
+<p>一个简单实现用全局计数器发时间戳。事务开始和提交时都通过原子的 fetch-and-add（FAA）取得编号，分别记为 <code>start_ts</code> 和 <code>commit_ts</code>。开始时间决定可以看见哪一轮提交，提交时间标记本事务写出的全部版本。若 T1 完成后 T2 才开始，T1 的提交时间就小于 T2 的开始时间。对于重叠执行的事务，时间戳规定可见性，是否可串行化还取决于冲突检测。</p>
+<p>读取一条记录时，找满足 <code>version &lt;= start_ts</code> 的最大版本号。第一版伪代码先按这个规则选读值，将写入暂存在写集。提交时先锁住写集，取一个提交时间戳，再给各记录依次安装同一时间戳的新版本。单看编号，每条记录都像是来自正确的快照，但还有一个时间窗口。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200827733.png" alt="第一版 Get 和 Commit，以及 T1 读出旧 A、新 B 的部分快照"></p>
+<p>图中 T2 先取得提交时间 1，已经安装 <code>B1</code>，还没安装 <code>A1</code>。T1 随后取得开始时间 2，按编号应当能看到整笔 T2。如果读者忽略写锁，此时只能找到 <code>A0</code>，却已经能找到 <code>B1</code>。两者都满足版本号不大于 2，放在一起仍然只有半笔提交。为多个值标上同一个编号，还要保证读者确实能取得属于这个编号的完整结果。</p>
+<h4 id="写入可见性">写入可见性</h4>
+<p>改进的协议要求写者在取得提交时间前持有整个写集的锁。安装某条记录的新版本后才释放其锁。读者若遇到正在写入的记录，就等它解锁，然后按自己的开始时间选版本。图中 T1 想读 A 时 A 仍锁着，等到 T2 安装 <code>A1</code>，T1 便能读出 <code>A1, B1</code>。实现时，读者对锁状态与版本链的观察也要同步，例如在读取期间复查版本和锁，确保一次读不会跨过未发现的更新。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200828821.png" alt="改进的 Get 和 Commit 及读者在锁上等待后取得完整快照的时序"></p>
+<blockquote>
+<p>能先取提交时间，再去锁住写集吗？</p>
+</blockquote>
+<p>按这里的读取协议，顺序不能交换。假设 T2 先取到时间 1，还没锁 A、B。T1 此时以时间 2 开始，见 A 未锁就读出 <code>A0</code>。接下来 T2 取得锁并安装新版本，T1 再读 B 就会得到 <code>B1</code>。先拿齐锁再领号，才能保证任何有资格看到 T2 的读者遇到的记录，要么已经安装好，要么还由 T2 持锁保护。</p>
+<h4 id="防止丢失更新">防止丢失更新</h4>
+<p>快照解决了跨记录读取的问题，写者之间还须检查是否同时修改了同一项。图中两笔事务都做 <code>A += 1</code>。T1、T2 的开始时间分别为 1、2，都看到 <code>A0=0</code>。T1 提交得到时间 3，写入 <code>A3=1</code>。如果 T2 也可以在时间 4 直接安装自己算的 <code>A4=1</code>，版本链虽有两次写，余额却只加了一次。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200823051.png" alt="两笔事务从同一个旧值加一，单靠保留两个新版本仍丢失一次更新"></p>
+<p>提交时应在持有写锁的条件下，对写集逐项检查当前最新的已提交版本。如果其中一项的提交时间晚于本事务的开始时间，说明本事务开始后已有其他事务改过自己也要写的记录，应中止重试。这里 T2 发现 <code>3 &gt; 2</code>，重试时会读到 1，随后才能正确写出 2。其他事务只改了无关记录，不影响这项检查。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200828051.png" alt="从 START、READ、WRITE 到 COMMIT 的快照选择和写集验证"></p>
+<h4 id="写偏斜">写偏斜</h4>
+<p>只验证写集还会漏掉一种冲突。图中 T1 读 X、写 Y，T2 读 Y、写 X，两笔事务都在对方提交前开始。T1 读到 <code>X0</code>，T2 读到 <code>Y0</code>。两人的写集分别是 Y 和 X，因此都可以通过写写冲突检查，先后发布 <code>Y3</code> 和 <code>X4</code>。然而，T1 读旧 X 要求 T1 排在 T2 前面，T2 读旧 Y 又要求 T2 排在 T1 前面，冲突图有环。这叫作写偏斜（write skew）。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261113200826199.png" alt="写集不相交的两个事务都读了对方将要修改的旧值"></p>
+<blockquote>
+<p>什么业务会因为这样的调度出错？</p>
+</blockquote>
+<p>假设 X、Y 分别表示甲、乙两名医生是否值班，规定至少留一人。初始两人都在岗。乙查到甲在岗，于是把自己的 Y 改成休息。与此同时，甲查到乙在岗，把自己的 X 也改成休息。两人改的是不同记录，两笔事务都提交后却无人值班。按任意串行顺序，第二个人都会看到第一人已离岗，只能留下。</p>
+<p>这种“从同一已提交快照读，提交时排除并发写同一记录”的隔离级别叫作快照隔离（SI）。允许它的系统就可能出现上面的写偏斜。如果业务要求可串行化，一种实现是让读写事务在提交时也验证读集，并让验证和发布按 OCC 的规则协调。医生的出勤状态已经被另一人改过，后验证的一方就要重试。只读事务仍可以读完选定的快照。MVCC 是保留和选择版本的机制，也可以和 2PL 或 OCC 结合。具体的隔离保证取决于读者选择哪个版本、写者在提交前检查哪些冲突。</p>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>执行阶段怎样读写</th>
+<th>提交或中止的依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单版本 OCC</td>
+<td>读已提交记录，记下版本，新值留在私有写集</td>
+<td>提交前协调写者并验证读集，发现冲突就重试</td>
+</tr>
+<tr>
+<td>HTM</td>
+<td>CPU 用缓存跟踪事务访问的内存</td>
+<td>硬件检查冲突并尝试提交，容量不足或外部事件也可能触发回退</td>
+</tr>
+<tr>
+<td>MVCC（此处采用 SI）</td>
+<td>从开始时的快照读取，写入产生新版本</td>
+<td>写者检查并发写写冲突，只读事务可以直接使用快照。可串行化还需处理写偏斜</td>
+</tr>
+</tbody>
+</table>
+<h2 id="两阶段提交与复制状态机">两阶段提交与复制状态机</h2>
+<p>假设银行按姓名分片，Alice 的账户在 A–M 服务器，Zack 的账户在 N–Z 服务器。一次发工资要给两人都入账，协调者（coordinator）通过 RPC 分别调用两个服务器上的 <code>deposit</code>。如果 Alice 已经入账，另一台服务器却在 Zack 入账前崩溃，单独恢复两个本地事务，就可能得到“一笔提交、一笔中止”的结果。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175205687.png" alt="一次发工资通过 RPC 调用两台服务器上的 deposit"></p>
+<p>与单机断电不同，这里可能只有一台机器停止，其他节点还在处理请求。网络也可能只阻断部分节点之间的消息，称为部分故障（partial failure）。跨机器的原子性需要让所有参与者对同一笔事务采用共同的最终决定。</p>
+<h3 id="两阶段提交">两阶段提交</h3>
+<p>参与这笔发工资事务的两个服务器叫作参与者（participant，也称 worker）。协调者负责收集各参与者的准备结果，再决定整笔事务提交还是中止。参与者可以在本地执行计算、暂存更新，但对整笔事务的提交要经过协调。</p>
+<p>两阶段提交（two-phase commit，2PC）把提交过程分成两个阶段。第一阶段是准备，协调者问所有参与者“你是否已经具备提交这笔事务的条件”，参与者回答 YES 或 NO。只有全部 YES，协调者才能决定 COMMIT。任一参与者回答 NO，就决定 ABORT。第二阶段是把这个共同决定通知所有参与者，各自执行并确认。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175204069.png" alt="客户端请求提交后，协调者执行 prepare 和 commit 两个阶段"></p>
+<p>图中编号 1 是客户端请求提交，编号 2、3 才是协议的两个阶段。阴影内的入账操作已经执行到可准备提交的位置。橙色的提交点位于协调者收齐准备结果之后，还要满足下面的持久化条件。</p>
+<h4 id="从本地提交到全局提交">从本地提交到全局提交</h4>
+<p>回想单机的 redo-only 事务。两个新余额 <code>a=8, b=12</code> 先留在内存，一条完整有效的日志持久化后，就可以据此恢复整笔事务。账本数据页可以稍后写回。若日志没有完整写成，事务就没有留下有效的提交依据。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175201408.png" alt="单机提交点在日志持久化时，重启后可据此重做余额"></p>
+<p>直接把这套恢复规则搬到每个参与者，会遇到一个问题。看下图，两台机器完成了日志写，但是还没有提交。coordinator 向两台 server 发送确认消息后收到 yes 并决定提交，但其中一台在收到最终决定前重启。这个时候进行 commit 时，下面一台机器由于重启，前面没有 commit 仍然留在内存中的 log 丢失了，收到 commit 之后仍然处在最初的状态；而上面一台机器则收到 commit 消息而提交了上面一半日志，因此导致只完成了一半的提交。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175210886.png" alt="参与者投 YES 后重启，错误地按未提交的本地事务清理日志"></p>
+<p>因此，参与者在回复 YES <strong>之前</strong>，必须先持久保存 <code>PREPARED</code>、事务 ID，以及恢复本地修改所需的信息。这个状态表示它承诺保留提交能力，接下来等待共同决定。它重启后也要认出这份承诺。</p>
+<p>协调者收齐 YES 后，先将 COMMIT 决定写稳，再通知参与者。这个写入才是全局提交点。参与者收到决定，记录并完成本地提交，随后回复确认。最终结果已决定为 ABORT 时，也要保存相应的决定，按协议让所有参与者完成中止。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175200646.png" alt="参与者先记录 PREPARED，协调者再记录 COMMIT，各自落盘后才发送相应消息"></p>
+<h3 id="消息丢失与崩溃">消息丢失与崩溃</h3>
+<p>这里所有请求都带同一笔事务的 ID。重发 <code>prepare</code> 或 <code>commit</code> 时，接收者按已经记录的状态答复，避免把一次重传当成第二次发工资。</p>
+<h4 id="准备阶段">准备阶段</h4>
+<p>第一种情况是 <code>prepare</code> 在网络中丢失。协调者迟迟收不到该参与者的回答，可以超时后重发。如果一直没有得到全部 YES，它也可以选择中止，此时还没有越过全局提交点。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175202184.png" alt="prepare 丢失后，协调者超时重发"></p>
+<p>再看下图，一台参与者在保存准备记录之前崩溃，另一台已经 PREPARED。协调者在等待期间没有收齐 YES，于是持久保存 ABORT，并通知仍在线的参与者中止。崩溃的节点重启后看到自己没有准备承诺，可以清理这笔尚未准备好的本地事务。两边最终都中止，整次发工资的原子性得到保留。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175203341.png" alt="缺少一张 YES 票时，协调者决定 ABORT，两边最终都中止"></p>
+<blockquote>
+<p>如果参与者已写稳 PREPARED，但 YES 回复丢了，它能在等待超时后自己撤销吗？</p>
+</blockquote>
+<p>它必须继续保留准备状态，并向协调者查询。站在它的角度，协调者既可能因为缺票决定 ABORT，也可能已经从一次重发中收齐 YES、决定 COMMIT。它单凭超时无法区分这两种情况。允许在超时后选择中止的是<strong>尚未作出最终决定的协调者</strong>，已经投出 YES 的参与者须服从最终决定。</p>
+<h4 id="提交阶段">提交阶段</h4>
+<p>COMMIT 已落到协调者的日志里，但发给 A–M 服务器的通知丢了。N–Z 服务器可以先完成提交，A–M 仍停在 PREPARED。协调者超时后重发相同决定，A–M 收到才继续完成。两台机器完成的物理时刻可以不同，它们最终执行的决定必须相同。未完成一侧需要继续保护相关数据，使其他事务不会利用这笔事务的半成品。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175201829.png" alt="COMMIT 通知丢失，A–M 参与者等待重发期间仍保持准备状态"></p>
+<p>若参与者直接在提交阶段崩溃，重启后先查本地日志。已有有效 COMMITTED 记录，就按本地恢复规则补齐修改。若只查到 PREPARED，则恢复为等待决定的状态，带事务 ID 向协调者查询。图中协调者已有 COMMIT，便从记录中重新发送，参与者据此完成提交。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175210393.png" alt="参与者重启后恢复 PREPARED，再向协调者取得提交决定"></p>
+<h4 id="协调者崩溃">协调者崩溃</h4>
+<p>协调者崩溃的位置决定了恢复后还能做什么。</p>
+<p>下图中，它还没有把任何最终决定写入日志。两个参与者都已准备好，只能等待协调者恢复。协调者恢复并检查完整的持久状态，确认没有最终决定后，可以记录 ABORT 再通知所有参与者。参与者在等待期间不能替协调者猜一个决定。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175159169.png" alt="协调者在记录最终决定前崩溃，重启后决定 ABORT"></p>
+<p>如果协调者已写稳 COMMIT，恢复后就必须继续发送 COMMIT。图中 A–M 已经提交，N–Z 还在等待。协调者重启后从日志中找到决定并重发，N–Z 也提交。把后半笔撤销会和前半笔已经生效的工资冲突。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175158789.png" alt="协调者已保存 COMMIT，重启后继续完成尚未结束的提交"></p>
+<table>
+<thead>
+<tr>
+<th>节点恢复时留下的记录</th>
+<th>可以采取的动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>参与者未保存 PREPARED，也未投出 YES</td>
+<td>撤销或丢弃尚未准备好的本地修改</td>
+</tr>
+<tr>
+<td>参与者只有 PREPARED</td>
+<td>保留承诺并查询最终决定</td>
+</tr>
+<tr>
+<td>参与者已有 COMMITTED 或 ABORTED</td>
+<td>按已知结果恢复，并对重发请求返回同一结果</td>
+</tr>
+<tr>
+<td>协调者没有最终决定</td>
+<td>按协议决定中止，记录后通知参与者</td>
+</tr>
+<tr>
+<td>协调者已有 COMMIT 或 ABORT</td>
+<td>继续完成这个决定，补发未确认的消息</td>
+</tr>
+</tbody>
+</table>
+<h4 id="与并发控制配合">与并发控制配合</h4>
+<p>本地事务的锁和验证要持续到全局决定生效。使用持锁到提交的 2PL 时，参与者准备好以后仍保留相关锁，收到 COMMIT 后完成本地修改再释放，收到 ABORT 后撤销再释放。否则其他事务可能读到一笔最终被全局中止的工资。</p>
+<p>使用 OCC 时，参与者在准备阶段验证读集、锁住需要保护的记录，并在投 YES 后保持保护。协调者收集的是这些本地验证与准备结果，再统一决定是否提交。若参与者一投 YES 就释放写锁，等协调者回来时，它先前验证过的依据可能已被其他事务改变。</p>
+<p>检查点也要识别 PREPARED。即使更新页已写回，仍要保留事务身份、准备状态和恢复所需的日志。可以把这些信息完整移入持久的检查点记录，再回收旧日志段。只有最终决定明确、相关结果也有可靠的持久依据后，才能按协议清理未决事务的恢复信息。</p>
+<h3 id="网络分区与-CAP">网络分区与 CAP</h3>
+<p>2PC 允许协调者故障后恢复正确结果，但等待可能很长。若两个区域之间的网络断开，各区域内部的机器却仍能互相通信，就形成了网络分区。看下面的商店，美国区和欧洲区各保存一份库存副本，内容都是“剩 1 件”。这个 1 指的是同一件商品。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175211370.png" alt="两个区域各保存同一件商品的库存副本，区域间链路断开"></p>
+<p>分区可以来自交换机故障、维护或链路损坏。下图的 fat-tree 网络中，交换机分为 Core、Aggregation、Edge 三层，底部每个 pod 里还有多台服务器。被叉掉的链路和交换节点使两组机器之间失去通信路径，各组内部仍可继续运行。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175201040.png" alt="交换网络中的部分节点失效，把机器隔成两组子网"></p>
+<p>跨地域连接还依赖长距离光缆。下面的照片用鲨鱼接触水下电缆的场景说明，线路也有物理损坏的可能。协议需要能够处理通信中断，并判断中断时哪些请求仍有足够的信息可以完成。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175158010.png" alt="水下电缆也可能受到外部物理因素影响"></p>
+<p>CAP 定理讨论这种分区期间的取舍。这里 C 指线性一致性，即操作看起来作用于一份数据，并保持已完成操作先于后来发起操作的实时顺序。A 指每个到达正常节点的请求最终都能得到符合接口约定的完成结果。P 指系统要把节点间可能长期无法通信纳入故障模型。发生分区后，系统无法对所有请求同时兑现前两项保证。</p>
+<p>工程服务还会给请求规定时限，这通常写进 SLO（服务等级目标）。正式的 CAP 可用性只要求最终响应，实际业务还要求响应在可接受的时间内到达。下图两次请求都最终有回复，但右边超过了 deadline，用户可能已经离开。把延迟落在 SLO 内的有效完成请求计入吞吐量，称为 goodput。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175159879.png" alt="同样收到回复，左边在 SLO 内完成，右边已经超过 deadline"></p>
+<h4 id="最后一件商品">最后一件商品</h4>
+<p>美国用户先买下商品，美国区返回成功，库存改为 0。复制消息却被分区挡住，欧洲区仍看到 1。接下来欧洲用户下单，欧洲区若直接按本地值返回购买成功，同一件商品就卖出了两次。若先等另一边确认，则可能一直等到请求超时。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175207666.png" alt="美国区已确认售出，欧洲区随后收到订单却无法获知新库存"></p>
+<p>不能通过一律回答“售罄”来同时获得两种保证。欧洲区此时无法区分美国区已经卖出和美国区根本没有订单这两种情况，必须遵守库存与购买接口的语义。返回“服务暂不可用”则明确表示这次购买尚未得到正常处理。</p>
+<p>下图左侧让两边都按本地库存继续确认，在这个执行中出现超卖。右侧把销售权保留在能够安全决策的一边，另一边暂停处理，守住单份库存的结果。它牺牲的是被暂停一侧的可用性。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175159507.png" alt="分区时两边独立确认导致超卖，暂停一侧则使该侧订单无法完成"></p>
+<p>在前面的事务系统里，2PC 通过让 PREPARED 参与者等待共同决定，优先保住全局提交的安全性。要让整个服务同时具备线性一致性，还须配合本地隔离和正确的读写协议。即使完全没有网络分区，一台协调者宕机也足以阻塞事务，因此还需要想办法让协调服务能够被接替。</p>
+<h3 id="复制状态机">复制状态机</h3>
+<p>复制可以让其他机器在某个节点故障后接管，也可以分担读取并缩短访问距离。GFS 副本和聊天记录缓存都用了复制，但它们对更新时间和结果可见性的要求不同。2PC 协调者的最终决定一旦发布就不能随意更改，因此接替者需要继承已经确定的决定和操作顺序。</p>
+<p>先看一个反例。C1 发出 <code>write(x=1)</code>，C2 发出 <code>write(x=2)</code>。两台服务器收到的请求集合相同，到达顺序却相反，于是一台最终为 1，另一台为 2。后台再合并的乐观复制适合允许暂时不同的状态。协调事务决定时，则要在对外确认前把相关顺序和决定协调好。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175203679.png" alt="同样两次写在两个副本上按相反顺序到达，最后得到不同值"></p>
+<p>复制状态机（replicated state machine，RSM）把每个副本看成按输入更新状态的程序。各副本从相同状态出发，按相同顺序执行相同的确定性操作，就会得到相同结果。图中初值都是 5，依次执行 <code>x += 1</code>、<code>x *= 2</code>，每台机器都会走过 5、6、12。若交换这两个操作，结果会变成 11，因此顺序也是输入的一部分。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175207008.png" alt="三个副本从 5 出发，按同一顺序执行加一和乘二"></p>
+<p>主备复制让主节点（primary）接收请求、选择顺序并分配序号，再把输入发给备节点（backup）。按协议取得足够的复制确认后，主节点才向客户端确认成功。备节点必须按序号执行，先到的后续序号要等缺失记录补齐。读请求也要采用与这一顺序相符的读取规则。若某个操作要用 <code>random()</code> 或 <code>time()</code>，主节点应把选定的随机数或时间作为输入一起复制，各副本据此执行。需要替换失效备机时，还要先把已提交状态传给新成员。</p>
+<h4 id="主节点故障">主节点故障</h4>
+<p>小规模服务可以由管理员决定何时切主。要自动处理，就可以让监控程序接收心跳。下图中客户端平时直接访问 S1，监控器 M 只负责观察。S1 的心跳消失后，M 让 S2 接任，客户端查询 M 得到新地址，再把请求发给 S2。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175202546.png" alt="监控器发现心跳中断后指定 S2，客户端重新查询主节点"></p>
+<blockquote>
+<p>多放几个监控器，各自发现超时就选一个新主，能提高可靠性吗？</p>
+</blockquote>
+<p>若它们独立决策，可能造成脑裂（split brain）。图中 M1 还能收到 S1 的心跳，M2 却因分区收不到，于是 M2 让 S2 接任。原主 S1 继续给一个客户端写入 3，新主 S2 给另一个客户端写入 2，两边都觉得自己有权确认请求。超时能说明消息没按时到达，但无法仅凭这一点确认旧主已停止服务。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175202978.png" alt="M1 和 M2 在分区中作出不同判断，两台服务器各自处理写入"></p>
+<h3 id="View-Server">View Server</h3>
+<p>可以让一个 view server（VS）统一维护配置序列。每个 view 包含单调递增的编号、主节点和备节点列表，客户端查询后缓存当前主节点。图中 view 1 是主 S1、备 S2。S1 失效后，view 2 把 S2 提升为主。S3 补齐状态后，在 view 3 成为 S2 的备机。随后 S2 失效，view 4 再把 S3 提升为主，让已恢复并追上状态的 S1 充当备机。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175209195.png" alt="由 VS 发布的四个 view，以及各节点的主、备、空闲状态变化"></p>
+<p>不过，只有一个 VS 仍然可能有两台机器同时<strong>认为</strong>自己是主。下图中 VS 与 S1 之间断开，VS 发布 view 2 并通知 S2 接任，S1 却还保留 view 1。协议需要保证旧主此时无法继续向客户端确认新的操作。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175206042.png" alt="S2 收到 view 2 后接任，S1 仍停留在 view 1"></p>
+<h4 id="拒绝旧-view">拒绝旧 view</h4>
+<p>在这个主备示例中，主节点处理请求时必须取得备节点接受。转发请求带上 view 编号，备节点只接受当前 view 中正确主节点发来的请求，其他角色也按自己的 view 拒绝不匹配的客户端操作。</p>
+<p>客户端 C 缓存着旧主 S1 的地址，发来一个写请求。S1 按 view 1 转发给 S2，S2 此时已经进入 view 2，因 view 不匹配而拒绝。S1 得不到必要确认，就无法把这次写作为成功操作返回。客户端收到错误后重新查询 VS，再向 view 2 中的主节点 S2 重试。对读请求也要有同样的有效主身份检查，例如转发给备机确认，防止旧主单独返回陈旧数据。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175208550.png" alt="旧主的 view 1 请求被 S2 拒绝，客户端更新配置后向 S2 重试"></p>
+<p>可以把接管边界分为两个时段来理解。</p>
+<table>
+<thead>
+<tr>
+<th>S2 的状态</th>
+<th>S1 收到旧客户端请求时</th>
+<th>客户端已经得知 view 2 时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S2 仍在 view 1</td>
+<td>S2 仍是备机，可以按 view 1 接受 S1 的转发</td>
+<td>S2 尚未安装新 view，会拒绝把自己当作 view 2 主节点的请求</td>
+</tr>
+<tr>
+<td>S2 安装了 view 2</td>
+<td>S2 拒绝 S1 的旧 view 转发，S1 无法取得确认</td>
+<td>S2 可以按新配置接收请求</td>
+</tr>
+</tbody>
+</table>
+<p>对这次交接，关键时刻是 S2 安装 view 2，开始拒绝旧 view。实际接管还须确保它已经取得旧 view 中所有必须保留的状态。新主确定后恢复日志并同步新备机，再开放服务，才把“谁能决定顺序”和“已有顺序从哪里接着执行”连接起来。旧主也须遵守 VS 发布的备机列表，不能因为等不到 ACK 就自行删去备机、独自确认。否则原先用于阻止旧 view 的检查会被绕过。</p>
+<h3 id="哪个副本可以接管">哪个副本可以接管</h3>
+<p>等待所有备机确认，一台慢机或失联节点就能卡住写入。能否少等几台？看下面的例子，S1、S2、S3 起初都保存 <code>x=1</code>。S1 写入 <code>x=2</code>，只收到 S2 的确认便向客户端返回成功，S3 还停在 1。随后 S1 崩溃，VS 恰好选 S3 为新主。客户端在成功写入之后才发起读，却读到 1，已经确认的写入丢了。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175206436.png" alt="S1 只等 S2 确认就回复，接管时却选择了落后的 S3"></p>
+<blockquote>
+<p>接管前先问“谁的日志最新”，就足够了吗？</p>
+</blockquote>
+<p>还要看问了哪些节点。下图只有 S3 回答，VS 没有询问持有新记录的 S2，就直接让 S3 接管。它在已收到的回复里确实最新，却仍遗漏了客户端已经成功提交的第 2 条写。先前确认过写入的集合，必须和接管时实际查询的集合有交集。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175200279.png" alt="写入确认落在 S2，接管查询却只问 S3，两个集合没有交集"></p>
+<h4 id="Quorum-的交集">Quorum 的交集</h4>
+<p>把同一个配置内的全部数据副本数记为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span>，这里包括主节点。一次写向至少 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>w</mi></msub></mrow><annotation encoding="application/x-tex">Q_w</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 个副本保存记录并取得确认，查询或恢复时从至少 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>r</mi></msub></mrow><annotation encoding="application/x-tex">Q_r</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 个副本收集状态。如果</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>Q</mi><mi>r</mi></msub><mo>+</mo><msub><mi>Q</mi><mi>w</mi></msub><mo>&gt;</mo><mi>N</mi><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">Q_r+Q_w&gt;N,
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mpunct">,</span></span></span></span></span></p>
+<p>那么这两个集合必有共同节点。证明可以反过来看，如果它们完全不重叠，合起来就至少需要 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Q</mi><mi>r</mi></msub><mo>+</mo><msub><mi>Q</mi><mi>w</mi></msub></mrow><annotation encoding="application/x-tex">Q_r+Q_w</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">r</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.02691em;">w</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 个不同副本，超过系统总数 N，因此不可能。共同节点会把先前已确认的写带进查询结果。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175204919.png" alt="读写 quorum 的交集条件和三种配置示例"></p>
+<p>在单写者已确定版本顺序的前提下，可以比较这些节点返回的版本。恢复时还要保留完整的日志前缀，按提交规则完成未决操作，防止只有最新编号、却缺少中间的修改。正常读取也要与尚未完成的写入协调，按协议返回已确认可见的状态。交集保证解决的是能否接触到持有记录的节点，版本顺序、提交规则和 view 切换共同决定整套服务的行为。</p>
+<table>
+<thead>
+<tr>
+<th>副本总数</th>
+<th style="text-align:right">写入等待的副本数</th>
+<th style="text-align:right">查询的副本数</th>
+<th>取舍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">2</td>
+<td>写入多等几台，查询只需等两台</td>
+</tr>
+<tr>
+<td>5</td>
+<td style="text-align:right">2</td>
+<td style="text-align:right">4</td>
+<td>写入可以较早确认，查询要覆盖更多节点</td>
+</tr>
+<tr>
+<td>N</td>
+<td style="text-align:right">N</td>
+<td style="text-align:right">1</td>
+<td>任取一个副本都能包含已完成的写，写入则必须等全部副本</td>
+</tr>
+</tbody>
+</table>
+<p>表里统计的是数据副本总数，主节点持久保存的那份也可以计入写集合。如果说“主节点还要等 W 台备机”，就要先换算为同一套总副本计数，再应用交集条件。例如总共 3 个副本，主节点加 1 台备机确认等于写 quorum 为 2，接管查询也至少需要覆盖 2 个副本。若只剩一台机器能够回答，它可能正是没有收到已确认写入的那一台，此时继续等待才能避免丢数据。</p>
+<blockquote>
+<p>如果我们的机器比较稳定，不会频繁出现 primary 挂掉的情况，那么可以将 w 设置为一个较小的值——这样同步会很快，但是当 primary 挂掉的时候，较大的 r 会导致较长的切换时间；反过来如果 primary 可能频繁地挂掉，则可以调大 w 的值，让较小的 r 在 primary 出问题时可以快速切换。</p>
+</blockquote>
+<h4 id="接管时恢复日志">接管时恢复日志</h4>
+<p>把前面的要求合起来，一次主备切换需要按顺序完成以下工作。</p>
+<ol>
+<li>当前主节点为请求分配序号，复制相应日志，取得写 quorum 的确认后再向客户端确认。</li>
+<li>VS 确定新 view，协议阻止旧 view 再确认操作。新配置按规定从旧配置中收集足够的状态，使恢复集合覆盖已确认的写入。</li>
+<li>从收集到的日志中恢复完整前缀，补齐所缺记录。选择接替者时比较日志及其已确认状态，不能只看哪个节点回复得快。</li>
+<li>把恢复的状态同步到新配置的备机，建立新的复制关系，然后从这个共同状态继续提供服务。</li>
+</ol>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175205294.png" alt="主节点复制确认、接管时收集日志并恢复副本的步骤"></p>
+<p>图中给出的恢复耗时约为 30 ms，体现的是快速故障恢复的目标或特定部署的结果。恢复量和网络速度会影响同步时间，心跳多久才判为失联也会影响客户端实际等待多久。备机一直追踪日志，接管时需要补的内容就可能很少。若要承受机器重启后丢失内存，还须把需要保留的日志持久化，或依赖足够多仍存活的副本。</p>
+<p>最后，VS 本身也可能失效。若当前主备仍能安全工作，它们可以继续处理已有 view 的请求，但需要改选主节点或增加备机时，就缺少新的权威配置。要让 VS 也有可接替的副本，必须让这些副本对 view 的先后和内容达成一致。Paxos、Raft 等共识协议用来解决这类复制决定的问题，也能用于复制 2PC 协调者的最终决定。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114175209799.png" alt="数据主备仍在运行时，单个 view server 失效会阻碍新的配置决定"></p>
+<h2 id="Paxos-与-Raft">Paxos 与 Raft</h2>
+<p>前面的 View Server 决定哪台机器是主节点。若 VS 自身也有多个副本，它们就要对“下一届 view 是什么”作出共同决定。一台说 S1 是主，另一台说 S2 是主，主备协议就失去了共同依据。共识协议解决的正是这个问题。Paxos 先让一组节点选定一个值，再扩展为一串决定。Raft 直接组织一份可复制、可换主的日志。</p>
+<h3 id="先决定一个值">先决定一个值</h3>
+<p>Lamport 用 Paxos 岛议会讲解这个问题。议员可以中途离场，信使也可能丢失消息，但每位议员都保存自己的账本。对于第 37 号法令，已经通过的内容需要一直保留。若每个人只把最先听到的提议记下来，S1 可能写 x，S2 写 y，S3 写 z，这样就得不到共同的法令。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184753574.png" alt="议会要为第 37 号法令选择共同内容，独自采用最先听到的提议会产生三个结果"></p>
+<p>把议员换成服务器，法令内容换成待决定的值 V，账本换成磁盘，多数议员换成 quorum，就得到单值共识的模型。允许不同客户端向不同节点提出不同候选值，协议最终为这一个实例选定一个值，称为 Single-Decree Paxos。Paxos 以及前面使用的逻辑时钟都出自 Lamport 的分布式系统研究。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184750471.png" alt="议会角色和计算机系统角色的对应，以及三个客户端提出不同值"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184749054.png" alt="Lamport 的图灵奖介绍"></p>
+<p>这里考虑节点崩溃后可重启、消息可丢失或延迟、网络可分区的情况。安全性要求同一实例一旦选定 V，后续就始终保留 V。离线节点可以稍后追上，投票时必须保留影响后续决定的持久状态。要继续取得进展，则需要一个可通信的多数派，以及足够稳定的提议者和消息传递。三台服务器中，两台能继续协作时，第三台可以暂时离线。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184745328.png" alt="三台服务器中的两台形成多数派，失效节点稍后恢复"></p>
+<h4 id="多数派与提案号">多数派与提案号</h4>
+<p>如果有一个永远可用的写者，让它选择 V 就很简单。一个初步办法是先申请写入资格。图中 S1 获得 S1、S2 的同意，它们随后拒绝把同一份资格再授给 S3，因此 S3 只有一票。S1 写出 V1 后，另一个多数派查询也会碰到保存 V1 的节点，因为三个节点里的两个多数派必然相交。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184748442.png" alt="多数派批准一个写者后，另一申请者无法再拿到同一份独占授权"></p>
+<blockquote>
+<p>如果拿到资格的 S1 在写值之前崩溃，其他节点怎样继续？</p>
+</blockquote>
+<p>给每次申请附一个更大的提案号。接受过编号 1 的承诺，并不妨碍节点以后对编号 2 作出新承诺。图中 S1 在取得编号 1 的授权后退出，S3 用编号 2 从 S2、S3 获得多数同意，就可以继续推动协议。已经承诺编号 2 的节点会拒绝迟到的编号 1 写入。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184749475.png" alt="S1 取得编号 1 的承诺后崩溃，S3 用编号 2 重新取得多数派承诺"></p>
+<p>一个节点可以同时承担 proposer、acceptor、learner 三种角色。proposer 发起提案并驱动两轮交互，acceptor 保存承诺和已经接受的提案，learner 得知共同决定后，将它交给上层服务执行。在图中 S1 负责处理当前请求，但 S2、S3 也具有成为提议者的能力。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184755957.png" alt="每台机器都可以运行 proposer、acceptor 和 learner"></p>
+<h4 id="Prepare-与-Accept">Prepare 与 Accept</h4>
+<p>第一轮是 Prepare。提议者选择编号 N，向 acceptor 发送申请。acceptor 记录自己承诺过的最大编号 <code>Nh</code>。新申请的 N 至少达到当前承诺时，它才更新并持久化 <code>Nh</code>，然后返回 promise。这个承诺的含义是，以后拒绝编号小于 N 的 Accept。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184754221.png" alt="Prepare 提升各 acceptor 的 Nh，并向提议者返回承诺"></p>
+<p>提议者收到多数派对同一编号 N 的承诺，才进入第二轮 Accept，发出 <code>(N,V)</code>。acceptor 再次检查 N 是否低于当前 <code>Nh</code>，因为两轮之间可能已有更高编号的申请。检查通过后，持久保存已接受的编号和值，再回复 <code>accept-ok</code>。当同一提案被多数派接受，V 就被选定。提议者收集到多数确认后，可以向 learner 广播 <code>decide</code>，让上层得知结果。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184744235.png" alt="Accept 被多数派持久保存后，向 learner 通知已选定的值"></p>
+<p>不过，只有“更大编号优先”还不够。假设 S1、S2 已经接受了 <code>(1,V1)</code>，V1 因而被选定。随后 S3 用编号 2 从 S2、S3 取得承诺。如果它可以随意写自己的 V2，S2、S3 又会形成一个接受 V2 的多数派。同一个实例先选定 V1、再选定 V2，安全性就被破坏了。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184759256.png" alt="更高编号若随意采用新值，会让同一实例先后选定 V1 和 V2"></p>
+<h3 id="继承已有提案">继承已有提案</h3>
+<p>每个 acceptor 除了 <code>Nh</code>，还保存最高的已接受提案号 <code>Na</code> 和对应值 <code>Va</code>。回复 Prepare 时，把 <code>(Na,Va)</code> 一起返回。提议者收齐一组多数派回复后，找出其中最大的 <code>Na</code>，采用它对应的 <code>Va</code>。只有这些回复全部表示从未接受过值，提议者才能自由选择本轮 V。</p>
+<p><code>Nh</code> 和 <code>Na</code> 可以不同。收到更高编号 Prepare 时只提高承诺，旧的已接受提案仍保留。于是图中节点可以同时保存 <code>Nh=2</code> 与 <code>Na=1, Va=V1</code>，表示“今后只接受编号至少为 2 的提案，但我上次真正接受的是编号 1 的 V1”。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184752355.png" alt="更高编号 Prepare 返回已有值，新提议者把它带入自己的 Accept"></p>
+<blockquote>
+<p>S1 已经提议 <code>foo</code> 后崩溃，S3 想写 <code>bar</code>，第 2 轮可以改写成 <code>bar</code> 吗？</p>
+</blockquote>
+<p>图中 S1、S2 已接受 <code>(1,foo)</code>。S3 发出编号 2 的 Prepare，收到自己的空记录以及 S2 的 <code>(1,foo)</code>。这组回复中，最高的已接受编号是 1，所以 S3 必须把本轮值改为 <code>foo</code>。它新提出的是 <code>(2,foo)</code>，本轮成功后 S2、S3 都保存 <code>Na=2, Va=foo</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184748127.png" alt="S1 崩溃后 S3 想改写 bar，需要先检查 Prepare 的回复"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184747731.png" alt="S2 在 promise 中返回 (1,foo)，S3 因而继续提议 foo"></p>
+<p>多数派的交集让后来的 Prepare 能遇到至少一个保存过已选定值的节点。但交集节点也可能已经接受过更高编号的提案，因此协议取的是回复中最高 <code>Na</code> 的值。按提案号归纳，若较低编号的 V 已被选定，后续合法提案就都要继承 V，更高编号只能继续确认这个共同值。</p>
+<h4 id="节点保存什么">节点保存什么</h4>
+<table>
+<thead>
+<tr>
+<th>状态</th>
+<th>含义</th>
+<th>保存要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Nh</code></td>
+<td>已承诺的最高提案号，今后拒绝比它更小的请求</td>
+<td>回复 promise 前持久化</td>
+</tr>
+<tr>
+<td><code>Na, Va</code></td>
+<td>最高的已接受提案号及其值</td>
+<td>回复 accept-ok 前一起持久化</td>
+</tr>
+<tr>
+<td><code>Mn</code></td>
+<td>本提议者这一轮使用的编号</td>
+<td>重启后可以重新生成，但必须保证新编号合法且不复用</td>
+</tr>
+<tr>
+<td><code>V</code></td>
+<td>本轮准备发送的值，经过 Prepare 回复选择</td>
+<td>可在内存中重新计算</td>
+</tr>
+</tbody>
+</table>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184757677.png" alt="每个节点磁盘上的 Nh、Na、Va 与内存中的本轮 Mn、V"></p>
+<p>下面保留了 Prepare 的伪代码。同一编号请求的重传可以再次返回 promise，因而代码用 <code>N &lt; Nh</code> 作为拒绝条件。发送新一轮申请时，提议者则选择超过自己已知承诺的编号。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184753920.png" alt="Prepare 的原始伪代码及尚未接受值时的节点状态"></p>
+<p>再看 Accept 与 decide 的伪代码。上半部分的“是否有旧值”，应根据<strong>本轮收集到的多数派回复</strong>判断，选取其中最高 <code>Na</code> 对应的值。Accept 到达时如果 N 已低于 <code>Nh</code>，就返回拒绝。否则更新并持久化 <code>Na=N, Va=V, Nh=N</code>。提议者只统计与本轮编号和值对应的确认，并向 learner 通知这一个值。失败时等待后用更高编号重试。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184743490.png" alt="取得多数 promise 后选值，发送 Accept，并在多数确认后通知决定的伪代码"></p>
+<blockquote>
+<p>如果 S1 和 S3 都选择编号 1，会怎样？</p>
+</blockquote>
+<p>acceptor 只凭编号检查承诺时，无法区分两份 <code>(1,foo)</code> 和 <code>(1,bar)</code>。因此编号必须全局唯一。同一提案号也必须始终对应同一个值。可以用 <code>(counter, node_id)</code>，先比较 counter，再用节点 ID 打破平局。图里的 <code>S1:19</code> 表示 S1 的计数 19。重启后重新读取持久承诺、提高计数，仍须避免再次使用已经用过的编号。</p>
+<h4 id="选定与故障">选定与故障</h4>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184754543.png" alt="值何时选定，以及 acceptor、proposer 在不同阶段失效的问题"></p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>结果和原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>收到多数 promise 时，V 选定了吗？</td>
+<td>还在准备阶段。promise 只约束后续接受的编号，并返回已有提案</td>
+</tr>
+<tr>
+<td>多数节点收到 Accept 时呢？</td>
+<td>要等这些节点检查通过并持久接受同一 <code>(N,V)</code>。迟到且被拒绝的 Accept 不计入多数</td>
+</tr>
+<tr>
+<td>提议者收到多数 accept-ok 时呢？</td>
+<td>它此时获知 V 已选定。真正选定的时刻可以更早，即最后一个必要 acceptor 持久接受时</td>
+</tr>
+<tr>
+<td>acceptor 发完 promise 后崩溃？</td>
+<td>重启后从 <code>Nh</code> 恢复承诺，继续拒绝较小编号。其余节点若仍能构成多数，可继续</td>
+</tr>
+<tr>
+<td>acceptor 收到 Accept 后崩溃？</td>
+<td>持久接受之前崩溃，该节点还不能计作已接受。持久接受之后崩溃，重启仍能在 Prepare 回复中报告 <code>Na,Va</code></td>
+</tr>
+<tr>
+<td>proposer 发送 Accept 到一半时崩溃？</td>
+<td>该值可能已选定，也可能只有少数接受。新提议者重新 Prepare，并按最高 <code>Na</code> 选值，无需先猜测旧 proposer 是否已经收齐 ACK</td>
+</tr>
+</tbody>
+</table>
+<p>少数接受过的值也可能被新提案继续采用，因为新提议者仅凭自己的回复集合无法排除它已在别处组成多数。客户端还没收到成功答复，也不能据此推断“这一实例没有作出决定”。</p>
+<blockquote>
+<p>只要多数机器活着，Paxos 就一定马上能结束吗？</p>
+</blockquote>
+<p>两个 proposer 可以交替提出更高编号。P1 刚取得编号 1 的 promise，P2 就用 2 提高承诺，使 P1 的 Accept 被拒绝。P1 再用 3 抢先，P2 的 2 又被拒绝。这不会产生两个不同决定，却可能一直没有新决定。活性通常依赖消息最终能及时到达，并让某个提议者稳定地完成两轮，例如用退避和 leader 协调减少相互抢占。</p>
+<h3 id="Multi-Paxos">Multi-Paxos</h3>
+<blockquote>
+<p>单值 Paxos 可以实现一个持续换主的 View Server 吗？</p>
+</blockquote>
+<p>先回顾一下 paxos 的协议：对于一个 paxos 实例，可能会有不同的 propose 先后抵达。但是在每一次提出 propose 之后，proposer 会看到写集和读集交集中的最新 Na 和 Va。paxos 要求如果看到的 Va 非空，就必须把 V 设置成当前的最新 Va。因此可以得知，如果已经选定了一个值，就无法再进行更改了。但是实际作为 view server 工作时，view 随时会因为 primary 机器挂掉而更新，选定之后即不能修改的单个 paxos 实例不能满足这个要求。</p>
+<p>一个实例可以决定一届 view。例如实例 1 决定主 A、备 B 和 C。A 故障后，实例 2 再决定主 B、备 C。已经选定的实例 1 保留原值，新的配置写进新的实例。图中 view 编号与 Paxos 实例号一一对应，记作一串历史。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184759594.png" alt="一届 view 对应一个 Paxos 实例，故障后用新实例决定下一届配置"></p>
+<p>把每个实例看成复制日志中的一个位置，就得到 Multi-Paxos。实例 0 决定 <code>add</code>，实例 1 决定 <code>cmp</code>，实例 2 决定后续命令。状态机按位置从小到大执行各实例已经选定的值，因而可以复制任意确定性计算。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184751420.png" alt="单值 Paxos 选定一项，Multi-Paxos 为多个日志位置分别达成共识"></p>
+<h4 id="日志位置冲突">日志位置冲突</h4>
+<p>最直接的实现是让 S1 先选一个位置，再针对它运行单值 Paxos。图中前面已有位置 0、1、2，客户端新命令是 <code>yyy</code>，S1 选择位置 3。若 Prepare 的多数回复都为空，S1 可以提议 <code>yyy</code>，再由多数 Accept 选定。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184756645.png" alt="S1 为位置 3 运行 Prepare、Accept 和 decide，写入 yyy"></p>
+<p>若 S2、S3 已经为位置 3 接受过 <code>zzz</code>，S1 重新申请时就必须按回复继承 <code>zzz</code>。它完成这一轮，选定的是该位置已有的候选值，自己的命令 <code>yyy</code> 还没放进去。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184751733.png" alt="位置 3 已接受 zzz，S1 需要先继续确认 zzz"></p>
+<p>S1 随后选位置 4，再运行协议，才把 <code>yyy</code> 放进下一格。多个节点都在抢同一格时，可能要反复换位置。这与同一个位置内提案号互相抢占是两个层面的冲突。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184757003.png" alt="S1 换到位置 4，为尚未写入的 yyy 再运行一轮 Paxos"></p>
+<h4 id="稳定-leader">稳定 leader</h4>
+<p>即使没有竞争，每项命令都单独 Prepare、Accept，取得决定也要两轮 RPC 往返。下图中固定由 S1 发起，位置 2、3 仍各自走一遍完整流程。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184758938.png" alt="稳定 leader 为每项命令单独 Prepare 和 Accept，平均每项两轮往返"></p>
+<p>可以让 S1 的一次 Prepare 覆盖从位置 2 开始的后续位置，acceptor 对这些位置承诺同一个编号 <code>S1:19</code>。在承诺有效期间，后续新命令只需为相应位置发送 Accept，常态成本降为每项一轮往返。新 leader 接手时，仍要收集并继承被覆盖位置中已经接受的值，按编号恢复各位置的决定。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184752825.png" alt="一次 Prepare 为后续位置建立承诺，每项命令随后直接执行 Accept"></p>
+<blockquote>
+<p>Multi-Paxos 必须永远只有一个 proposer 吗？</p>
+</blockquote>
+<p>安全规则允许多个 proposer 同时尝试，但它们可能争抢提案号、争抢日志位置并反复重试。固定 leader 让客户端集中提交，由它安排位置，主要是在稳定运行期间减少这些冲突。leader 更替仍由底层 Paxos 承诺和选值规则保护。</p>
+<p>真正实现一个复制服务，还要补上故障检测、leader 选举、状态恢复和日志推进。Paxos 的单值规则已经定义得很清楚，Multi-Paxos 的工程方案则需要明确这些机制怎样衔接。Raft 的作者和 Chubby 的实现者都讨论过，从单值协议到完整系统之间存在这些实现工作。</p>
+<p>看下图，位置 3 的 <code>yyy</code> 已经出现，位置 2 却还是空的。状态机需要按顺序执行，所以不能越过 2 直接执行 3。恢复者要先对位置 2 运行 Paxos，若存在必须继承的值就补回它，若可以自由选值则可以用不改变状态的 no-op 填空。这个 no-op 也要经由共识选定。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184748752.png" alt="位置 2 的空洞挡住了位置 3 的顺序执行"></p>
+<h3 id="Raft-的复制日志">Raft 的复制日志</h3>
+<p>Raft 直接定义复制日志服务，把问题分成 leader 选举、日志复制和提交安全性。每台服务器有自己的日志和状态机，客户端命令先进入日志，共识模块决定哪些位置已提交，状态机再按序执行。短期内某个 follower 可以少几项，但已经提交并执行的历史必须一致。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184754866.png" alt="Raft 共识模块复制命令日志，各状态机按相同顺序执行"></p>
+<p>Raft 把节点状态和两个主要 RPC 的处理规则放在一起，便于按完整协议实现。etcd 使用 Raft 复制元数据，Kubernetes 的控制面依赖 etcd 保存状态，TiDB、CockroachDB 等系统也将共识复制用于各自的数据分片。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184758337.png" alt="采用 Raft 或相关共识复制设计的系统实例"></p>
+<h4 id="角色与任期">角色与任期</h4>
+<p>Raft 节点在任一时刻处于 follower、candidate、leader 三种状态之一。follower 平时响应 leader 的日志请求及 candidate 的投票请求。它长时间收不到有效的 leader 消息，就成为 candidate 发起选举。获得多数票才成为 leader，随后接收客户端命令并向其他节点复制。看到更高任期时，原 leader 或 candidate 更新自己的任期并退回 follower。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184758034.png" alt="三种角色的转换，以及正常情况下主动发送请求的一方"></p>
+<p>任期（term）是递增的逻辑编号，每个节点记录自己看到的 <code>currentTerm</code>。一次新选举会进入更高任期，可能选出一个 leader，也可能因分票而没有赢家。图中 term 3 只有选举，下一轮 term 4 才产生 S3。任期并非固定长度的时间段，各节点知道最新任期的时刻也可以不同。安全要求是同一 term 最多选出一个 leader。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184758634.png" alt="任期中的选举和正常运行阶段，分票的 term 3 没有 leader"></p>
+<p>leader 定期发送心跳。follower 在选举超时内没有收到可接受的 leader 消息，就自己成为 candidate 并发起新一轮选举。常见的教学示例把超时设在 100–500 ms 一类范围，实际数值要结合网络往返和调度延迟选择。节点通常只在收到有效的 leader 请求，或按协议授出票时重置选举计时器，避免过期消息持续推迟选举。</p>
+<h4 id="投票规则">投票规则</h4>
+<p>candidate 先递增 <code>currentTerm</code>、投自己一票，并持久保存本轮状态，然后向其他节点发送 <code>RequestVote</code>。收齐包括自己在内的多数票，就当选。若它先收到当前任期合法 leader 的消息，就返回 follower。若收到更高 term 的请求或回复，则先更新任期。</p>
+<p>每个节点在一个 term 内最多投给一个 candidate。五台机器中，一个候选者拿到三票后，其他候选者最多拿到剩余两票。多数派相交配合“每任期一票”，就排除了同一任期的两个赢家。对同一 candidate 的重复投票请求可以重发原来的答复。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184800278.png" alt="五台机器中三票已经投给同一候选者，剩余两票无法组成另一个多数派"></p>
+<p>多个 candidate 也可能同时开始，假如有三台机器，一个 leader 挂掉之后剩下两个 candidate 几乎同时开始投票并各自投给自己一票，这种情况下就会导致无法选出 leader，且会一直在这种情况下重试。Raft 给各节点使用独立随机的选举超时，例如在 <code>[T, 2T]</code> 内重新取值。下一轮更早超时的节点就有机会在其他节点开始竞争前收齐多数票。它减少持续碰撞，进展仍需要一个能够通信的多数派。</p>
+<blockquote>
+<p><code>currentTerm</code> 和 <code>votedFor</code> 哪些需要持久化？</p>
+</blockquote>
+<p>两个都需要。图中 term 2 的 S1 先得到 S1、S2、S3 的三票。S3 重启后 如果忘了自己已投给 S1，便可能又投给 S5，后者再加上 S4 和自己的票也得到三票。同一任期就出现了两个 leader。因此投票必须先记录到稳定存储，再回复 <code>voteGranted</code>。进入更高 term 时，按新任期重新记录 <code>votedFor</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184747346.png" alt="选举状态表及 S3 丢失投票记录后在同一任期重复投票的反例"></p>
+<p>下面的 RequestVote 伪代码先展示任期和投票对象的检查。实现中，发现更高 term 时应退回 follower，把新任期的 <code>votedFor</code> 初始化为空，再判断是否授票。较旧 term 的请求被拒绝，回复带上本机最新 term。完整的投票规则还要比较候选者日志是否足够新，这个条件会在提交安全性的反例里用到。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184759893.png" alt="RequestVote 的参数、返回值和任期投票检查伪代码"></p>
+<h3 id="复制与修复日志">复制与修复日志</h3>
+<p>一条日志由 index、term 和 command 标识。index 是它在日志中的位置，term 是创建它的 leader 所在的任期。两者作用不同。例如下图 index 4 属于 term 2，index 5 至 8 都属于 term 3。每个节点把日志持久保存，重启后才能继续参与协议。提交表示该项已经得到协议保护，此后的合法 leader 都必须保留它。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184749809.png" alt="leader 与几个 follower 的日志位置、任期和命令"></p>
+<p>客户端把命令 <code>xxx</code> 交给 S1，S1 在自己的日志末尾追加，向 follower 发送 <code>AppendEntries</code>。follower 检查并持久保存后回复。若它是当前任期的条目，并满足后面介绍的选举与提交规则，leader 获得多数确认就可以推进 <code>commitIndex</code>，按序把命令交给状态机执行，再回复客户端。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184755205.png" alt="客户端命令写入日志、复制成功、执行并回复的正常时序"></p>
+<p><code>commitIndex</code> 表示已提交的最大连续位置。leader 会把它随 AppendEntries 或心跳带给 follower，follower 据此执行已经收到的已提交条目。三节点集群中，leader 自己和一个 follower 已经能组成多数，第三台慢机可以继续追赶。图中画出了全部回复的过程，关键条件是达到多数派。RPC 可以重发，follower 依靠 index 和 term 识别已经有的条目。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184757363.png" alt="落后节点通过重试补齐日志，多数派已确认的命令可以先提交"></p>
+<h4 id="日志为什么会分叉">日志为什么会分叉</h4>
+<p>旧 leader S1 被网络分区隔在一边，尚不知道另一边已经选出 term 2 的 S3。客户端 A 仍能联系 S1，于是 S1 在 index 3 本地追加 term 1 的 <code>xxx</code>。另一边 S3 追加 term 2 的 <code>shi</code>、<code>ret</code>，并复制给 S2。S1 的本地追加尚未获得多数，不能据此向客户端确认已经提交。网络恢复后，这段未提交的后缀需要按新 leader 的历史修复。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184747032.png" alt="旧 leader 和新 leader 分别追加不同命令，产生日志后缀分叉"></p>
+<p>Raft 维持日志匹配性质。如果两个节点在同一个 index 上有相同 term 的条目，它们在这一项中保存相同命令，之前的全部日志也相同。图中两台机器的 index 5 都是 term 3 的 <code>jmp</code>，所以前 5 项一致。index 6 的任期不同，可以属于尚未协调的后缀。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184751110.png" alt="相同 index 和 term 的条目具有相同命令与相同日志前缀"></p>
+<h4 id="检查前一项">检查前一项</h4>
+<p>leader 发送一批新条目时，还附上它们之前一项的 <code>prevLogIndex</code> 和 <code>prevLogTerm</code>。follower 只有在相同位置找到相同 term，才接受后续追加。图上半部分的前一项都是 index 4、term 2 的 <code>mov</code>，因此可接上 term 3 的 <code>jmp</code>。下半部分 follower 在 index 4 保存的是 term 1 的 <code>shl</code>，前缀对不上，就先拒绝。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184750796.png" alt="前一项匹配时接受追加，前一项 term 不匹配时拒绝"></p>
+<p>这也说明了日志匹配性质怎样逐步维持。开始时日志为空，公共前缀一致。一次成功追加先确认前一项，通过已有的前缀一致性，再把同一 leader 发来的条目接上去。同一 term 只有一个 leader，而 leader 对自己的同一日志位置只写一条命令，因此新增的相同 index、term 也对应同一命令。</p>
+<p>leader 为每个 follower 保存 <code>nextIndex</code>，表示准备从哪个位置继续发送。下面第一次想发 index 5，先检查 <code>prevLogIndex=4</code>，遭到拒绝。leader 将该 follower 的 nextIndex 退到 4，改用 index 3 作前一项，成功后补上 index 4 的 <code>mov</code>，再补 index 5 的 <code>jmp</code>。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184755623.png" alt="一次拒绝后退回公共前缀，再依次补齐 mov 和 jmp"></p>
+<p>如果分叉更长，简单实现会逐次后退，直到找到匹配位置。下图两个 follower 各有自己的 nextIndex，修复进度可以不同。遇到相同 index、不同 term 的冲突条目时，才删除该冲突位置及其后的旧后缀，再安装 leader 的新条目。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184745647.png" alt="分别维护各 follower 的 nextIndex，连续拒绝时逐步向前查找公共前缀"></p>
+<p>下面的 AppendEntries 伪代码省略了一些返回与状态更新。处理旧 term 请求时，拒绝后应立即返回。看到更高 term，则更新任期并退回 follower。前一项缺失或任期不匹配时也立即拒绝。只有前缀检查通过，才处理随消息到来的新条目。已经匹配的条目保留，空心跳也沿用前缀检查，不能无条件截掉 follower 的所有后缀。持久写好新增日志后再答复成功，并按 leader 的提交位置推进本地执行。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184744625.png" alt="AppendEntries 的字段、前缀检查与日志修复伪代码"></p>
+<h3 id="Raft-何时能提交">Raft 何时能提交</h3>
+<p>恢复日志会覆盖未提交的冲突条目，所以“某项已经写入磁盘”和“这项已经提交”还要分开判断。安全要求是，leader 一旦决定提交某项，以后所有合法 leader 的日志都必须包含它。新 leader 在自己的日志末尾追加命令，再用这份历史修复 follower。</p>
+<blockquote>
+<p>index 4 已经复制到 S1、S2、S3，五个节点中有三个保存了它，就能确定它永远不会被覆盖吗？</p>
+</blockquote>
+<p>先看只按任期和一票规则选举、尚未限制候选日志的错误版本。term 2 的 S1 已把 index 4 复制给 S2、S3，随后崩溃。S5 的日志只有前两项，如果它仍能在 term 3 拿到多数票，就会在 index 3 写入自己的新命令，并用这份更短的历史覆盖其他副本的冲突后缀。index 4 因此丢失。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184750149.png" alt="index 4 的 term 2 条目已经存在于五台机器中的三台"></p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184745988.png" alt="缺少候选日志检查时，落后的 S5 当选后覆盖了原先的多数副本"></p>
+<h4 id="候选日志的比较">候选日志的比较</h4>
+<p>选举时要把 <code>lastLogTerm</code> 和 <code>lastLogIndex</code> 一起带进 RequestVote。投票者比较候选者和自己的日志末项。先比最后一项的 term，较大的更新。term 相同时再比 index，<strong>较长的更新</strong>。候选者的这两个字段至少与投票者一样新，才具备拿到这一票的条件。</p>
+<p>下图上半部分留下的问题是，S1 故障后，该让谁继承 index 4？如果 S4 或 S5 的最后一项落后于 S2、S3，它们就会被这些节点拒绝，拿不到三票。下半部分给了两个具体比较。</p>
+<ul>
+<li>Case A 中 S1 的任期序列是 <code>[1,1,2,2,2]</code>，S2 是 <code>[1,1,2,2]</code>。最后 term 同为 2，S1 的最后 index 为 5，比 S2 的 4 大，因此 S1 更新。</li>
+<li>Case B 中 S2 的任期序列变成 <code>[1,1,2,3]</code>。它最后 term 为 3，高于 S1 的 2，因此 S2 更新，尽管它只有 4 项。</li>
+</ul>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184746316.png" alt="限制候选者日志，以及两组 lastLogTerm、lastLogIndex 比较题"></p>
+<p>加上这条投票条件，原例中的 S4、S5 无法取代持有已确认条目的节点。S2 或 S3 可以当选，随后把 index 4 带进新任期。多数派接受与多数派选举之间的交集，结合日志匹配性质，使提交过的当前任期条目持续留在后续 leader 中。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184756306.png" alt="S4、S5 因日志落后被拒绝，持有 index 4 的 S3 当选"></p>
+<p>这里的多数派一律按全部服务器计数，leader 自己的持久副本也算一份。五台服务器的多数是三台，不能把“多数 follower”和“多数服务器”混用。</p>
+<h4 id="旧任期条目的反例">旧任期条目的反例</h4>
+<p>还要检查该条目属于哪个任期。下面 S1 当前处于 term 4，正在把 index 3 上的 <strong>term 2</strong> 条目补到多数派。它自己的 index 4 已有一条 term 4 日志，但目前只有 S1 保存了这一项。S5 则保存着另一条分支，末尾三项的 term 都是 3。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184752044.png" alt="term 4 的 S1 补齐旧条目，S5 的日志末项却属于 term 3"></p>
+<p>按时间顺序看，下图发生了这些变化。</p>
+<ol>
+<li>term 2 时，index 3 的旧条目仅到达 S1、S2，尚未获得五台机器中的多数确认。</li>
+<li>之后的分区中，S5 在 term 3 当选，并在自己的日志中追加 term 3 条目，但这些条目也尚未形成提交。</li>
+<li>S1 恢复联系后，在 term 4 当选。它在本地追加 term 4 的 index 4，并将旧的 term 2、index 3 补给 S3。至此 S1、S2、S3 都有 index 3 的旧值。</li>
+<li>若 S1 此时再次崩溃，其他节点都还没拿到它的 term 4 条目。S5 发起 term 5 选举，日志末项的 term 3 比 S2、S3 的 term 2 新，仍有机会取得多数票。它接任后就会用自己的 term 3 条目覆盖 index 3。</li>
+</ol>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184753231.png" alt="旧 term 2 条目后来补到多数派，仍可能被 S5 的后续任期覆盖"></p>
+<p>因此，新 leader 不能仅凭旧条目现在到了多数派，就直接认定它提交。要让日志中的旧前缀也获得提交保护，可以继续复制<strong>当前任期的一条后续条目</strong>。图中 S1 把 index 4、term 4 也复制到 S1、S2、S3。这时，S5 仅有 term 3 的末项，无法再从这些节点取得选票。index 4 一旦提交，日志匹配性质也保护了它之前的 index 3。</p>
+<p><img src="https://acannedfish-img-1399263106.cos.ap-shanghai.myqcloud.com/blog/20261114184746682.png" alt="当前 term 4 的 index 4 获得多数确认后，连同之前的 index 3 一起提交"></p>
+<p>完整的计数规则是，leader 找到一个位置 N，确认包括自己在内的多数服务器已持久保存至少到 N 的匹配日志，并且 <code>log[N].term == currentTerm</code>，才凭这次多数确认将 <code>commitIndex</code> 推进到 N。随后按序执行直到 N 的所有条目。如果新任期暂时没有客户端命令，leader 也可以追加一条本任期的 no-op，让旧前缀通过同样的规则获得确认。</p>
+<table>
+<thead>
+<tr>
+<th>要判断的事情</th>
+<th>所需条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Paxos 某个值已选定</td>
+<td>同一实例中的同一提案 <code>(N,V)</code> 已被多数 acceptor 持久接受</td>
+</tr>
+<tr>
+<td>Raft 某节点当选</td>
+<td>本轮取得包括自己在内的多数票，投票者每任期只投一个候选者，并检查其日志足够新</td>
+</tr>
+<tr>
+<td>Raft leader 按副本数推进提交</td>
+<td>匹配日志已到多数服务器，推进到的 N 属于 leader 当前任期</td>
+</tr>
+<tr>
+<td>Raft 旧任期条目获得提交保护</td>
+<td>它位于一条已按规则提交的后续日志之前，随同连续前缀一起提交</td>
+</tr>
+</tbody>
+</table>
+<p>Paxos 把“这一格选择哪个值”的规则用于连续日志位置，Raft 把任期、选举、前缀修复和提交条件结合起来维护复制日志。两者都需要把参与下一轮判断的状态可靠保存，并在决定命令之后按同一顺序驱动状态机。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://aCannedFish.github.io">aCannedFish</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://acannedfish.github.io/2026/11/09/BLOG004/">https://acannedfish.github.io/2026/11/09/BLOG004/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://aCannedFish.github.io" target="_blank">aCannedFish's Home</a>！</span></div></div><div class="tag_share"><div class="post-share"><div class="social-share" data-image="/img/background6.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related  no-desc" href="/2026/11/03/BLOG003/" title="Re：从0开始的图形渲染"><img class="cover" src="/img/background5.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">Re：从0开始的图形渲染</div></div></div></a><a class="pagination-related  no-desc" href="/2026/11/12/BLOG005/" title="Vulkan 学习日志"><img class="cover" src="/img/background7.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Vulkan 学习日志</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div></div><div class="aside-content" id="aside-content" data-route-scope="post"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">aCannedFish</div><div class="author-info-description"></div><div class="site-data"><div class="site-data-item"><div class="headline">文章</div><div class="length-num">124</div></div><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/aCannedFish"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/aCannedFish" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:yuguanting@sjtu.edu.cn" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.</span> <span class="toc-text">本地文件系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Block-Layer"><span class="toc-number">1.1.</span> <span class="toc-text">Block Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File-Layer"><span class="toc-number">1.2.</span> <span class="toc-text">File Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#inode-Number-Layer"><span class="toc-number">1.3.</span> <span class="toc-text">inode Number Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#File-Name-Number"><span class="toc-number">1.4.</span> <span class="toc-text">File Name Number</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Path-Name-Layer"><span class="toc-number">1.5.</span> <span class="toc-text">Path Name Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Absolute-Path-Name-Layer"><span class="toc-number">1.6.</span> <span class="toc-text">Absolute Path Name Layer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Symbolic-Link-Layer"><span class="toc-number">1.7.</span> <span class="toc-text">Symbolic Link Layer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F-API"><span class="toc-number">2.</span> <span class="toc-text">文件系统 API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6"><span class="toc-number">2.1.</span> <span class="toc-text">打开文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#fd-%E5%92%8C-cursor"><span class="toc-number">2.2.</span> <span class="toc-text">fd 和 cursor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OPEN-%E5%92%8C-READ"><span class="toc-number">2.3.</span> <span class="toc-text">OPEN 和 READ</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A3%81%E7%9B%98%E8%AF%BB%E5%86%99"><span class="toc-number">2.4.</span> <span class="toc-text">磁盘读写</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%97%AD%E4%B8%8E%E5%88%A0%E9%99%A4"><span class="toc-number">2.5.</span> <span class="toc-text">关闭与删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%A8%E7%9B%AE%E5%BD%95%E9%87%8D%E5%91%BD%E5%90%8D"><span class="toc-number">2.6.</span> <span class="toc-text">跨目录重命名</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Remote-Procedure-Call"><span class="toc-number">3.</span> <span class="toc-text">Remote Procedure Call</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Stub"><span class="toc-number">3.1.</span> <span class="toc-text">Stub</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E4%B8%8E%E5%9B%9E%E5%A4%8D"><span class="toc-number">3.2.</span> <span class="toc-text">请求与回复</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E7%BC%96%E7%A0%81"><span class="toc-number">3.3.</span> <span class="toc-text">参数编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%BC%96%E7%A0%81"><span class="toc-number">3.4.</span> <span class="toc-text">二进制编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%85%BC%E5%AE%B9"><span class="toc-number">3.5.</span> <span class="toc-text">版本兼容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B6%85%E6%97%B6%E4%B8%8E%E9%87%8D%E8%AF%95"><span class="toc-number">3.6.</span> <span class="toc-text">超时与重试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%AC%A1%E6%95%B0"><span class="toc-number">3.7.</span> <span class="toc-text">执行次数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E5%8E%BB%E9%87%8D"><span class="toc-number">3.8.</span> <span class="toc-text">请求去重</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">4.</span> <span class="toc-text">分布式文件系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#NFS"><span class="toc-number">4.1.</span> <span class="toc-text">NFS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E5%92%8C%E8%AF%BB%E5%8F%96"><span class="toc-number">4.1.1.</span> <span class="toc-text">打开和读取</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E5%8F%A5%E6%9F%84"><span class="toc-number">4.1.2.</span> <span class="toc-text">文件句柄</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%BC%93%E5%AD%98"><span class="toc-number">4.1.3.</span> <span class="toc-text">客户端缓存</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS"><span class="toc-number">4.2.</span> <span class="toc-text">GFS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%9D%97%E4%B8%8E%E5%89%AF%E6%9C%AC"><span class="toc-number">4.2.1.</span> <span class="toc-text">分块与副本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%BB-chunk"><span class="toc-number">4.2.2.</span> <span class="toc-text">读 chunk</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%99%E5%85%A5%E5%86%B2%E7%AA%81"><span class="toc-number">4.2.3.</span> <span class="toc-text">写入冲突</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HDFS"><span class="toc-number">4.3.</span> <span class="toc-text">HDFS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3FS"><span class="toc-number">4.4.</span> <span class="toc-text">3FS</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%83%E6%95%B0%E6%8D%AE%E4%B8%8E%E7%9B%AE%E5%BD%95"><span class="toc-number">4.4.1.</span> <span class="toc-text">元数据与目录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%93%E5%BC%80%E6%96%87%E4%BB%B6-2"><span class="toc-number">4.4.2.</span> <span class="toc-text">打开文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D-chunk"><span class="toc-number">4.4.3.</span> <span class="toc-text">定位 chunk</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E4%B8%8E%E5%AD%98%E5%82%A8%E5%88%86%E7%A6%BB"><span class="toc-number">4.4.4.</span> <span class="toc-text">计算与存储分离</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FUSE-%E4%B8%8E%E5%8E%9F%E7%94%9F-I-O"><span class="toc-number">4.4.5.</span> <span class="toc-text">FUSE 与原生 I&#x2F;O</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E6%A8%A1%E5%9E%8B"><span class="toc-number">5.</span> <span class="toc-text">一致性模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E5%BF%83%E5%8C%96%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-number">5.1.</span> <span class="toc-text">中心化服务器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%AF%E6%9C%AC%E4%B8%8E%E5%90%8C%E6%AD%A5"><span class="toc-number">5.2.</span> <span class="toc-text">副本与同步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.3.</span> <span class="toc-text">最终一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%99%E6%9B%B4%E6%96%B0%E6%8E%92%E5%BA%8F"><span class="toc-number">5.4.</span> <span class="toc-text">给更新排序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%A0%E6%9E%9C%E4%B8%8E%E9%80%BB%E8%BE%91%E6%97%B6%E9%92%9F"><span class="toc-number">5.5.</span> <span class="toc-text">因果与逻辑时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E9%BE%99%E4%B8%8E%E5%90%91%E9%87%8F%E6%97%B6%E9%92%9F"><span class="toc-number">5.6.</span> <span class="toc-text">接龙与向量时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A5%E6%A0%BC%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.7.</span> <span class="toc-text">严格一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.8.</span> <span class="toc-text">线性一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-number">5.9.</span> <span class="toc-text">顺序一致性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8E%9F%E5%AD%90%E6%80%A7%E4%B8%8E%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D"><span class="toc-number">6.</span> <span class="toc-text">原子性与故障恢复</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E6%AC%A1%E6%9C%AA%E5%AE%8C%E6%88%90%E7%9A%84%E8%BD%AC%E8%B4%A6"><span class="toc-number">6.1.</span> <span class="toc-text">一次未完成的转账</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%B1%E5%AD%90%E5%89%AF%E6%9C%AC"><span class="toc-number">6.2.</span> <span class="toc-text">影子副本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E6%97%A5%E5%BF%97"><span class="toc-number">6.3.</span> <span class="toc-text">文件系统日志</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%BD%E5%8A%A0%E4%B8%80%E4%B8%AA%E5%9D%97"><span class="toc-number">6.3.1.</span> <span class="toc-text">追加一个块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E4%BF%AE%E6%94%B9%E5%89%AF%E6%9C%AC"><span class="toc-number">6.3.2.</span> <span class="toc-text">并发修改副本</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E4%B8%8E%E6%8F%90%E4%BA%A4%E7%82%B9"><span class="toc-number">6.4.</span> <span class="toc-text">事务与提交点</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%AA%E9%87%8D%E5%81%9A%E6%97%A5%E5%BF%97"><span class="toc-number">6.4.1.</span> <span class="toc-text">只重做日志</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%B0%E5%80%BC%E8%BF%98%E6%98%AF%E8%AE%B0%E6%93%8D%E4%BD%9C"><span class="toc-number">6.4.2.</span> <span class="toc-text">记值还是记操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E4%B8%8E%E9%87%8D%E5%81%9A"><span class="toc-number">6.4.3.</span> <span class="toc-text">撤销与重做</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B4%A9%E6%BA%83%E5%90%8E%E6%80%8E%E6%A0%B7%E6%81%A2%E5%A4%8D"><span class="toc-number">6.4.4.</span> <span class="toc-text">崩溃后怎样恢复</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E7%82%B9"><span class="toc-number">6.5.</span> <span class="toc-text">检查点</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B7%A8%E8%BF%87%E6%A3%80%E6%9F%A5%E7%82%B9%E7%9A%84%E4%BA%8B%E5%8A%A1"><span class="toc-number">6.5.1.</span> <span class="toc-text">跨过检查点的事务</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E6%97%A5%E5%BF%97%E7%9A%84%E5%8F%96%E8%88%8D"><span class="toc-number">6.5.2.</span> <span class="toc-text">三种日志的取舍</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6%E4%B8%8E%E4%B8%A4%E9%98%B6%E6%AE%B5%E9%94%81"><span class="toc-number">7.</span> <span class="toc-text">并发控制与两阶段锁</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%B9%B6%E5%8F%91"><span class="toc-number">7.1.</span> <span class="toc-text">为什么要并发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A2%E5%A4%B1%E7%9A%84%E5%AD%98%E6%AC%BE"><span class="toc-number">7.2.</span> <span class="toc-text">丢失的存款</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AB%9E%E6%80%81%E7%9A%84%E5%AE%9E%E9%99%85%E5%BD%B1%E5%93%8D"><span class="toc-number">7.2.1.</span> <span class="toc-text">竞态的实际影响</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%94%E7%A6%BB%E7%9A%84%E5%8D%95%E4%BD%8D"><span class="toc-number">7.3.</span> <span class="toc-text">隔离的单位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E5%85%A8%E5%B1%80%E9%94%81%E5%88%B0%E8%AE%B0%E5%BD%95%E9%94%81"><span class="toc-number">7.4.</span> <span class="toc-text">从全局锁到记录锁</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BD%AC%E8%B4%A6%E5%92%8C%E5%AE%A1%E8%AE%A1"><span class="toc-number">7.4.1.</span> <span class="toc-text">转账和审计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E5%8A%A0%E9%94%81"><span class="toc-number">7.4.2.</span> <span class="toc-text">静态加锁</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E9%94%81"><span class="toc-number">7.5.</span> <span class="toc-text">两阶段锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AF%E4%B8%B2%E8%A1%8C%E5%8C%96"><span class="toc-number">7.6.</span> <span class="toc-text">可串行化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%B9%E7%85%A7%E4%B8%89%E7%A7%8D%E8%B0%83%E5%BA%A6"><span class="toc-number">7.6.1.</span> <span class="toc-text">对照三种调度</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%86%E5%9B%BE%E4%B8%8E%E5%86%B2%E7%AA%81"><span class="toc-number">7.6.2.</span> <span class="toc-text">视图与冲突</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%A4%E7%A7%8D%E5%88%A4%E6%8D%AE%E7%9A%84%E8%8C%83%E5%9B%B4"><span class="toc-number">7.6.3.</span> <span class="toc-text">两种判据的范围</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2PL-%E7%9A%84%E8%AF%81%E6%98%8E"><span class="toc-number">7.6.4.</span> <span class="toc-text">2PL 的证明</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AD%BB%E9%94%81"><span class="toc-number">7.7.</span> <span class="toc-text">死锁</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OCC%E3%80%81HTM-%E4%B8%8E-MVCC"><span class="toc-number">8.</span> <span class="toc-text">OCC、HTM 与 MVCC</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#OCC-%E7%9A%84%E4%B8%89%E4%B8%AA%E9%98%B6%E6%AE%B5"><span class="toc-number">8.1.</span> <span class="toc-text">OCC 的三个阶段</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E4%B8%8E%E5%86%99%E5%9B%9E"><span class="toc-number">8.1.1.</span> <span class="toc-text">验证与写回</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E5%80%BC%E4%B8%8E%E7%89%88%E6%9C%AC"><span class="toc-number">8.1.2.</span> <span class="toc-text">数值与版本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%A9%E5%B0%8F%E6%8F%90%E4%BA%A4%E9%94%81%E7%9A%84%E8%8C%83%E5%9B%B4"><span class="toc-number">8.1.3.</span> <span class="toc-text">缩小提交锁的范围</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E9%94%81%E7%9A%84%E6%88%90%E6%9C%AC"><span class="toc-number">8.2.</span> <span class="toc-text">加锁的成本</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E8%AF%AF%E4%B8%AD%E6%AD%A2"><span class="toc-number">8.2.1.</span> <span class="toc-text">为什么会误中止</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E4%BA%8B%E5%8A%A1%E5%86%85%E5%AD%98"><span class="toc-number">8.3.</span> <span class="toc-text">硬件事务内存</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E8%AF%95%E4%B8%8E%E5%9B%9E%E9%80%80"><span class="toc-number">8.3.1.</span> <span class="toc-text">重试与回退</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E6%80%8E%E6%A0%B7%E9%AA%8C%E8%AF%81"><span class="toc-number">8.3.2.</span> <span class="toc-text">硬件怎样验证</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E7%9A%84%E4%BF%9D%E8%AF%81"><span class="toc-number">8.4.</span> <span class="toc-text">事务的保证</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#ACID"><span class="toc-number">8.4.1.</span> <span class="toc-text">ACID</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E7%89%88%E6%9C%AC%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6"><span class="toc-number">8.5.</span> <span class="toc-text">多版本并发控制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%BB%E5%90%8C%E4%B8%80%E4%B8%AA%E5%BF%AB%E7%85%A7"><span class="toc-number">8.5.1.</span> <span class="toc-text">读同一个快照</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BF%AB%E7%85%A7%E6%97%B6%E9%97%B4"><span class="toc-number">8.5.2.</span> <span class="toc-text">快照时间</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%99%E5%85%A5%E5%8F%AF%E8%A7%81%E6%80%A7"><span class="toc-number">8.5.3.</span> <span class="toc-text">写入可见性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%98%B2%E6%AD%A2%E4%B8%A2%E5%A4%B1%E6%9B%B4%E6%96%B0"><span class="toc-number">8.5.4.</span> <span class="toc-text">防止丢失更新</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%99%E5%81%8F%E6%96%9C"><span class="toc-number">8.5.5.</span> <span class="toc-text">写偏斜</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4%E4%B8%8E%E5%A4%8D%E5%88%B6%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="toc-number">9.</span> <span class="toc-text">两阶段提交与复制状态机</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4"><span class="toc-number">9.1.</span> <span class="toc-text">两阶段提交</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%8E%E6%9C%AC%E5%9C%B0%E6%8F%90%E4%BA%A4%E5%88%B0%E5%85%A8%E5%B1%80%E6%8F%90%E4%BA%A4"><span class="toc-number">9.1.1.</span> <span class="toc-text">从本地提交到全局提交</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E4%B8%A2%E5%A4%B1%E4%B8%8E%E5%B4%A9%E6%BA%83"><span class="toc-number">9.2.</span> <span class="toc-text">消息丢失与崩溃</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E9%98%B6%E6%AE%B5"><span class="toc-number">9.2.1.</span> <span class="toc-text">准备阶段</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%90%E4%BA%A4%E9%98%B6%E6%AE%B5"><span class="toc-number">9.2.2.</span> <span class="toc-text">提交阶段</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%8F%E8%B0%83%E8%80%85%E5%B4%A9%E6%BA%83"><span class="toc-number">9.2.3.</span> <span class="toc-text">协调者崩溃</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8E%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6%E9%85%8D%E5%90%88"><span class="toc-number">9.2.4.</span> <span class="toc-text">与并发控制配合</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E5%88%86%E5%8C%BA%E4%B8%8E-CAP"><span class="toc-number">9.3.</span> <span class="toc-text">网络分区与 CAP</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%80%E5%90%8E%E4%B8%80%E4%BB%B6%E5%95%86%E5%93%81"><span class="toc-number">9.3.1.</span> <span class="toc-text">最后一件商品</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="toc-number">9.4.</span> <span class="toc-text">复制状态机</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BB%E8%8A%82%E7%82%B9%E6%95%85%E9%9A%9C"><span class="toc-number">9.4.1.</span> <span class="toc-text">主节点故障</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#View-Server"><span class="toc-number">9.5.</span> <span class="toc-text">View Server</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%92%E7%BB%9D%E6%97%A7-view"><span class="toc-number">9.5.1.</span> <span class="toc-text">拒绝旧 view</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%93%AA%E4%B8%AA%E5%89%AF%E6%9C%AC%E5%8F%AF%E4%BB%A5%E6%8E%A5%E7%AE%A1"><span class="toc-number">9.6.</span> <span class="toc-text">哪个副本可以接管</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Quorum-%E7%9A%84%E4%BA%A4%E9%9B%86"><span class="toc-number">9.6.1.</span> <span class="toc-text">Quorum 的交集</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E7%AE%A1%E6%97%B6%E6%81%A2%E5%A4%8D%E6%97%A5%E5%BF%97"><span class="toc-number">9.6.2.</span> <span class="toc-text">接管时恢复日志</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Paxos-%E4%B8%8E-Raft"><span class="toc-number">10.</span> <span class="toc-text">Paxos 与 Raft</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%88%E5%86%B3%E5%AE%9A%E4%B8%80%E4%B8%AA%E5%80%BC"><span class="toc-number">10.1.</span> <span class="toc-text">先决定一个值</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%9A%E6%95%B0%E6%B4%BE%E4%B8%8E%E6%8F%90%E6%A1%88%E5%8F%B7"><span class="toc-number">10.1.1.</span> <span class="toc-text">多数派与提案号</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Prepare-%E4%B8%8E-Accept"><span class="toc-number">10.1.2.</span> <span class="toc-text">Prepare 与 Accept</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%A7%E6%89%BF%E5%B7%B2%E6%9C%89%E6%8F%90%E6%A1%88"><span class="toc-number">10.2.</span> <span class="toc-text">继承已有提案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8A%82%E7%82%B9%E4%BF%9D%E5%AD%98%E4%BB%80%E4%B9%88"><span class="toc-number">10.2.1.</span> <span class="toc-text">节点保存什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%89%E5%AE%9A%E4%B8%8E%E6%95%85%E9%9A%9C"><span class="toc-number">10.2.2.</span> <span class="toc-text">选定与故障</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Multi-Paxos"><span class="toc-number">10.3.</span> <span class="toc-text">Multi-Paxos</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E4%BD%8D%E7%BD%AE%E5%86%B2%E7%AA%81"><span class="toc-number">10.3.1.</span> <span class="toc-text">日志位置冲突</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A8%B3%E5%AE%9A-leader"><span class="toc-number">10.3.2.</span> <span class="toc-text">稳定 leader</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Raft-%E7%9A%84%E5%A4%8D%E5%88%B6%E6%97%A5%E5%BF%97"><span class="toc-number">10.4.</span> <span class="toc-text">Raft 的复制日志</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%92%E8%89%B2%E4%B8%8E%E4%BB%BB%E6%9C%9F"><span class="toc-number">10.4.1.</span> <span class="toc-text">角色与任期</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8A%95%E7%A5%A8%E8%A7%84%E5%88%99"><span class="toc-number">10.4.2.</span> <span class="toc-text">投票规则</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E4%B8%8E%E4%BF%AE%E5%A4%8D%E6%97%A5%E5%BF%97"><span class="toc-number">10.5.</span> <span class="toc-text">复制与修复日志</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E5%88%86%E5%8F%89"><span class="toc-number">10.5.1.</span> <span class="toc-text">日志为什么会分叉</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E5%89%8D%E4%B8%80%E9%A1%B9"><span class="toc-number">10.5.2.</span> <span class="toc-text">检查前一项</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Raft-%E4%BD%95%E6%97%B6%E8%83%BD%E6%8F%90%E4%BA%A4"><span class="toc-number">10.6.</span> <span class="toc-text">Raft 何时能提交</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%80%99%E9%80%89%E6%97%A5%E5%BF%97%E7%9A%84%E6%AF%94%E8%BE%83"><span class="toc-number">10.6.1.</span> <span class="toc-text">候选日志的比较</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A7%E4%BB%BB%E6%9C%9F%E6%9D%A1%E7%9B%AE%E7%9A%84%E5%8F%8D%E4%BE%8B"><span class="toc-number">10.6.2.</span> <span class="toc-text">旧任期条目的反例</span></a></li></ol></li></ol></li></ol></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
   const showKatex = () => {
     document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
   }
